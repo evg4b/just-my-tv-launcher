@@ -1,0 +1,6 @@
+[submodule "sources/couchy-launcher"]
+	path = sources/couchy-launcher
+	url = git@github.com:conreo/couchy-launcher.git
+[submodule "sources/cleanyourtv"]
+	path = sources/cleanyourtv
+	url = https://github.com/Gathin23/cleanyourtv
