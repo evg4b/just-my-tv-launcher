@@ -35,7 +35,14 @@ final class TileMenu {
             });
             list.addView(row);
         }
-        w.showAsDropDown(anchor, 0, Math.round(4 * d));
+        // showAsDropDown cannot flip a WRAP_CONTENT popup, and under the bar it would run off the screen
+        list.measure(View.MeasureSpec.makeMeasureSpec(w.getWidth(), View.MeasureSpec.EXACTLY), View.MeasureSpec.UNSPECIFIED);
+        int[] at = new int[2];
+        anchor.getLocationInWindow(at);
+        int gap = Math.round(4 * d), h = list.getMeasuredHeight();
+        int y = at[1] + anchor.getHeight() + gap;
+        if (y + h > anchor.getRootView().getHeight()) y = Math.max(0, at[1] - gap - h);
+        w.showAtLocation(anchor, Gravity.TOP | Gravity.START, at[0], y);
         list.getChildAt(0).requestFocus();
         return w;
     }

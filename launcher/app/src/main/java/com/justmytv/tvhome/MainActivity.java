@@ -42,7 +42,6 @@ import java.util.concurrent.Executors;
 
 /** Home screen: the app grid with the bar, the focus ring, the header, the tile menu (PLAN 7, 8, 9). */
 public class MainActivity extends Activity implements AppAdapter.Listener {
-    private static final int CEILING_DP = 120;     // rows scrolled up stop below the header
     private static final int FADE_DP = 36;
     private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
@@ -81,6 +80,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private VideoWallpaper video;
     private ImageView poster;
     private int wallpaperGen;        // a newer applyWallpaper makes older background results stale
+    private int inputsGen;           // the same for updateInputsButton
     private boolean started, skipApple;
     private List<String> aerialUrls;
     private boolean weatherFailed;   // the last refresh failed: show when the cache is from
@@ -149,7 +149,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float d = dm.density;
         GridMetrics m = new GridMetrics(dm.widthPixels, dm.heightPixels, d, state.columns, state.rowsBelow, state.corner);
-        int ceiling = Math.round(CEILING_DP * d);
+        int ceiling = Math.round(GridMetrics.CEILING_DP * d);
         List<App> items = adapter == null ? Collections.emptyList() : adapter.items();
         adapter = new AppAdapter(m, state.columns, state.labels, this);
         adapter.setItems(items);
@@ -362,9 +362,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     /** The Inputs icon shows only when it is wanted and there is an input to switch to (PLAN 7.7). */
     void updateInputsButton() {
         boolean want = state.showInputsButton, connectedOnly = state.inputsConnectedOnly;
+        int gen = ++inputsGen;
         pool.execute(() -> {   // TvInputManager calls are IPC: not on the main thread at every return to Home
             boolean show = want && !Inputs.list(this, connectedOnly).isEmpty();
             ui.post(() -> {
+                if (gen != inputsGen) return;   // a newer check, after a quick toggle, wins
                 findViewById(R.id.btn_inputs).setVisibility(show ? View.VISIBLE : View.GONE);
                 if (panel.showing(screens.inputs)) panel.refresh();
             });
@@ -442,6 +444,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     @Override
     public boolean onKeyDown(int code, KeyEvent e) {
+        // a panel over Move mode would leave the arrows moving the tile behind it
+        if (movingPkg != null && (code == KeyEvent.KEYCODE_MENU || code == KeyEvent.KEYCODE_TV_INPUT)) endMove();
         if (code == KeyEvent.KEYCODE_MENU) {   // the gear's key, where the remote has one (PLAN 7.6)
             if (panel.isOpen()) panel.close();
             else panel.open(screens.root);

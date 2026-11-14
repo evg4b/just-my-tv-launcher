@@ -24,6 +24,11 @@ public class GridMetricsTest {
         assertEquals(0, new GridMetrics(1920, 1080, 2f, 5, 0, 0).cornerPx);
     }
 
+    @Test public void barStaysBelowTheHeader() {            // 4 columns, 2 rows below would put it at 76 dp
+        assertEquals(256, new GridMetrics(1920, 1080, 2f, 4, 2, 16).barTop);
+        assertEquals(256, new GridMetrics(1920, 1080, 2f, 4, 3, 16).barTop);
+    }
+
     @Test public void scroll() {
         // the bar comes back to its line from wherever it is
         assertEquals(-200, GridMetrics.scrollDy(true, 572, 828, 772, 240, 1080));

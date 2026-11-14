@@ -9,8 +9,9 @@ one Activity. The only libraries are AndroidX RecyclerView, DynamicAnimation and
 
 ## Status
 
-All planned features are written and build cleanly, and the 23 unit tests pass. Most of them have not been tried on
-the TV yet: only the app grid (milestone M1) has run there. The on-device checks are listed as T16 to T19 in
+All planned features are written and build cleanly, and the 24 unit tests pass. The grid, the tile menu, settings,
+inputs, weather and the wallpapers have been checked on the TV. The remote buttons service and the Russian strings
+have not, and a few video checks need someone watching the screen. The on-device checks are listed as T16 to T19 in
 [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md).
 
 ## Features

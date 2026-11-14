@@ -3,6 +3,8 @@ package com.justmytv.tvhome;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
@@ -23,7 +25,11 @@ final class WallpaperFiles {
 
     static File poster(Context ctx) { return new File(ctx.getFilesDir(), "poster.webp"); }
 
-    /** A picture at no more than about screen size (inSampleSize, no extra dependencies), or null. */
+    /**
+     * The picture's 16:9 centre at no more than screen size, or null. Only that region is decoded: a 12 MP portrait
+     * photo would otherwise be decoded almost whole (48 MB) for a screen that shows a third of it.
+     */
+    @SuppressWarnings("deprecation")   // BitmapRegionDecoder.newInstance(InputStream, boolean): the API 31 one is too new
     static Bitmap picture(Context ctx, Uri uri) {
         BitmapFactory.Options o = new BitmapFactory.Options();
         o.inJustDecodeBounds = true;
@@ -33,19 +39,47 @@ final class WallpaperFiles {
             Log.w("Wallpaper", "picture unreadable", e);
             return null;
         }
-        if (o.outWidth <= 0 || o.outHeight <= 0) return null;
-        int sample = 1;
-        while (o.outWidth / (sample * 2) >= W && o.outHeight / (sample * 2) >= H) sample *= 2;
+        int w = o.outWidth, h = o.outHeight;
+        if (w <= 0 || h <= 0) return null;
+        int cw = Math.min(w, h * W / H), ch = Math.min(h, w * H / W);
         BitmapFactory.Options d = new BitmapFactory.Options();
-        d.inSampleSize = sample;
+        d.inSampleSize = sample(cw, ch);
+        Bitmap b;
         try (InputStream in = ctx.getContentResolver().openInputStream(uri)) {
-            Bitmap b = BitmapFactory.decodeStream(in, null, d);
-            if (b != null) b.prepareToDraw();
-            return b;
-        } catch (IOException | SecurityException | OutOfMemoryError e) {
+            BitmapRegionDecoder r = BitmapRegionDecoder.newInstance(in, false);
+            try {
+                int x = (w - cw) / 2, y = (h - ch) / 2;
+                b = r.decodeRegion(new Rect(x, y, x + cw, y + ch), d);
+            } finally {
+                r.recycle();
+            }
+        } catch (IOException e) {   // a format the region decoder does not read (GIF, BMP): the whole picture
+            d.inSampleSize = sample(w, h);
+            try (InputStream in = ctx.getContentResolver().openInputStream(uri)) {
+                b = BitmapFactory.decodeStream(in, null, d);
+            } catch (IOException | SecurityException | OutOfMemoryError e2) {
+                Log.w("Wallpaper", "picture failed", e2);
+                return null;
+            }
+        } catch (SecurityException | OutOfMemoryError e) {
             Log.w("Wallpaper", "picture failed", e);
             return null;
         }
+        if (b == null) return null;
+        if (b.getWidth() > W) {
+            Bitmap s = Bitmap.createScaledBitmap(b, W, Math.max(1, b.getHeight() * W / b.getWidth()), true);
+            if (s != b) b.recycle();
+            b = s;
+        }
+        b.prepareToDraw();
+        return b;
+    }
+
+    /** The largest power of two that keeps w x h at least screen size. */
+    private static int sample(int w, int h) {
+        int s = 1;
+        while (w / (s * 2) >= W && h / (s * 2) >= H) s *= 2;
+        return s;
     }
 
     /** The decoded poster frame, or null. RGB_565: it is opaque and only shown until the video's first frame. */

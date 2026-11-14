@@ -46,6 +46,7 @@ final class Inputs {
         } catch (RuntimeException e) {
             // a TV input service that fails to answer: no inputs rather than a crash
         }
+        out.sort((x, y) -> x.label.compareTo(y.label));   // the system lists HDMI 1, 3, 2 on this TV
         return out;
     }
 

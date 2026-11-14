@@ -156,3 +156,7 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D82 | `TopFade` keeps its hardware layer only while rows are scrolled up | At rest the layer was a full-screen offscreen pass for nothing | PLAN 7.5 |
 | D83 | The default wallpaper and window background are the dithered gradient shape `aurora.xml`; `poster_default.webp` is removed | **Revises D58:** the bitmap held 8 MB of RAM for a gradient; banding to be checked on the TV (T19) | PLAN 6.2, 11.3 |
 | D84 | Settings root has 9 items: Wallpaper, Weather, Apps, Appearance, Inputs, Remote buttons, Clock, About, TV settings | Remote buttons (M7) joins the 8 of PLAN 10.1 | PLAN 10.1 |
+| D85 | `network_security_config.xml` trusts Apple Root CA (`res/raw/apple_root_ca.pem`, SHA-256 `B0:B1:73:0E…F0:24`) for `sylvan.apple.com` only, together with the system store | Android 11 lacks that root, so every Apple aerial failed TLS on the TV. Other hosts keep the platform defaults; trust-all stays out (D49) | PLAN 6.3, RISKS 45 |
+| D86 | The tile menu is measured and opens above the tile when it does not fit below | Under the bar `showAsDropDown` ran off the screen and showed only "Open" (TV check, T17) | PLAN 8 |
+| D87 | The bar rests no higher than 128 dp (the header ceiling plus the band's 8 dp); "Rows below the bar" that do not fit are cut at the bottom | With 4 columns and 2 rows below the bar covered the clock (code review, confirmed on the TV) | PLAN 7.2 |
+| D88 | The Inputs panel sorts inputs by label | The TV lists HDMI 1, 3, 2 | PLAN 7.7 |

@@ -205,6 +205,8 @@ final class SidePanel {
             if (action != EditorInfo.IME_ACTION_SEARCH && action != EditorInfo.IME_ACTION_DONE && !enter) return false;
             String q = v.getText().toString().trim();
             if (!q.isEmpty()) submit.accept(q);
+            // the TV keyboard stays up over the results otherwise; submit rebuilds the screen, so not v's token
+            ctx.getSystemService(android.view.inputmethod.InputMethodManager.class).hideSoftInputFromWindow(content.getWindowToken(), 0);
             return true;
         });
         content.addView(e, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.round(56 * d)));

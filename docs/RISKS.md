@@ -307,3 +307,6 @@ A summary by priority:
   Entries with unreachable links are disabled rather than crashing the app. TLS is not disabled (trust-all is not carried over). Streams are enabled
   only when the user chooses. Attribution in "About". The question of whether this is permitted is Q20.
 - **Status.** the list was checked from the file (289 entries, 251 Apple and Amazon); the reachability of the links and TLS on the TCL have not been verified.
+  **TV check, 2026-11-14:** Amazon links play. Apple links failed with "Trust anchor for certification path not found":
+  `sylvan.apple.com` chains to Apple Root CA, which Android 11 does not ship. Fixed without trust-all: the app trusts
+  that one root for that one host, next to the system store (D85). After the fix, Apple clips stream too.

@@ -3,6 +3,7 @@ package com.justmytv.tvhome;
 /** Grid sizes from the screen and the column count (PLAN 7.2), and the focus scroll rule. Pure, JVM-tested. */
 final class GridMetrics {
     static final float FOCUS_SCALE = 1.10f;
+    static final int CEILING_DP = 120;   // rows scrolled up stop below the header
 
     final int tileW, tileH, itemH, barTop, cornerPx, labelMargin;
 
@@ -12,7 +13,9 @@ final class GridMetrics {
         tileW = Math.round(w);
         tileH = Math.round(w * 101 / 180f);
         itemH = tileH + Math.round(45 * density);               // padding 8 + 8, gap 7, label 22
-        barTop = Math.round(heightPx - (1 + rowsBelow) * itemH - 26 * density);   // 8 dp padding + 18 dp peek
+        // 8 dp padding + 18 dp peek; the band (8 dp above the tiles) stays under the header, or big tiles with rows
+        // below would cover the clock and the weather
+        barTop = Math.max(Math.round((CEILING_DP + 8) * density), Math.round(heightPx - (1 + rowsBelow) * itemH - 26 * density));
         cornerPx = Math.round(cornerDp * density * Math.min(1f, w / (180 * density)));
         labelMargin = tileH + Math.round(7 * density);          // from the item's top padding edge
     }
