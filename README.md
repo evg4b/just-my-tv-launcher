@@ -116,8 +116,8 @@ the remote buttons.
 
 Just My TV Launcher goes online in three cases only. When a city is set, it asks Open-Meteo for the current weather
 every 30 minutes while the home screen is visible, sending the city's coordinates. When the Aerials wallpaper is
-chosen, it streams clips from Apple and Amazon. When the Photos wallpaper is chosen, it downloads a random photo from
-picsum.photos at the interval you set, again only while the home screen is visible. Nothing else leaves the TV: no
+chosen, it streams clips from Apple and Amazon. When the Photos wallpaper is chosen, it asks Unsplash's API for a random photo with
+your own access key and downloads it, at the interval you set and only while the home screen is visible. Nothing else leaves the TV: no
 analytics, no crash reporting, no accounts.
 
 The remote buttons service is an accessibility service, because that is the only way to catch a key press inside

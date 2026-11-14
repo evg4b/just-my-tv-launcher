@@ -59,9 +59,11 @@ public class StateJsonTest {
         assertEquals(5, a.photoMinutes);
         a.wallpaper = "photos";
         a.photoMinutes = 30;
+        a.unsplashKey = "AbC-123_x";
         StateJson b = StateJson.parse(a.toJson());
         assertEquals("photos", b.wallpaper);
         assertEquals(30, b.photoMinutes);
+        assertEquals("AbC-123_x", b.unsplashKey);
         assertEquals(5, StateJson.parse("{\"wallpaper\":{\"photoMinutes\":7}}").photoMinutes);
     }
 

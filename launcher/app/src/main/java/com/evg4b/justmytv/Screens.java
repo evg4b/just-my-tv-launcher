@@ -19,7 +19,7 @@ final class Screens {
     private final MainActivity a;
     private final SidePanel panel;
 
-    final SidePanel.Screen root, apps, inputs;
+    final SidePanel.Screen root, apps, inputs, wallpaper = this::wallpaperRows;
 
     Screens(MainActivity a, SidePanel panel) {
         this.a = a;
@@ -33,7 +33,7 @@ final class Screens {
 
     private void root(SidePanel p) {
         p.title(s(R.string.settings));
-        p.section(R.drawable.ic_image, s(R.string.wallpaper), this::wallpaper);
+        p.section(R.drawable.ic_image, s(R.string.wallpaper), wallpaper);
         p.section(R.drawable.wx_sun_cloud, s(R.string.weather), this::weather);
         p.section(R.drawable.ic_apps, s(R.string.apps), apps);
         p.section(R.drawable.ic_palette, s(R.string.appearance), this::appearance);
@@ -197,9 +197,9 @@ final class Screens {
     // ---- wallpaper (PLAN 6, 10.1) ----
 
     private static final String[] TYPES = {"gradient", "picture", "photos", "video", "aerials"};
-    private static final int[] PHOTO_MINUTES = {1, 5, 15, 30, 60};
+    private static final int[] PHOTO_MINUTES = {5, 15, 30, 60};   // 2 requests a photo; a new key has 50 an hour
 
-    private void wallpaper(SidePanel p) {
+    private void wallpaperRows(SidePanel p) {
         StateJson st = a.state;
         p.title(s(R.string.wallpaper));
         String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_photos), s(R.string.wp_video),
@@ -211,7 +211,10 @@ final class Screens {
             panel.refresh();   // the photo and aerial options come and go with the type
         });
         if (st.wallpaper.equals("photos")) {
-            String[] every = {s(R.string.min_1), s(R.string.min_5), s(R.string.min_15), s(R.string.min_30), s(R.string.hour_1)};
+            String key = st.unsplashKey;
+            p.item(s(R.string.unsplash_key), (key.isEmpty() ? s(R.string.city_not_set) : "…" + key.substring(Math.max(0, key.length() - 4)))
+                    + "  ›", () -> panel.push(this::unsplashKey));
+            String[] every = {s(R.string.min_5), s(R.string.min_15), s(R.string.min_30), s(R.string.hour_1)};
             int cur = 0;
             while (PHOTO_MINUTES[cur] != st.photoMinutes && cur < PHOTO_MINUTES.length - 1) cur++;
             p.choice(s(R.string.photo_every), every, cur, i -> {
@@ -220,8 +223,18 @@ final class Screens {
                 a.applyWallpaper();   // the timer starts over with the new interval
             });
             p.item(s(R.string.next_photo), null, a.photos::next);
+            StringBuilder note = new StringBuilder();
+            switch (a.photos.status()) {
+                case NO_KEY: note.append(s(R.string.photos_no_key)).append('\n'); break;
+                case BAD_KEY: note.append(s(R.string.photos_bad_key)).append('\n'); break;
+                case LIMIT: note.append(s(R.string.photos_limit)).append('\n'); break;
+                case FAILED: note.append(s(R.string.photos_failed)).append('\n'); break;
+                default: break;
+            }
             String by = a.photos.author();
-            p.note(by.isEmpty() ? s(R.string.photos_note) : a.getString(R.string.photo_by, by) + "\n" + s(R.string.photos_note));
+            if (!by.isEmpty()) note.append(a.getString(R.string.photo_by, by)).append('\n');
+            note.append(s(R.string.photos_note));
+            p.note(note.toString());
         }
         if (st.wallpaper.equals("aerials")) {
             String[] sources = {s(R.string.aerials_all), "Apple", "Amazon"};
@@ -242,6 +255,29 @@ final class Screens {
             a.applyDim();
         });
         p.note(s(R.string.aerials_note));
+    }
+
+    /** The owner's Unsplash access key (D102): typed once, kept in the state file on the TV. */
+    private void unsplashKey(SidePanel p) {
+        StateJson st = a.state;
+        p.title(s(R.string.unsplash_key));
+        android.widget.EditText e = p.edit(s(R.string.unsplash_key_hint), st.unsplashKey, k -> {
+            st.unsplashKey = k.trim();
+            a.save();
+            a.applyWallpaper();
+            panel.back();
+        });
+        // a key is case-sensitive: no capitals or suggestions from the keyboard
+        e.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        if (!st.unsplashKey.isEmpty()) {
+            p.item(s(R.string.unsplash_key_remove), null, () -> {
+                st.unsplashKey = "";
+                a.save();
+                a.applyWallpaper();
+                panel.back();
+            });
+        }
+        p.note(s(R.string.unsplash_key_note));
     }
 
     private static final int[] THEME_NAMES = {R.string.theme_nature, R.string.theme_space, R.string.theme_city,

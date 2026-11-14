@@ -27,7 +27,8 @@ final class StateJson {
     String wallpaper = "gradient";    // gradient | picture | photos | video | aerials
     String videoUri = "", imageUri = "";
     int dim = 20;                      // 0, 20, 40 or 60 %
-    int photoMinutes = 5;              // the Photos wallpaper changes every 1, 5, 15, 30 or 60 min (D101)
+    int photoMinutes = 5;              // the Photos wallpaper changes every 5, 15, 30 or 60 min (D101)
+    String unsplashKey = "";           // the owner's Unsplash access key (D102); stays on the TV
     String aerialSource = "";          // "" (both), "A" or "Z" (D100)
     Set<String> aerialThemes = allThemes();   // never empty
 
@@ -88,7 +89,8 @@ final class StateJson {
                 int dm = wp.optInt("dim", 20);
                 s.dim = dm == 0 || dm == 40 || dm == 60 ? dm : 20;
                 int pm = wp.optInt("photoMinutes", 5);
-                s.photoMinutes = pm == 1 || pm == 15 || pm == 30 || pm == 60 ? pm : 5;
+                s.photoMinutes = pm == 15 || pm == 30 || pm == 60 ? pm : 5;
+                s.unsplashKey = wp.optString("unsplashKey", "").trim();
                 String src = wp.optString("aerialSource", "");
                 s.aerialSource = src.equals("A") || src.equals("Z") ? src : "";
                 JSONArray th = wp.optJSONArray("aerialThemes");
@@ -150,7 +152,7 @@ final class StateJson {
             o.put("known", new JSONArray(known));
             o.put("lastFocused", lastFocused);
             o.put("wallpaper", obj(o, "wallpaper").put("type", wallpaper).put("uri", videoUri).put("image", imageUri)
-                    .put("dim", dim).put("photoMinutes", photoMinutes).put("aerialSource", aerialSource).put("aerialThemes", new JSONArray(aerialThemes)));
+                    .put("dim", dim).put("photoMinutes", photoMinutes).put("unsplashKey", unsplashKey).put("aerialSource", aerialSource).put("aerialThemes", new JSONArray(aerialThemes)));
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
                     .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv));

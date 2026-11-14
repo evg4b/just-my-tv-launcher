@@ -119,7 +119,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
             aerialUrls = null;
         });
-        photos = new PhotoWallpaper(this, poster);
+        photos = new PhotoWallpaper(this, poster, () -> {
+            if (panel != null && panel.showing(screens.wallpaper)) panel.refresh();
+        });
         applyWallpaper();
         // the poster view now covers the window; drop the theme background after the first frame (overdraw, PLAN 11.3)
         getWindow().getDecorView().post(() -> getWindow().setBackgroundDrawable(null));
@@ -245,7 +247,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     private void startVideo() {
         if (state.wallpaper.equals("photos")) {
-            photos.start(state.photoMinutes * 60_000L);
+            photos.start(state.photoMinutes * 60_000L, state.unsplashKey);
         } else if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
             video.startFile(Uri.parse(state.videoUri));
         } else if (state.wallpaper.equals("aerials")) {

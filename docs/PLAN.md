@@ -828,15 +828,18 @@ streaming from arbitrary URLs. The only network video is the fixed aerial list (
 
 ### 6.2a. Photos: a random Unsplash photo on a timer (D101)
 
-**As built (2026-11-14).** `PhotoWallpaper` asks `https://picsum.photos/1920/1080.jpg`, which redirects to a random
-photo already cropped to 1920x1080; the redirect address carries the picsum id, and `/id/{id}/info` gives the author.
-The photo goes to `files/photo.jpg` (through a temporary file, at most 5 MB) and the author to `files/photo.txt`; the
+**As built (2026-11-14, D102).** `PhotoWallpaper` asks `https://api.unsplash.com/photos/random?orientation=landscape&
+content_filter=high` with `Authorization: Client-ID <the owner's access key>` and downloads `urls.raw` with Imgix
+parameters for a 1920x1080 crop; then it calls the photo's `links.download_location`, as Unsplash's API guidelines
+require, and keeps `user.name` as the author. The key is typed on the TV and kept in the state file
+(`wallpaper.unsplashKey`); it is sent to `api.unsplash.com` only. 401 means a rejected key (no retry until a new key),
+403 or 429 the hourly limit (retry in 15 minutes), anything else a retry in 2 minutes. The photo goes to `files/photo.jpg` (through a temporary file, at most 5 MB) and the author to `files/photo.txt`; the
 picture is decoded with `WallpaperFiles.picture`. The change is the aerials' transition on the poster: 1 s to black
 and 1.2 s back in, ease-in-out, drawn as a black `SRC_ATOP` colour filter on the opaque bitmap, so no extra layer.
 The timer runs only between `onStart` and `onStop`; on start the kept photo comes up from black and the next one is due
-`photoMinutes` after the kept one was written. A failed download is retried after a minute; with no kept photo the
-gradient shows. Picsum needs no key or account; Unsplash's own API would need a developer key and allows 50 requests an
-hour until approved. Picsum was down (Cloudflare 522) when this was written, so the download has not been seen to work.
+`photoMinutes` after the kept one was written. With no kept photo the gradient shows. A new key allows 50 requests an
+hour and each photo takes two, so the shortest interval is 5 minutes. Picsum (keyless) was the first source; it was
+down (Cloudflare 522) for hours, so the owner chose Unsplash's API with their own key. Not yet seen with a real key.
 
 ### 6.3. Aerials: streamed Apple and Amazon clips (D49)
 

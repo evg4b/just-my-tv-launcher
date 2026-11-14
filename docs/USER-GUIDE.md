@@ -49,9 +49,9 @@ Rows work in one of three ways:
 
 ### Wallpaper
 
-Type chooses between Gradient, Picture, Photos, Video and Aerials. "Choose video…" and "Choose picture…" open the TV's file
-picker and switch to that type when you pick a file. Dimming darkens a picture or video by 0, 20, 40 or 60 %; it does
-not apply to the gradient.
+Type chooses between Gradient, Picture, Photos, Video and Aerials. "Choose video…" and "Choose picture…" open the TV's
+file picker and switch to that type when you pick a file. Dimming darkens a picture or video by 0, 20, 40 or 60 %; it
+does not apply to the gradient.
 
 A video plays silently and loops without a break. Whenever Home appears, you first see a still frame taken from the
 start of the clip (black the very first time), and the video fades in over about a second once it is playing. The
@@ -84,12 +84,22 @@ With Aerials chosen, two more rows appear under Type:
 A line under the rows says how many clips will play. Some mixes have none, for example Apple with Wildlife or
 Abstract and fireplaces, because Apple has no such clips; then Home shows the gradient. Each change starts a new clip.
 
-Photos shows a random photo from Unsplash, downloaded from picsum.photos, and changes it while the home screen is
-visible. "Change every" sets the interval: 1, 5, 15 or 30 minutes, or an hour (5 minutes at first). "Next photo"
-changes it at once. A change uses the same transition as the aerials: the photo fades to black and the new one fades
-in. The last photo is kept on the TV, so Home shows it straight away next time, also without a network; the
-countdown continues from when it was downloaded. Under the rows you see who took the photo. If no photo has been
-downloaded yet and picsum.photos cannot be reached, you see the gradient, and the launcher tries again every minute.
+Photos shows a random landscape photo from Unsplash and changes it while the home screen is visible. It needs your own
+free Unsplash access key:
+
+1. On a computer or phone, sign in at [unsplash.com/developers](https://unsplash.com/developers), choose "New
+   Application", accept the terms and give it a name.
+2. Copy the Access Key (not the Secret key).
+3. On the TV, open Settings → Wallpaper, choose Photos, open "Unsplash access key", type the key and press OK. The
+   phone remote app's keyboard is easier than the on-screen one. The row then shows the key's last four characters.
+
+A new key allows 50 requests an hour and each photo takes two, so the shortest interval is 5 minutes. "Change every"
+sets it: 5, 15 or 30 minutes, or an hour (5 minutes at first). "Next photo" changes it at once. A line under the rows
+says when the key was rejected, the hourly limit is used up (the next try is in 15 minutes) or Unsplash cannot be
+reached (the next try is in 2 minutes). "Remove the key" on the key screen deletes it from the TV. A change uses the
+same transition as the aerials: the photo fades to black and the new one fades in. The last photo is kept on the TV, so
+Home shows it straight away next time, also without a network; the countdown continues from when it was downloaded.
+Under the rows you see who took the photo. Until a photo has been downloaded, you see the gradient.
 
 ### Weather
 
