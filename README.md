@@ -70,7 +70,7 @@ Then install and make it the home screen:
 ```bash
 adb connect <tv ip>:5555
 adb -s <tv ip>:5555 install -r launcher/app/build/outputs/apk/release/app-release.apk
-adb -s <tv ip>:5555 shell cmd package set-home-activity com.justmytv.tvhome/.MainActivity
+adb -s <tv ip>:5555 shell cmd package set-home-activity com.evg4b.justmytv/.MainActivity
 ```
 
 You can also press Home on the remote, pick TV Home and choose "Always".

@@ -1571,7 +1571,7 @@ just-my-tv-launcher/
 └── sources/                     # submodules, reference only; removed after implementation (section 1.1)
 ```
 
-Package name: `com.justmytv.tvhome` (D57). Not `com.gathin.tvhome` (that is the CleanYourTV package).
+Package name: `com.evg4b.justmytv` (D95, which replaced `com.justmytv.tvhome` of D57). Not `com.gathin.tvhome` (that is the CleanYourTV package).
 
 ### 11.2. Manifest
 
@@ -1781,11 +1781,11 @@ plugins {
 }
 
 android {
-    namespace 'com.justmytv.tvhome'
+    namespace 'com.evg4b.justmytv'
     compileSdk 36                       // required: Media3 1.11.1 has minCompileSdk=36 in its AAR metadata
 
     defaultConfig {
-        applicationId 'com.justmytv.tvhome'
+        applicationId 'com.evg4b.justmytv'
         minSdk 26                       // Media3 from 1.9 requires minSdk 23; we take 26, as in CleanYourTV
         targetSdk 34
         versionCode 1

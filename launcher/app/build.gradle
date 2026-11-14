@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    namespace 'com.justmytv.tvhome'
+    namespace 'com.evg4b.justmytv'
     compileSdk 36                       // Media3 1.11.1 declares minCompileSdk=36 (PLAN 11.5)
     buildToolsVersion '36.0.0'          // the one the Docker image has; AGP 8.13 would fetch 35.0.0
 
     defaultConfig {
-        applicationId 'com.justmytv.tvhome'
+        applicationId 'com.evg4b.justmytv'
         minSdk 26
         targetSdk 34
         versionCode 1
