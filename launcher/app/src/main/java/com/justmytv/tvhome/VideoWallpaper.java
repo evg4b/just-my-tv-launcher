@@ -26,8 +26,9 @@ import java.util.Random;
 
 /**
  * The video wallpaper (PLAN 6.1, 6.3): Media3 on a SurfaceView under an opaque poster. The poster fades out at the
- * first frame and comes back on stop or failure. A user file loops; aerials play as a rolling two-item playlist,
- * so one clip runs into the next without a black frame. All player calls are on the main thread.
+ * first frame and comes back on stop or failure. A user file loops seamlessly; aerials play as a rolling two-item
+ * playlist, and each clip fades to black before its end and the next fades in from black (D93). All player calls
+ * are on the main thread.
  */
 @OptIn(markerClass = UnstableApi.class)
 final class VideoWallpaper {
@@ -38,6 +39,8 @@ final class VideoWallpaper {
 
     private static final long WATCHDOG_FILE_MS = 3_000, WATCHDOG_AERIALS_MS = 8_000;
     private static final int MAX_AERIAL_ERRORS = 3;   // clips in a row that fail before we give up
+    private static final long FADE_MS = 1_000;          // an aerial's fade to black before it ends
+    private static final long REVEAL_MS = 1_500;        // fade in after a clip change even without a first-frame callback
 
     private final Context ctx;
     private final SurfaceView surface;
@@ -54,6 +57,8 @@ final class VideoWallpaper {
     private final Runnable watchdog = () -> {
         if (resumed && !rendered) fallback("no first frame in " + watchdogMs + " ms");
     };
+    private final Runnable fadeToBlack = this::fadeToBlack;
+    private final Runnable reveal = this::hidePoster;
 
     VideoWallpaper(Context ctx, SurfaceView surface, ImageView poster, Listener listener) {
         this.ctx = ctx;
@@ -100,6 +105,8 @@ final class VideoWallpaper {
     /** ON_STOP: release the decoder; the poster is opaque again. */
     void stop() {
         main.removeCallbacks(watchdog);
+        main.removeCallbacks(fadeToBlack);
+        main.removeCallbacks(reveal);
         if (player != null) {
             player.release();
             player = null;
@@ -129,9 +136,20 @@ final class VideoWallpaper {
                 hidePoster();
             }
 
+            @Override public void onIsPlayingChanged(boolean playing) { scheduleFadeToBlack(); }
+
+            @Override public void onPlaybackStateChanged(int state) { scheduleFadeToBlack(); }
+
             @Override public void onMediaItemTransition(MediaItem item, int reason) {
-                // aerials: drop the clip that ended, queue another, so the playlist always has a next item
-                if (aerials == null || player == null || player.getCurrentMediaItemIndex() == 0) return;
+                if (aerials == null || player == null) return;
+                if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                    // the next clip: under black (normally already faded to it), then in from black at its first frame
+                    showPoster();
+                    main.postDelayed(reveal, REVEAL_MS);
+                    scheduleFadeToBlack();
+                }
+                // drop the clip that ended, queue another, so the playlist always has a next item
+                if (player.getCurrentMediaItemIndex() == 0) return;
                 String now = item == null || item.localConfiguration == null ? null : item.localConfiguration.uri.toString();
                 player.removeMediaItem(0);
                 player.addMediaItem(MediaItem.fromUri(Aerials.next(aerials, now, random)));
@@ -182,7 +200,25 @@ final class VideoWallpaper {
         go();
     }
 
+    /** Fade to black FADE_MS before the current aerial ends; again whenever playback or the clip changes. */
+    private void scheduleFadeToBlack() {
+        main.removeCallbacks(fadeToBlack);
+        if (player == null || aerials == null || !player.isPlaying()) return;
+        long d = player.getDuration();
+        if (d == C.TIME_UNSET) return;
+        main.postDelayed(fadeToBlack, Math.max(0, d - player.getCurrentPosition() - FADE_MS));
+    }
+
+    private void fadeToBlack() {
+        poster.animate().cancel();
+        poster.setVisibility(View.VISIBLE);
+        poster.animate().alpha(1f).setDuration(FADE_MS)
+                .setInterpolator(new AccelerateDecelerateInterpolator())
+                .start();
+    }
+
     private void hidePoster() {
+        main.removeCallbacks(reveal);
         poster.animate().alpha(0f).setDuration(900)
                 .setInterpolator(new AccelerateDecelerateInterpolator())   // ease-in-out
                 .withEndAction(() -> poster.setVisibility(View.GONE))
@@ -199,6 +235,8 @@ final class VideoWallpaper {
     private void fallback(String reason) {
         Log.w("Wallpaper", "fallback: " + reason);
         main.removeCallbacks(watchdog);
+        main.removeCallbacks(fadeToBlack);
+        main.removeCallbacks(reveal);
         if (player != null) {
             player.release();
             player = null;
