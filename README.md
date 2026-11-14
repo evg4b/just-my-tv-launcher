@@ -1,6 +1,6 @@
 # Just My TV Launcher
 
-![Just My TV Launcher](docs/images/hero.svg)
+![Just My TV Launcher](docs/images/hero.jpg)
 
 A home screen for Android TV that opens fast and stays out of the way. It shows your apps as one grid with a bar at
 the bottom, a clock, the weather, and a wallpaper that can be a picture, your own video loop, or streamed aerial
@@ -38,16 +38,19 @@ have not, and a few video checks need someone watching the screen. The on-device
 
 ## Screens
 
-The home screen: the bar is the row with the focused tile, one more row sits below it, and the next row peeks up from
-the bottom edge.
+The home screen with its default settings: the clock, the date and the weather at the top left, and one row of apps,
+the bar, along the bottom. Press Down for the rest of the apps.
 
-![The home screen with the clock, the weather and the app grid](docs/images/home-screen.svg)
+![The home screen with the clock, the weather and the bar of apps](docs/images/home-screen.jpg)
 
 The settings panel slides in from the right over the home screen.
 
-![The settings panel over the home screen](docs/images/settings-panel.svg)
+![The settings panel over the home screen](docs/images/settings-panel.jpg)
 
-These are drawings made to the layout's real sizes, not screenshots.
+These pictures are rendered from the app's own layout sizes, colours, font and icons rather than taken as
+screenshots; the app tiles are placeholders. The wallpaper is a NASA photograph from the International Space Station,
+["A reddish airglow blankets Earth beneath the Milky Way"](https://commons.wikimedia.org/wiki/File:A_reddish_airglow_blankets_Earth_beneath_the_Milky_Way_%28iss073e0982696%29.jpg),
+in the public domain; NASA does not endorse this project.
 
 ## Requirements
 

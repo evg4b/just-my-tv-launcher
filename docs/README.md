@@ -20,7 +20,7 @@ is not stored in git.
 | [WALLPAPERS.md](WALLPAPERS.md) | Register of background images and videos: what is taken from CleanYourTV and Couchy, their licences, and the streamed Apple and Amazon aerials | Choosing the background and checking licences |
 | [remote-buttons.md](remote-buttons.md) | 23 remote buttons: codes, behaviour, requirements | The remote and button remapping |
 | [remote-captures/](remote-captures/) | Raw `getevent` recordings and the `Generic.kl` key layout from the TV | Primary data for the button codes |
-| [images/](images/) | The README pictures (title banner, home screen, settings panel), drawn to the layout's real sizes in warm colours | Showing the launcher |
+| [images/](images/) | The README pictures (title banner, home screen, settings panel), rendered from the app's layout, colours, font and icons over a public-domain NASA photo | Showing the launcher |
 | [screen-mockup.html](screen-mockup.html) | Interactive mockup of the home screen, 960×540 dp | Element placement, focus, panels |
 
 ## Milestones
