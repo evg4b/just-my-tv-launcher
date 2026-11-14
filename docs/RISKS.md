@@ -318,5 +318,7 @@ A summary by priority:
   the service from the list entirely. Either way the remote buttons stop working without any message.
 - **How to handle it.** The app cannot rebind itself (that needs `WRITE_SECURE_SETTINGS`). Settings → Remote buttons shows
   "Turn off and on" when the service is listed but not running (D91), and the user guide says what to do after an update.
-  Over ADB, clearing and re-setting `enabled_accessibility_services` rebinds it.
+  Over ADB, clearing and re-setting `enabled_accessibility_services` rebinds it. That works only once the launcher's process
+  is running: right after an install, with the screensaver on, it stayed unbound through seven tries and bound at once
+  after Home was brought up. Setting `accessibility_enabled` to 0 first and pausing a few seconds between the steps helps.
 - **Status.** verified on the TV, 2026-11-14. Not checked: whether a reboot rebinds it on its own.
