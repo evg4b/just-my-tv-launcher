@@ -110,7 +110,6 @@ buttons you assigned. It stays off until you turn it on in the TV's accessibilit
 | `launcher/` | The Android app (Gradle project) |
 | `tools/` | Docker build, `tv.py` (ADB client and screenshots), `record.sh` and `restore.sh` |
 | `docs/` | The plan, decisions, open questions, device facts, operations, and the user guide |
-| `sources/` | Two reference projects as git submodules. Nothing in the app uses them; they are removed once the work is verified |
 
 [docs/README.md](docs/README.md) lists every document.
 

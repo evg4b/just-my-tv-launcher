@@ -9,8 +9,8 @@ articles where no official page was found. Each item is marked with its level of
 
 Research date: 13 November 2026.
 
-**Important:** examples from `sources/` are reference only. Code from there may be copied and rewritten, but it must not be imported
-or referenced (PLAN 1.1).
+**Important:** the examples from CleanYourTV and Couchy were reference only. Code from them was copied and rewritten, never
+imported or referenced (PLAN 1.1); the projects are no longer in the repository (D98).
 
 ---
 

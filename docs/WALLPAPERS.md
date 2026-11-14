@@ -8,8 +8,8 @@ of the plan). They must not be imported or referenced from `sources/`.
 
 | Source | Images | Video | Gradients and background in code | Notes |
 |---|---|---|---|---|
-| `sources/cleanyourtv` (themes) | Yes: about 20 sets, more than 100 files in total | **No** | Yes (for example, `red-rain`, `istanbul`, and `glass-gallery` are drawn in code) | Each set has its own licence, see `themes/*/CREDITS.md` |
-| `sources/couchy-launcher` | **No** files. It has a list of links to the streamed Apple and Amazon aerials (`assets/aerials.json`), which we take (D49) | **No** video files; the streams are reached by links | Yes: gradient presets in `ui/Theme.kt`, `Aurora` is the basis of our poster | The Twemoji icons (MIT) and the Cookie font (OFL) are not needed for the background |
+| CleanYourTV (themes) | Yes: about 20 sets, more than 100 files in total | **No** | Yes (for example, `red-rain`, `istanbul`, and `glass-gallery` are drawn in code) | Each set has its own licence, see `themes/*/CREDITS.md` |
+| Couchy | **No** files. It has a list of links to the streamed Apple and Amazon aerials (`assets/aerials.json`), which we take (D49) | **No** video files; the streams are reached by links | Yes: gradient presets in `ui/Theme.kt`, `Aurora` is the basis of our poster | The Twemoji icons (MIT) and the Cookie font (OFL) are not needed for the background |
 
 Conclusion: background images are taken from CleanYourTV. From Couchy we take only the gradient values (facts, not code).
 Neither project contains video, so the video is either a user file or our own clip (see Q17).

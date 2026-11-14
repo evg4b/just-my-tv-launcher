@@ -61,4 +61,4 @@ Blocks **M0**: the skeleton cannot start. Blocks **M1**: the grid cannot start. 
 | S2 | ~~Disable `flar2.homebutton`~~ **Done differently, 2026-11-14:** its accessibility service was already off; TV Home's service replaced it in `enabled_accessibility_services`. The app itself stays enabled. `tools/restore.sh` puts the recorded list back | — |
 | S3 | ~~Record the TV state~~ **Done:** recorded before every TV change (latest 2026-11-14) | — |
 | S4 | ~~Review `ic_input.xml` and `ic_picture.xml`~~ **Done as recommended in Q4 and Q5:** the Inputs icon is kept; Wallpaper uses the Material "image" icon (`ic_image.xml`), and `ic_picture.xml` is gone | — |
-| S5 | Delete `sources/` (submodules) after implementation and verification on the TV | Ready: no code, script or build file refers to it. Removing the submodules was blocked by the permission check on 2026-11-14, so it waits for your go-ahead (OPERATIONS 9) |
+| S5 | ~~Delete `sources/` (submodules)~~ **Done 2026-11-14 (D98)** | — |

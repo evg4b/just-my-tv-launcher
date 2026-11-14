@@ -1,10 +1,11 @@
 # Your own home screen for Android TV: research and plan (version 2)
 
 Status: **built.** M0–M7 are implemented in `launcher/` and checked on the TV (2026-11-14); what is left is listed in
-OPEN-QUESTIONS (T16–T19, S1, S5). The plan below is kept as written, with status lines per stage (section 15). This document is meant so that the next iteration of the model can build the project
+OPEN-QUESTIONS (T16–T19, S1). The plan below is kept as written, with status lines per stage (section 15). This document is meant so that the next iteration of the model can build the project
 without a human writing the code. Every claim is marked with its source:
 
-- `path:line`: a file in `sources/` (CleanYourTV or Couchy), checked by reading;
+- `path:line`: a file in the reference projects, CleanYourTV at commit `b121838` and Couchy at commit `d3dcd70`, checked by reading. They were in `sources/` as
+  submodules until 2026-11-14, when they were removed (D98); the paths below are relative to those upstream repositories;
 - `curl`: a live response from the Open-Meteo API, saved as fixtures;
 - `WebFetch` / `gh`: a page or repository, checked on 2026-11-13;
 - `ADB`: a command on the TV `<TV_IP>`, read-only;
@@ -84,6 +85,9 @@ this is the launcher with video wallpapers that you had in mind.
 ---
 
 ### 1.1. The rule for using `sources/`
+
+**Done 2026-11-14 (D98):** the app was built and checked on the TV, and the folder is removed. The rule below is kept as the
+record of how the reference projects were used.
 
 `sources/` is reference material only. The folder is attached as git submodules, and it exists so that we can read other people's code
 and copy what we need from it. Nothing from it may be imported or used inside the app itself.
@@ -1568,7 +1572,6 @@ just-my-tv-launcher/
 ├── docs/
 │   ├── PLAN.md                  # this document
 │   └── screen-mockup.html       # home screen mockup
-└── sources/                     # submodules, reference only; removed after implementation (section 1.1)
 ```
 
 Package name: `com.evg4b.justmytv` (D95, which replaced `com.justmytv.tvhome` of D57). Not `com.gathin.tvhome` (that is the CleanYourTV package).
@@ -2132,7 +2135,7 @@ A detailed review of the problem cases and how to handle them: [docs/RISKS.md](R
 
 ## 17. Sources
 
-**Source code for reference (submodules, `sources/`, removed after implementation, section 1.1):**
+**Source code for reference** (submodules in `sources/` until 2026-11-14, section 1.1; CleanYourTV at commit `b121838` and Couchy at commit `d3dcd70`):
 
 - CleanYourTV: `cleanyourtv/AGENTS.md:147–148` (rules), `cleanyourtv/docs/launcher.md`,
   `cleanyourtv/launcher/app/build.gradle` (dependencies and R8), `cleanyourtv/launcher/app/src/main/AndroidManifest.xml`

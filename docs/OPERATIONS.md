@@ -153,6 +153,8 @@ The disabling commands are written into the record before they run.
 
 ## 9. Removing the reference projects (`sources/`)
 
+**Done 2026-11-14 (D98).** The steps below were followed; they are kept for the record.
+
 This is done only after the last milestone (M7) and verification on the TV. Rule: the app does not depend on `sources/` (PLAN 1.1).
 
 1. Check that there are no references to `sources/` in the code, manifests, resources, scripts, or the build.

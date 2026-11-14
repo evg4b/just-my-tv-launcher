@@ -21,7 +21,6 @@ is not stored in git.
 | [remote-buttons.md](remote-buttons.md) | 23 remote buttons: codes, behaviour, requirements | The remote and button remapping |
 | [remote-captures/](remote-captures/) | Raw `getevent` recordings and the `Generic.kl` key layout from the TV | Primary data for the button codes |
 | [screen-mockup.html](screen-mockup.html) | Interactive mockup of the home screen, 960×540 dp | Element placement, focus, panels |
-| [icons-showcase.html](icons-showcase.html) | Icon showcase: from CleanYourTV, needed by the plan, weather icons | Choosing icons |
 
 ## Milestones
 
@@ -36,18 +35,19 @@ is not stored in git.
 
 The documents use three labels:
 
-- **verified**: confirmed on the TV over ADB, by official documentation, or from files in `sources/`;
+- **verified**: confirmed on the TV over ADB, by official documentation, or from the reference projects' files;
 - **from CleanYourTV / Couchy**: described in their code or documentation, not yet checked on our TV;
 - **to verify**: our assumption, which must be confirmed during implementation.
 
-Sources: `sources/cleanyourtv` and `sources/couchy-launcher` (submodules, reference only; the rule is in PLAN 1.1), the
+Sources: the reference projects CleanYourTV and Couchy (read, never imported; PLAN 1.1; removed from the repository on
+2026-11-14, D98), the
 official Android and Google documentation (links in [BEST-PRACTICES.md](BEST-PRACTICES.md) and section 17 of
 [PLAN.md](PLAN.md)), live Open-Meteo API responses, and ADB checks on the TV (see [DEVICE.md](DEVICE.md)).
 
 ## What is not stored in the repository
 
 - `private/`: personal values, ignored through `.gitignore`.
-- `sources/`: other people's projects, included as submodules **for reference only**. Code, resources, and scripts may be copied
-  and rewritten from them, but they must not be imported, called, or referenced by the app. The folder is removed after
-  implementation (PLAN 1.1, OPERATIONS 9).
+- Other people's projects. CleanYourTV and Couchy were attached as submodules in `sources/` for reference while the app was
+  built, and removed afterwards (PLAN 1.1, OPERATIONS 9, D98). What was taken from CleanYourTV is credited in
+  `LICENSE-CleanYourTV`.
 - Screenshots and TV recordings, if any are added, are kept separately and contain no personal data in the frame.

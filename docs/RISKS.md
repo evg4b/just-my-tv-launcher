@@ -293,7 +293,8 @@ A summary by priority:
 - **How to handle it.** The rule in PLAN 1.1: copy and rewrite, but do not reference. A check before every commit:
   `grep -rn "sources/" --include=*.java --include=*.xml --include=*.gradle --include=*.sh --include=Dockerfile .`
   The result must be empty. Before the folder is removed, check that the build works with an empty `sources/`.
-- **Status.** the rule is recorded (PLAN 1.1, DECISIONS D45); there is no automated check yet, it will be added in M0.
+- **Status.** closed: no code, resource, script or build file referred to `sources/`, the build passed without it, and the
+  folder was removed on 2026-11-14 (D98).
 
 ---
 
