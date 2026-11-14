@@ -6,14 +6,14 @@ final class GridMetrics {
 
     final int tileW, tileH, itemH, barTop, cornerPx, labelMargin;
 
-    GridMetrics(int widthPx, int heightPx, float density, int columns, int rowsBelow) {
+    GridMetrics(int widthPx, int heightPx, float density, int columns, int rowsBelow, int cornerDp) {
         float cell = (widthPx - 2 * 44 * density) / columns;
         float w = Math.max(80 * density, Math.min(180 * density, (cell - 12 * density) / FOCUS_SCALE));
         tileW = Math.round(w);
         tileH = Math.round(w * 101 / 180f);
         itemH = tileH + Math.round(45 * density);               // padding 8 + 8, gap 7, label 22
         barTop = Math.round(heightPx - (1 + rowsBelow) * itemH - 26 * density);   // 8 dp padding + 18 dp peek
-        cornerPx = Math.round(16 * density * Math.min(1f, w / (180 * density)));
+        cornerPx = Math.round(cornerDp * density * Math.min(1f, w / (180 * density)));
         labelMargin = tileH + Math.round(7 * density);          // from the item's top padding edge
     }
 

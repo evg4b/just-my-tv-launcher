@@ -28,6 +28,8 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
         /** Move focus to a position (row wrap at the ends of a row); out of range means stay. */
         void focusPosition(int position);
+
+        void onMenu(App app, View card);
     }
 
     /** Tile colours for apps without a banner (PLAN 5.3). */
@@ -37,12 +39,14 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
     private final GridMetrics m;
     private final int columns;
+    private final boolean labels;
     private final Listener listener;
     private List<App> items = Collections.emptyList();
 
-    AppAdapter(GridMetrics m, int columns, Listener listener) {
+    AppAdapter(GridMetrics m, int columns, boolean labels, Listener listener) {
         this.m = m;
         this.columns = columns;
+        this.labels = labels;
         this.listener = listener;
         setHasStableIds(true);   // a rescan keeps focus on the same app
     }
@@ -52,6 +56,15 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     void setItems(List<App> apps) {
         items = apps;
         notifyDataSetChanged();
+    }
+
+    /** Move mode: one step of the tile being moved. */
+    void move(int from, int to) {
+        items.add(to, items.remove(from));
+        notifyItemMoved(from, to);
+        // the bar's "Up goes to the header" depends on the position
+        notifyItemChanged(from);
+        notifyItemChanged(to);
     }
 
     @Override public int getItemCount() { return items.size(); }
@@ -65,6 +78,7 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         lp.width = m.tileW;
         lp.height = m.tileH;
         ((ViewGroup.MarginLayoutParams) h.name.getLayoutParams()).topMargin = m.labelMargin;
+        if (!labels) h.name.setVisibility(View.GONE);
         float r = m.cornerPx;
         h.card.setOutlineProvider(new ViewOutlineProvider() {
             @Override public void getOutline(View v, Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), r); }
@@ -74,6 +88,11 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         h.card.setOnClickListener(v -> {
             int p = h.getBindingAdapterPosition();
             if (p != RecyclerView.NO_POSITION) listener.onLaunch(items.get(p));
+        });
+        h.card.setOnLongClickListener(v -> {
+            int p = h.getBindingAdapterPosition();
+            if (p != RecyclerView.NO_POSITION) listener.onMenu(items.get(p), v);
+            return true;
         });
         h.card.setOnFocusChangeListener((v, has) -> {
             float s = has ? GridMetrics.FOCUS_SCALE : 1f;

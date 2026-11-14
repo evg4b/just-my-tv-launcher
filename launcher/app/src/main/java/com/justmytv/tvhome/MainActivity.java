@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,20 +16,23 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Home screen: the app grid with the bar, the focus ring and the header (PLAN 7, milestone M1). */
+/** Home screen: the app grid with the bar, the focus ring, the header, the tile menu (PLAN 7, 8, 9). */
 public class MainActivity extends Activity implements AppAdapter.Listener {
-    private static final int COLUMNS = 5;          // PLAN 7.2; becomes a setting in M3
     private static final int CEILING_DP = 120;     // rows scrolled up stop below the header
     private static final int FADE_DP = 36;
 
@@ -35,6 +40,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     // a full pool takes all the CPU on a weak TV and drops frames (PLAN 5.2)
     private final ExecutorService pool =
             Executors.newFixedThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors() - 1));
+    private final ExecutorService io = Executors.newSingleThreadExecutor();   // state writes, in order
     private final Runnable rescan = this::load;
     private final BroadcastReceiver packages = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) {
@@ -43,38 +49,36 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         }
     };
 
+    private LauncherState store;
+    StateJson state;
     private RecyclerView grid;
     private AppAdapter adapter;
     private AppArt art;
     private FocusGlass glass;
+    /** Every launchable app from the last scan, hidden ones included (the Apps screen lists them). */
+    List<App> installed = new ArrayList<>();
     private int generation;
     private int lastPos;        // last focused tile; Down from the header returns to it if it is on the bar
-    private boolean artDropped;
+    private boolean artDropped, focusedOnce;
+    private String movingPkg;   // Move mode (PLAN 8)
+    private PopupWindow menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        float d = dm.density;
-        GridMetrics m = new GridMetrics(dm.widthPixels, dm.heightPixels, d, COLUMNS, 0);
-        int ceiling = Math.round(CEILING_DP * d);
-
+        store = new LauncherState(this);
+        state = StateJson.parse(store.read());   // a few KB; the grid size depends on it
         art = new AppArt(this);
-        glass = new FocusGlass(findViewById(R.id.glass_host), d, m.cornerPx);
-        adapter = new AppAdapter(m, COLUMNS, this);
+        glass = new FocusGlass(findViewById(R.id.glass_host), getResources().getDisplayMetrics().density);
 
         grid = findViewById(R.id.grid);
-        grid.setPadding(grid.getPaddingLeft(), m.barTop, grid.getPaddingRight(), 0);
-        grid.setLayoutManager(new BarGridLayoutManager(this, COLUMNS, ceiling));
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
-        grid.addItemDecoration(new BarBand(d, COLUMNS));
-        TopFade.attach(grid, ceiling, FADE_DP * d);
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) { glass.scrolled(dy); }
         });
-        grid.setAdapter(adapter);
+        applyLayout();
 
         header(R.id.btn_inputs, new Intent("com.android.tv.action.VIEW_INPUTS"));   // our panel comes in M3
         header(R.id.btn_network, new Intent(Settings.ACTION_WIFI_SETTINGS));
@@ -90,13 +94,32 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         load();
     }
 
+    /** (Re)build the grid from the settings: columns, rows below the bar, labels, corners (PLAN 7.2, 10.1). */
+    void applyLayout() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        float d = dm.density;
+        GridMetrics m = new GridMetrics(dm.widthPixels, dm.heightPixels, d, state.columns, state.rowsBelow, state.corner);
+        int ceiling = Math.round(CEILING_DP * d);
+        List<App> items = adapter == null ? Collections.emptyList() : adapter.items();
+        adapter = new AppAdapter(m, state.columns, state.labels, this);
+        adapter.setItems(items);
+        while (grid.getItemDecorationCount() > 0) grid.removeItemDecorationAt(0);
+        grid.setPadding(grid.getPaddingLeft(), m.barTop, grid.getPaddingRight(), 0);
+        grid.setLayoutManager(new BarGridLayoutManager(this, state.columns, ceiling));
+        grid.addItemDecoration(new BarBand(d, state.columns));
+        TopFade.attach(grid, ceiling, FADE_DP * d);
+        grid.setAdapter(adapter);
+        glass.setCorner(m.cornerPx);
+        glass.hide();
+    }
+
     private void header(int id, Intent intent) {
         View b = findViewById(id);
         b.setOnClickListener(v -> start(intent));
         b.setOnFocusChangeListener((v, has) -> { if (has) glass.hide(); });
         b.setOnKeyListener((v, code, e) -> {
             if (code != KeyEvent.KEYCODE_DPAD_DOWN) return false;
-            if (e.getAction() == KeyEvent.ACTION_DOWN) focusPosition(lastPos < COLUMNS ? lastPos : 0);
+            if (e.getAction() == KeyEvent.ACTION_DOWN) focusPosition(lastPos < state.columns ? lastPos : 0);
             return true;
         });
     }
@@ -106,8 +129,15 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         super.onStart();
         if (artDropped) {
             artDropped = false;
-            loadArt(adapter.items(), generation);
+            loadArt(installed, generation);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        if (movingPkg != null) endMove();
+        if (menu != null) menu.dismiss();
+        super.onStop();
     }
 
     @Override
@@ -115,6 +145,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         unregisterReceiver(packages);
         ui.removeCallbacksAndMessages(null);
         pool.shutdownNow();
+        io.shutdown();   // let a pending state write finish
         super.onDestroy();
     }
 
@@ -126,7 +157,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if (level < TRIM_MEMORY_BACKGROUND || artDropped) return;
-        for (App a : adapter.items()) a.art = null;
+        for (App a : installed) a.art = null;
         adapter.notifyDataSetChanged();
         artDropped = true;
     }
@@ -137,7 +168,30 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         // Home has nowhere to go back to; finishing would only restart it with a flash.
     }
 
-    /** Scan on the pool, show the list, then fill in banners as they are ready. */
+    /** Move mode takes the arrows, OK and Back while it is on (PLAN 8). */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        if (movingPkg == null) return super.dispatchKeyEvent(e);
+        int cols = state.columns;
+        switch (e.getKeyCode()) {
+            case KeyEvent.KEYCODE_DPAD_LEFT: if (down(e)) moveBy(-1); return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT: if (down(e)) moveBy(1); return true;
+            case KeyEvent.KEYCODE_DPAD_UP: if (down(e)) moveBy(-cols); return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN: if (down(e)) moveBy(cols); return true;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_BACK:
+                if (e.getAction() == KeyEvent.ACTION_UP) endMove();   // on UP, so the release does not click the tile
+                return true;
+            default: return super.dispatchKeyEvent(e);
+        }
+    }
+
+    private static boolean down(KeyEvent e) { return e.getAction() == KeyEvent.ACTION_DOWN; }
+
+    // ---- apps ----
+
+    /** Scan on the pool, apply the saved order and hiding, show the list, then fill in banners as they are ready. */
     private void load() {
         int gen = ++generation;
         pool.execute(() -> {
@@ -147,38 +201,66 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 if (gen != generation) return;
                 // keep the bitmaps of apps that did not change, so a rescan does not blank the grid
                 Map<String, App> old = new HashMap<>();
-                for (App a : adapter.items()) old.put(a.pkg, a);
+                for (App a : installed) old.put(a.pkg, a);
                 for (App a : apps) {
                     App o = old.get(a.pkg);
                     if (o != null && o.lastUpdate == a.lastUpdate) a.art = o.art;
                 }
-                boolean first = adapter.getItemCount() == 0;
-                adapter.setItems(apps);
-                if (first) focusFirst();
+                installed = apps;
+                applyApps();
                 loadArt(apps, gen);
             });
         });
     }
 
+    /** The visible tiles from the scan and the state (PLAN 9.3); saves the state when the scan changed it. */
+    void applyApps() {
+        List<String> pkgs = new ArrayList<>(installed.size());
+        Map<String, App> byPkg = new HashMap<>();
+        for (App a : installed) {
+            pkgs.add(a.pkg);
+            byPkg.put(a.pkg, a);
+        }
+        AppListMerger.Result r = AppListMerger.merge(state.order, state.known, state.hidden, pkgs);
+        if (!r.order.equals(state.order) || !r.known.equals(state.known)) {
+            state.order = r.order;
+            state.known = new LinkedHashSet<>(r.known);
+            save();
+        }
+        List<App> visible = new ArrayList<>(r.visible.size());
+        for (String p : r.visible) visible.add(byPkg.get(p));
+        int keep = lastPos;
+        adapter.setItems(visible);
+        if (!focusedOnce && !visible.isEmpty()) {
+            focusedOnce = true;
+            int i = r.visible.indexOf(state.lastFocused);   // focus returns to the last launched app (PLAN 7.6)
+            grid.post(() -> focusPosition(Math.max(0, i)));
+        } else if (!visible.isEmpty() && (getCurrentFocus() == null || !getCurrentFocus().isAttachedToWindow())) {
+            grid.post(() -> focusPosition(Math.min(keep, visible.size() - 1)));   // the focused tile was hidden
+        }
+    }
+
     private void loadArt(List<App> apps, int gen) {
-        for (int i = 0; i < apps.size(); i++) {
-            App a = apps.get(i);
+        for (App a : apps) {
             if (a.art != null) continue;
-            int pos = i;
             pool.execute(() -> {
                 Bitmap b = art.load(a);
                 ui.post(() -> {
                     if (gen != generation || b == null) return;
                     a.art = b;
-                    adapter.notifyItemChanged(pos);
+                    int pos = adapter.items().indexOf(a);
+                    if (pos >= 0) adapter.notifyItemChanged(pos);
                 });
             });
         }
     }
 
-    private void focusFirst() {
-        grid.post(() -> focusPosition(0));
+    void save() {
+        String json = state.toJson();   // snapshot on the main thread, write in order on io
+        io.execute(() -> store.write(json));
     }
+
+    // ---- focus ----
 
     @Override
     public void focusPosition(int pos) {
@@ -201,15 +283,77 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         glass.follow(card);
     }
 
+    // ---- menu and Move mode (PLAN 8) ----
+
+    @Override
+    public void onMenu(App a, View card) {
+        if (movingPkg != null) return;
+        menu = TileMenu.show(card,
+                getString(R.string.open), (TileMenu.Action) () -> onLaunch(a),
+                getString(R.string.move), (TileMenu.Action) () -> startMove(a),
+                getString(R.string.hide), (TileMenu.Action) () -> setHidden(a.pkg, true),
+                getString(R.string.app_details), (TileMenu.Action) () -> start(new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.pkg, null))));
+    }
+
+    void setHidden(String pkg, boolean hidden) {
+        if (hidden ? !state.hidden.add(pkg) : !state.hidden.remove(pkg)) return;
+        save();
+        applyApps();
+    }
+
+    private void startMove(App a) {
+        movingPkg = a.pkg;
+        glass.setMoving(true);
+        Toast.makeText(this, R.string.move_hint, Toast.LENGTH_SHORT).show();
+    }
+
+    private void moveBy(int delta) {
+        List<App> items = adapter.items();
+        int from = -1;
+        for (int i = 0; i < items.size(); i++) if (items.get(i).pkg.equals(movingPkg)) from = i;
+        int to = Math.max(0, Math.min(items.size() - 1, from + delta));
+        if (from < 0 || to == from) return;
+        adapter.move(from, to);
+        lastPos = to;
+        grid.post(() -> {
+            RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(to);
+            if (vh == null) {
+                focusPosition(to);
+                return;
+            }
+            View card = vh.itemView.findViewById(R.id.card);
+            card.requestFocus();
+            vh.itemView.requestRectangleOnScreen(new Rect(0, 0, vh.itemView.getWidth(), vh.itemView.getHeight()));
+            glass.follow(card);
+        });
+    }
+
+    private void endMove() {
+        List<String> visible = new ArrayList<>();
+        for (App a : adapter.items()) visible.add(a.pkg);
+        state.order = AppListMerger.reorder(state.order, visible);
+        save();
+        movingPkg = null;
+        glass.setMoving(false);
+    }
+
+    // ---- launching ----
+
     @Override
     public void onLaunch(App a) {
+        if (movingPkg != null) return;
+        if (!a.pkg.equals(state.lastFocused)) {
+            state.lastFocused = a.pkg;
+            save();
+        }
         start(new Intent(Intent.ACTION_MAIN)
                 .addCategory(a.leanback ? Intent.CATEGORY_LEANBACK_LAUNCHER : Intent.CATEGORY_LAUNCHER)
                 .setClassName(a.pkg, a.info.name)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
     }
 
-    private void start(Intent i) {
+    void start(Intent i) {
         try {
             startActivity(i);
         } catch (ActivityNotFoundException | SecurityException e) {

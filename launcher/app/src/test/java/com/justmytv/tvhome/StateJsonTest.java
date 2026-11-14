@@ -1,0 +1,57 @@
+package com.justmytv.tvhome;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import java.util.Arrays;
+
+public class StateJsonTest {
+    @Test public void emptyOrCorruptGivesDefaults() {
+        for (String s : new String[]{"", "   ", "{not json", "[]", null}) {
+            StateJson j = StateJson.parse(s);
+            assertEquals(5, j.columns);
+            assertEquals(0, j.rowsBelow);
+            assertTrue(j.h24);
+            assertTrue(j.showDate);
+            assertTrue(j.order.isEmpty());
+            assertFalse(j.hasCity());
+        }
+    }
+
+    @Test public void roundTrip() {
+        StateJson a = new StateJson();
+        a.order = Arrays.asList("a", "b");
+        a.hidden.add("b");
+        a.columns = 6;
+        a.h24 = false;
+        a.city = "Berlin";
+        a.lat = 52.52;
+        a.lon = 13.41;
+        a.fetchedAt = 1763000000000L;
+        StateJson b = StateJson.parse(a.toJson());
+        assertEquals(a.order, b.order);
+        assertEquals(a.hidden, b.hidden);
+        assertEquals(6, b.columns);
+        assertFalse(b.h24);
+        assertEquals("Berlin", b.city);
+        assertEquals(13.41, b.lon, 1e-9);
+        assertEquals(1763000000000L, b.fetchedAt);
+    }
+
+    @Test public void outOfRangeIsClamped() {
+        StateJson j = StateJson.parse("{\"ui\":{\"columns\":99,\"rowsBelow\":-4,\"corner\":5}}");
+        assertEquals(7, j.columns);
+        assertEquals(0, j.rowsBelow);
+        assertEquals(16, j.corner);
+    }
+
+    @Test public void unknownKeysSurvive() {
+        StateJson j = StateJson.parse("{\"wallpaper\":{\"type\":\"video\",\"dim\":30},\"ui\":{\"future\":1}}");
+        String out = j.toJson();
+        assertTrue(out, out.contains("\"type\":\"video\""));
+        assertTrue(out, out.contains("\"future\":1"));
+    }
+}

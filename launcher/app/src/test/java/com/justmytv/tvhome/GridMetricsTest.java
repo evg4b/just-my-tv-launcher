@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class GridMetricsTest {
     @Test public void fiveColumnsOnTheTv() {               // 1920x1080 px, density 2: the table in PLAN 7.2
-        GridMetrics m = new GridMetrics(1920, 1080, 2f, 5, 0);
+        GridMetrics m = new GridMetrics(1920, 1080, 2f, 5, 0, 16);
         assertEquals(295, m.tileW);                          // 147.6 dp
         assertEquals(166, m.tileH);                          // 83 dp
         assertEquals(256, m.itemH);                          // 128 dp
@@ -16,7 +16,12 @@ public class GridMetricsTest {
     }
 
     @Test public void fourColumnsHitTheMaximum() {
-        assertEquals(360, new GridMetrics(1920, 1080, 2f, 4, 0).tileW);   // 180 dp
+        assertEquals(360, new GridMetrics(1920, 1080, 2f, 4, 0, 16).tileW);   // 180 dp
+    }
+
+    @Test public void rowsBelowLiftTheBar() {
+        assertEquals(772 - 256, new GridMetrics(1920, 1080, 2f, 5, 1, 16).barTop);
+        assertEquals(0, new GridMetrics(1920, 1080, 2f, 5, 0, 0).cornerPx);
     }
 
     @Test public void scroll() {

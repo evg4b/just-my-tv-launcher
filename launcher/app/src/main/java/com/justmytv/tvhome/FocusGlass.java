@@ -17,18 +17,19 @@ import androidx.dynamicanimation.animation.SpringForce;
 final class FocusGlass {
     private final FrameLayout host;
     private final View view;
+    private final GradientDrawable ring = new GradientDrawable();
+    private final int stroke;
     private final SpringAnimation sx, sy;
     private final float pad;
     private boolean shown;
 
-    FocusGlass(FrameLayout host, float density, float cornerPx) {
+    FocusGlass(FrameLayout host, float density) {
         this.host = host;
         pad = 6 * density;
+        stroke = Math.round(2 * density);
         view = new View(host.getContext());
-        GradientDrawable g = new GradientDrawable();
-        g.setCornerRadius(cornerPx * GridMetrics.FOCUS_SCALE + pad);
-        g.setStroke(Math.round(2 * density), 0xFF8AB4F8);   // Couchy's default accent
-        view.setBackground(g);
+        setMoving(false);
+        view.setBackground(ring);
         view.setVisibility(View.INVISIBLE);
         host.addView(view, new FrameLayout.LayoutParams(0, 0));
         sx = spring(DynamicAnimation.TRANSLATION_X);
@@ -70,6 +71,15 @@ final class FocusGlass {
     /** The grid scrolled by dy: carry the ring along. */
     void scrolled(int dy) {
         host.setTranslationY(host.getTranslationY() - dy);
+    }
+
+    void setCorner(float cornerPx) {
+        ring.setCornerRadius(cornerPx * GridMetrics.FOCUS_SCALE + pad);
+    }
+
+    /** Move mode shows an amber ring instead of the accent. */
+    void setMoving(boolean moving) {
+        ring.setStroke(stroke, moving ? 0xFFFFB74D : 0xFF8AB4F8);   // accent: Couchy's default
     }
 
     void hide() {
