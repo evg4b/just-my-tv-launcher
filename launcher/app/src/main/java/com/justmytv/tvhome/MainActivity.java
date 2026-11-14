@@ -16,13 +16,17 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.PopupWindow;
+import android.widget.TextClock;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -62,6 +66,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private boolean artDropped, focusedOnce;
     private String movingPkg;   // Move mode (PLAN 8)
     private PopupWindow menu;
+    private SidePanel panel;
+    private Screens screens;
+    private View opener;        // what had focus when the panel opened; it gets it back
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +87,20 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         });
         applyLayout();
 
-        header(R.id.btn_inputs, new Intent("com.android.tv.action.VIEW_INPUTS"));   // our panel comes in M3
-        header(R.id.btn_network, new Intent(Settings.ACTION_WIFI_SETTINGS));
-        header(R.id.btn_settings, new Intent(Settings.ACTION_SETTINGS));            // our panel comes in M3
+        panel = new SidePanel(findViewById(R.id.panel), findViewById(R.id.veil), () -> {
+            opener = getCurrentFocus();
+            glass.hide();
+            blockBehindPanel(true);
+        }, () -> {
+            blockBehindPanel(false);
+            if (opener != null && opener.isAttachedToWindow() && opener.isShown()) opener.requestFocus();
+            else focusPosition(Math.min(lastPos, adapter.getItemCount() - 1));
+        });
+        screens = new Screens(this, panel);
+        header(R.id.btn_inputs, () -> panel.open(screens.inputs));
+        header(R.id.btn_network, () -> start(new Intent(Settings.ACTION_WIFI_SETTINGS)));
+        header(R.id.btn_settings, () -> panel.open(screens.root));
+        applyClock();
 
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -113,9 +131,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         glass.hide();
     }
 
-    private void header(int id, Intent intent) {
+    private void header(int id, Runnable click) {
         View b = findViewById(id);
-        b.setOnClickListener(v -> start(intent));
+        b.setOnClickListener(v -> click.run());
         b.setOnFocusChangeListener((v, has) -> { if (has) glass.hide(); });
         b.setOnKeyListener((v, code, e) -> {
             if (code != KeyEvent.KEYCODE_DPAD_DOWN) return false;
@@ -124,9 +142,43 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         });
     }
 
+    /** Nothing behind an open panel takes focus, so the D-pad stays inside it. */
+    private void blockBehindPanel(boolean block) {
+        int f = block ? ViewGroup.FOCUS_BLOCK_DESCENDANTS : ViewGroup.FOCUS_AFTER_DESCENDANTS;
+        grid.setDescendantFocusability(f);
+        ((ViewGroup) findViewById(R.id.header_buttons)).setDescendantFocusability(f);
+    }
+
+    /** 12/24 h, the date and the greeting (PLAN 10.1, Clock). */
+    void applyClock() {
+        String fmt = state.h24 ? "HH:mm" : "h:mm";
+        TextClock clock = findViewById(R.id.clock);
+        clock.setFormat12Hour(fmt);
+        clock.setFormat24Hour(fmt);
+        int date = state.showDate ? View.VISIBLE : View.GONE;
+        findViewById(R.id.date).setVisibility(date);
+        findViewById(R.id.date_divider).setVisibility(date);
+        TextView g = findViewById(R.id.greeting);
+        g.setVisibility(state.greeting ? View.VISIBLE : View.GONE);
+        if (state.greeting) {
+            int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            g.setText(h >= 5 && h < 12 ? R.string.greeting_morning : h >= 12 && h < 17 ? R.string.greeting_afternoon
+                    : h >= 17 && h < 23 ? R.string.greeting_evening : R.string.greeting_night);
+        }
+    }
+
+    /** The Inputs icon shows only when it is wanted and there is an input to switch to (PLAN 7.7). */
+    void updateInputsButton() {
+        boolean show = state.showInputsButton && !Inputs.list(this, state.inputsConnectedOnly).isEmpty();
+        findViewById(R.id.btn_inputs).setVisibility(show ? View.VISIBLE : View.GONE);
+        if (panel.showing(screens.inputs)) panel.refresh();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        applyClock();   // the greeting follows the time of day
+        updateInputsButton();
         if (artDropped) {
             artDropped = false;
             loadArt(installed, generation);
@@ -137,6 +189,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     protected void onStop() {
         if (movingPkg != null) endMove();
         if (menu != null) menu.dismiss();
+        panel.close();
         super.onStop();
     }
 
@@ -165,7 +218,22 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
-        // Home has nowhere to go back to; finishing would only restart it with a flash.
+        // BACK closes a panel; otherwise Home has nowhere to go back to, and finishing would only restart it
+        if (panel.isOpen()) panel.back();
+    }
+
+    @Override
+    public boolean onKeyDown(int code, KeyEvent e) {
+        if (code == KeyEvent.KEYCODE_MENU) {   // the gear's key, where the remote has one (PLAN 7.6)
+            if (panel.isOpen()) panel.close();
+            else panel.open(screens.root);
+            return true;
+        }
+        if (code == KeyEvent.KEYCODE_TV_INPUT) {   // only if the system passes it to us
+            panel.open(screens.inputs);
+            return true;
+        }
+        return super.onKeyDown(code, e);
     }
 
     /** Move mode takes the arrows, OK and Back while it is on (PLAN 8). */
@@ -208,6 +276,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 }
                 installed = apps;
                 applyApps();
+                if (panel.showing(screens.apps)) panel.refresh();
                 loadArt(apps, gen);
             });
         });
@@ -231,6 +300,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         for (String p : r.visible) visible.add(byPkg.get(p));
         int keep = lastPos;
         adapter.setItems(visible);
+        if (panel.isOpen()) return;   // focus goes back to the grid when the panel closes
         if (!focusedOnce && !visible.isEmpty()) {
             focusedOnce = true;
             int i = r.visible.indexOf(state.lastFocused);   // focus returns to the last launched app (PLAN 7.6)

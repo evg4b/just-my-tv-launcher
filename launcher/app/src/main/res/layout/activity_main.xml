@@ -32,13 +32,31 @@
         android:layout_height="match_parent"
         android:clipChildren="false" />
 
-    <!-- header: clock and date on the left -->
+    <!-- header on the left: greeting (off by default), clock and date, weather (M5) -->
     <LinearLayout
+        android:id="@+id/header_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
         android:layout_marginStart="56dp"
         android:layout_marginTop="26dp"
+        android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/greeting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="@font/outfit_medium"
+        android:letterSpacing="0.22"
+        android:textAllCaps="true"
+        android:textColor="#8CFFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -56,6 +74,7 @@
             android:textSize="52sp" />
 
         <View
+            android:id="@+id/date_divider"
             android:layout_width="1dp"
             android:layout_height="26dp"
             android:layout_marginStart="16dp"
@@ -75,9 +94,11 @@
             android:textColor="#A6FFFFFF"
             android:textSize="14sp" />
     </LinearLayout>
+    </LinearLayout>
 
-    <!-- header: round icons on the right, no labels (PLAN 7.1). Until M3 they open the system screens. -->
+    <!-- header: round icons on the right, no labels (PLAN 7.1) -->
     <LinearLayout
+        android:id="@+id/header_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
@@ -105,4 +126,21 @@
             android:contentDescription="@string/settings"
             android:src="@drawable/ic_settings" />
     </LinearLayout>
+
+    <!-- under an open panel -->
+    <View
+        android:id="@+id/veil"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#59000000"
+        android:visibility="gone" />
+
+    <!-- settings and inputs panel (PLAN 10): 440 dp from the right; its content is built in code -->
+    <FrameLayout
+        android:id="@+id/panel"
+        android:layout_width="440dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@drawable/panel_bg"
+        android:visibility="gone" />
 </FrameLayout>
