@@ -10,7 +10,7 @@ Blocks **M0**: the skeleton cannot start. Blocks **M1**: the grid cannot start. 
 |---|---|---|---|
 | Q1 | ~~May I start M0?~~ **Answer: yes** (2026-11-13) | — | — |
 | Q2 | ~~Commit and push? To which branch?~~ **Answer: commit by logical steps, push to `main`** (D59) | — | — |
-| Q3 | Record the TV state (`tools/record.sh`)? This is read-only | Rollback, M0 | Do not record |
+| Q3 | ~~Record the TV state?~~ **Done** 2026-11-13 before the M0 install (`~/.just-my-tv-launcher/<TV_IP>.json`) | — | — |
 | Q4 | Inputs icon: keep `ic_input.xml` (looks like a remote) or replace it? | Does not block | Keep it, check on the TV |
 | Q5 | Wallpaper icon: `ic_picture.xml` is a TV icon. Replace it? | Does not block | Replace with the Material "image" icon |
 | Q6 | Date in the header: two lines (as in the original) or one line ("Friday, 13 November")? | Does not block | Two lines |

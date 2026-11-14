@@ -2039,6 +2039,7 @@ This section used to repeat them and drifted out of date, so it now only points 
 Each stage is built and checked on the TV. The check commands are in section 12.
 
 **M0. Skeleton.** `launcher/` with Gradle (section 11), an empty `MainActivity` with HOME and LEANBACK_LAUNCHER, a manifest with `<queries>`, a Docker build. *Done when:* `tools/docker-build.sh launcher assembleRelease` produces an APK; the APK installs and opens as Home (choose "Always").
+**Done 2026-11-13:** state recorded, installed, HOME set with `cmd package set-home-activity` (works on the TCL), the Home key opens the poster screen. T1 (HOME after a reboot) is still open.
 
 **M1. Grid with the bar.** Scan (9.3), banners and the WebP cache (5), `RecyclerView` + `BarGridLayoutManager` (2.2),
 `BarBand` (2.2), tile and label (7.3), focus ring (7.4). 5 columns, the formula from 7.2.

@@ -1,7 +1,10 @@
 # Operations: installation, state recording, rollback, checks
 
-This document describes how to change the TV safely and how to restore everything. It is a reference, not automation:
-the scripts `tools/record.sh` and `tools/restore.sh` will be written in M0.
+This document describes how to change the TV safely and how to restore everything. The scripts:
+`TV_HOST=<TV_IP> tools/record.sh` (read-only) and `TV_HOST=<TV_IP> tools/restore.sh [record.json]` (changes the TV).
+`record.sh` records the packages listed in section 3 plus every app that has a HOME activity (so private package names
+stay out of the repository), and the full list of disabled packages. The `enabled` value is the `User 0` number from
+`dumpsys package`: 0 default, 1 on, 2 off, 3 off by the user.
 
 All ADB commands below use the address `<TV_IP>`. Substitute your own value from `private/redactions.md`.
 
@@ -77,7 +80,7 @@ The goal of the rollback is to restore the whole state from the record. For our 
 The command to restore HOME (check it on the TV before using it):
 
 ```bash
-adb -s <TV_IP>:5555 shell cmd package set-home-activity com.conreo.couchytv/.MainActivity
+adb -s <TV_IP>:5555 shell cmd package set-home-activity com.conreo.couchytv/.MainActivity   # checked on the TCL: works for our launcher
 ```
 
 If the command does not work, choose HOME on the TV: Home → select Couchy → "Always". This is a manual rollback, and no record is needed for it.
