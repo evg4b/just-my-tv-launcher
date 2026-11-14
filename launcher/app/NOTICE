@@ -1,0 +1,14 @@
+just-my-tv-launcher
+Copyright 2026 the just-my-tv-launcher authors. Licensed under the Apache License 2.0 (see LICENSE).
+
+This product includes software and resources from third parties:
+
+- CleanYourTV (https://github.com/Gathin23/cleanyourtv), MIT License,
+  Copyright (c) 2026 Gathin. Parts of the build tooling and launcher code are based on it.
+  The licence text is in LICENSE-CleanYourTV at the repository root.
+
+- Material Icons (https://github.com/google/material-design-icons), Apache License 2.0,
+  Copyright Google LLC.
+
+- AndroidX and Media3 (https://developer.android.com/jetpack/androidx), Apache License 2.0,
+  Copyright The Android Open Source Project.

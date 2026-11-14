@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.justmytv.tvhome'
+    compileSdk 36                       // Media3 1.11.1 declares minCompileSdk=36 (PLAN 11.5)
+    buildToolsVersion '36.0.0'          // the one the Docker image has; AGP 8.13 would fetch 35.0.0
+
+    defaultConfig {
+        applicationId 'com.justmytv.tvhome'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        release {
+            // R8: fast startup on a weak CPU
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Installed over ADB: signed with the debug key
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packagingOptions {
+        resources {
+            // Kotlin metadata pulled in by AndroidX; this app is plain Java and never reads it
+            excludes += ['kotlin/**', 'META-INF/*.version', 'META-INF/*.kotlin_module', 'DebugProbesKt.bin']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.1.0'
+    implementation 'androidx.media3:media3-exoplayer:1.11.1'
+    testImplementation 'junit:junit:4.13.2'
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Launcher" parent="android:Theme.Material.NoActionBar">
+        <!-- default poster (PLAN 6.2); removed after the first frame once the poster view exists -->
+        <item name="android:windowBackground">@drawable/window_bg</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:colorBackground">#FF000000</item>
+    </style>
+</resources>
