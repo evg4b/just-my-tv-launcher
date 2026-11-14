@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home screen mockup 960×540 dp</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --accent: #8AB4F8;
+    --tile: #1C1C1E;
+    --band: rgba(20, 20, 22, .86);
+    --panel: rgba(30, 32, 38, .94);
+    --text: rgba(255, 255, 255, .95);
+    --dim: rgba(255, 255, 255, .55);
+    --glass: rgba(255, 255, 255, .10);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0c0d10; color: var(--text);
+    font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; padding: 14px 16px 6px; font-size: 14px; color: var(--dim); }
+  header b { color: var(--text); font-weight: 600; }
+  .viewport { position: relative; width: 100%; height: calc(100vh - 150px); min-height: 360px; }
+
+  /* 960×540 dp: 1 CSS px = 1 dp. The script scales it to the window. */
+  .stage { position: absolute; width: 960px; height: 540px; overflow: hidden; border-radius: 6px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+
+  /* Background: video wallpaper. A gradient instead of a video frame (Aurora from Couchy). */
+  .video { position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 420px at 78% 110%, rgba(128,208,199,.55), transparent 60%),
+      radial-gradient(700px 380px at 12% 0%, rgba(19,84,122,.9), transparent 70%),
+      linear-gradient(160deg, #13547A 0%, #2B825B 55%, #80D0C7 100%); }
+  .video .tag { position: absolute; right: 16px; top: 250px; font-size: 11px; color: rgba(255,255,255,.6); }
+  /* Dimming only at the top (60 % → 0 by 20 %), like ScrimTop in Couchy. */
+  .scrim { position: absolute; inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 20%); }
+
+  /* Header: clock and date on the left. Round icons with no labels on the right. */
+  .clockbox { position: absolute; left: 56px; top: 26px; z-index: 5; display: flex; align-items: center; gap: 16px; }
+  .clock { font-size: 52px; font-weight: 300; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .divider { width: 1px; height: 26px; background: rgba(255,255,255,.22); margin-bottom: 6px; }
+  .date { font-size: 14px; line-height: 1.35; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.65); margin-bottom: 4px; }
+  .icons { position: absolute; right: 40px; top: 32px; z-index: 5; display: flex; align-items: center; gap: 8px; }
+  .round { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(18,20,24,.55); border: 1px solid rgba(255,255,255,.08); cursor: pointer; }
+  .round.focus { background: rgba(255,255,255,.22); }
+  svg.i { width: 22px; height: 22px; fill: var(--text); flex: none; }
+
+  /* Weather and city on the left, under the clock and date. */
+  .footer { position: absolute; left: 56px; top: 84px; z-index: 5; display: flex; align-items: center; gap: 8px; }
+  .footer .temp { font-size: 18px; font-weight: 500; }
+  .footer .city { font-size: 13px; font-weight: 300; color: rgba(255,255,255,.6); }
+
+  /* Bar and rows. The bar sits at the bottom; the rows below it are not visible until you scroll down.
+     Top of the bar at rest: 366.5 dp; the footer starts at 500 dp. */
+  /* Clipping at the bottom edge of the grid (500 dp): rows below the bar are not visible until you scroll. */
+  .clip { position: absolute; left: 0; right: 0; top: 0; height: 540px; overflow: hidden; z-index: 2; }
+  .gridwrap { position: absolute; left: 0; right: 0; top: 386.5px; transition: transform .26s ease-out; }
+  .band { position: absolute; left: 22px; right: 22px; top: -6px; height: 137px;
+    background: var(--band); border-radius: 26px; border: 1px solid rgba(255,255,255,.08); }
+  .grid { position: absolute; left: 44px; right: 44px; top: 0; display: grid;
+    grid-template-columns: repeat(5, 1fr); grid-auto-rows: 127.5px; }
+  .cell { position: relative; }
+  .tile { position: absolute; left: 50%; top: 8px; width: 147px; height: 82.5px; transform: translateX(-50%);
+    border-radius: 13px; overflow: hidden; background: var(--tile); transition: transform .18s ease-out; }
+  .tile.banner { background: linear-gradient(135deg, var(--c1), var(--c2)); }
+  .tile .sheen { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,.1), transparent 50%, rgba(0,0,0,.14)); }
+  .tile .glyph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .tile .glyph svg { width: 48px; height: 48px; fill: rgba(255,255,255,.92); }
+  .tile.hidden::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+  .name { position: absolute; left: 0; right: 0; top: 94px; height: 22px; text-align: center; font-size: 14px;
+    font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(242,255,255,.55); opacity: 0;
+    transition: opacity .15s; }
+  .cell.focused .tile { transform: translateX(-50%) scale(1.10); }
+  .cell.focused .name { opacity: 1; color: rgba(242,255,255,.95); }
+  .name { display: none; }   /* labels were removed from the mockup after review */
+  /* App name above the bar (dock_title): visible when focus is on the bar. */
+  .glass { position: absolute; border-radius: 13px; border: 2px solid var(--accent); z-index: 3; pointer-events: none;
+    box-shadow: 0 8px 16px rgba(0,0,0,.5), 0 0 0 6px rgba(138,180,248,.10);
+    transition: all .26s cubic-bezier(.2,.8,.2,1); }
+
+  /* Right panel: 440 dp, slides in from the right in 260 ms. */
+  .veil { position: absolute; inset: 0; background: rgba(0,0,0,.35); opacity: 0; transition: opacity .26s; pointer-events: none; z-index: 6; }
+  .veil.on { opacity: 1; }
+  .panel { position: absolute; top: 0; right: 0; bottom: 0; width: 440px; z-index: 7;
+    background: var(--panel); border-radius: 16px 0 0 16px; padding: 28px 24px 24px;
+    transform: translateX(100%); transition: transform .26s cubic-bezier(.2,.8,.2,1); }
+  .panel.on { transform: translateX(0); }
+  .panel h2 { margin: 0 0 14px; font-size: 22px; font-weight: 600; }
+  .row { height: 56px; border-radius: 12px; padding: 0 14px; display: flex; align-items: center; gap: 14px;
+    font-size: 17px; margin-bottom: 4px; }
+  .row .meta { margin-left: auto; color: var(--dim); font-size: 14px; }
+  .row.focus { background: var(--glass); box-shadow: inset 0 0 0 2px var(--accent); }
+  .row .chev { margin-left: 10px; color: var(--dim); }
+  .state { width: 8px; height: 8px; border-radius: 50%; background: #81C995; }
+  .state.wait { background: rgba(255,255,255,.35); }
+  .note { font-size: 13px; color: var(--dim); margin: 10px 4px 0; line-height: 1.4; }
+
+  .ann { position: absolute; z-index: 4; font-size: 11px; color: #FFE082; background: rgba(0,0,0,.55);
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap; pointer-events: none; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 16px 0; }
+  button { font: inherit; color: var(--text); background: #1f2229; border: 1px solid #2c303a; border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); }
+  table { border-collapse: collapse; width: min(960px, 96vw); margin: 10px 16px 24px; font-size: 13px; }
+  td, th { border-bottom: 1px solid #22252d; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { color: var(--dim); font-weight: 500; }
+</style>
+</head>
+<body>
+<header>
+  <b>Home screen mockup, 960×540 dp</b> (1920×1080 px at density 320, section 18 of the plan).
+  At rest, only the bar at the bottom is visible, and the next row peeks up from below. The down arrow expands the grid, and the up arrow brings it back.
+  Arrow keys move focus, <b>S</b> opens settings, <b>I</b> opens inputs, <b>Esc</b> closes the panel.
+  Weather icons are schematic.
+</header>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+  <div class="video"><span class="tag">video wallpaper (gradient instead of a video frame)</span></div>
+  <div class="scrim"></div>
+
+  <!-- Header on the left: clock and date (as in CleanYourTV: 52 sp light, date 14 sp caps) -->
+  <div class="clockbox">
+    <div class="clock" id="clock">14:20</div>
+    <div class="divider"></div>
+    <div class="date" id="date">13 November<br>Friday</div>
+  </div>
+
+  <!-- Icons on the right, no labels: inputs, network, settings -->
+  <div class="icons">
+    <div class="round" id="btnInputs" title="Inputs (plan section 7.7)" tabindex="0">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18,7V4c0,-1.1 -0.9,-2 -2,-2H8C6.9,2 6,2.9 6,4v3H5v6l3,6v3h8v-3l3,-6V7H18zM8,4h8v3h-2V5h-1v2h-2V5h-1v2H8V4z"/></svg>
+    </div>
+    <div class="round" title="Network">
+      <svg class="i" viewBox="0 0 24 24"><path d="M1,9l2,2c4.97,-4.97 13.03,-4.97 18,0l2,-2C16.93,2.93 7.08,2.93 1,9zM9,17l3,3 3,-3c-1.65,-1.66 -4.34,-1.66 -6,0zM5,13l2,2c2.76,-2.76 7.24,-2.76 10,0l2,-2C15.14,9.14 8.87,9.14 5,13z"/></svg>
+    </div>
+    <div class="round" id="btnSettings" title="Settings (plan section 10)" tabindex="0">
+      <svg class="i" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
+    </div>
+  </div>
+
+  <!-- Weather and city on the left, under the clock and date -->
+  <div class="footer">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8.5" r="3.6"/><path d="M9 20h9a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.4 1.6A3.3 3.3 0 0 0 9 20z" fill="#fff" stroke="none"/></svg>
+    <span class="temp">4°</span>
+    <span class="city">City</span>
+  </div>
+
+  <!-- Bar (row 1) and the rows below it -->
+  <div class="clip">
+    <div class="gridwrap" id="gridwrap">
+      <div class="band"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="glass" id="glass"></div>
+  </div>
+
+  <!-- Annotations -->
+  <div class="ann" style="left:56px; top:146px;">clock and date on the left, icons on the right, as in CleanYourTV</div>
+  <div class="ann" style="left:600px; top:132px;">at rest the bar is visible and the next row peeks up from below; down expands the grid</div>
+
+  <div class="veil" id="veil"></div>
+
+  <!-- Settings panel (440 dp) -->
+  <aside class="panel" id="settings" aria-label="Settings">
+    <h2>Settings</h2>
+    <div class="row focus"><svg class="i" viewBox="0 0 24 24"><path d="M21,3H3C1.9,3 1,3.9 1,5v12c0,1.1 0.9,2 2,2h5v2h8v-2h5c1.1,0 1.99,-0.9 1.99,-2L23,5C23,3.9 22.1,3 21,3zM21,17H3V5h18V17z"/></svg>Wallpaper<span class="meta">video</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="#fff" stroke-width="2"/></svg>Weather<span class="meta">City</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><path d="M4,4h4v4H4zM10,4h4v4h-4zM16,4h4v4h-4zM4,10h4v4H4zM10,10h4v4h-4zM16,10h4v4h-4zM4,16h4v4H4zM10,16h4v4h-4zM16,16h4v4h-4z"/></svg>Apps<span class="meta">hidden 0</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="#fff" stroke-width="2"/></svg>Appearance<span class="meta">5 columns, rows 0</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><path d="M18,7V4c0,-1.1 -0.9,-2 -2,-2H8C6.9,2 6,2.9 6,4v3H5v6l3,6v3h8v-3l3,-6V7H18z"/></svg>Inputs<span class="meta">icon button</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 7v5l3 2" stroke="#fff" stroke-width="2" fill="none"/></svg>Clock<span class="meta">24 h</span><span class="chev">›</span></div>
+    <div class="row"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="2"/><rect x="11" y="10" width="2" height="7"/><rect x="11" y="6" width="2" height="2"/></svg>About<span class="chev">›</span></div>
+    <p class="note">All settings apply immediately. Weather: Open-Meteo.com (CC BY 4.0). Icons: Material Icons (Apache-2.0).</p>
+  </aside>
+
+  <!-- Inputs panel (440 dp) -->
+  <aside class="panel" id="inputs" aria-label="Inputs">
+    <h2>Inputs</h2>
+    <div class="row focus"><span class="state"></span>HDMI 1<span class="meta">connected</span><span class="chev">›</span></div>
+    <div class="row"><span class="state wait"></span>HDMI 2<span class="meta">waiting</span><span class="chev">›</span></div>
+    <div class="row"><span class="state wait"></span>HDMI 3<span class="meta">waiting</span><span class="chev">›</span></div>
+    <div class="row"><span class="state wait"></span>More (AV)<span class="meta">3 inputs</span><span class="chev">›</span></div>
+    <p class="note">The "waiting" status comes from TvInputManager: CONNECTED_STANDBY. On a TCL, an empty HDMI port can look the same as a switched-off device. The "Connected only" option hides these rows.</p>
+  </aside>
+</div>
+</div>
+
+<div class="controls">
+  <button id="openS">Settings (S)</button>
+  <button id="openI">Inputs (I)</button>
+  <button id="close">Close (Esc)</button>
+</div>
+
+<table>
+  <tr><th>Element</th><th>Value in the mockup</th><th>Source</th></tr>
+  <tr><td>Screen</td><td>960×540 dp</td><td>1920×1080 px, density 320 (section 18)</td></tr>
+  <tr><td>Clock and date</td><td>top left, 56 dp margin; clock 52 sp light; date 14 sp caps</td><td>CleanYourTV <code>activity_main.xml</code>: paddingStart 56 dp, paddingTop 26 dp, clock 52 sp</td></tr>
+  <tr><td>Icons on the right</td><td>round, 40 dp, no labels; inputs, network, settings</td><td>CleanYourTV: <code>icon_only_buttons</code>, <code>icon_only_inputs</code></td></tr>
+  <tr><td>Weather and city</td><td>left, under the clock and date (top 84 dp), 56 dp margin</td><td>our own decision (CleanYourTV has no weather)</td></tr>
+  <tr><td>Bar at rest</td><td>top 386.5 dp, row height 127.5 dp; the next row peeks up 18 dp from below</td><td><code>MainActivity.java:706–709</code>: "push the dock row towards the bottom"</td></tr>
+  <tr><td>Rows under the bar</td><td>0 at rest (<code>rows_below_dock</code> = 0); the next row peeks in from below; on Down the grid expands</td><td><code>config.xml:413</code>, "the rest of the grid stays below until you press Down"</td></tr>
+  <tr><td>Columns</td><td>5 at 960 dp: tile 147 × 83 dp, radius 13 dp</td><td><code>AppAdapter.java:108–114</code></td></tr>
+  <tr><td>Focus</td><td>scale 1.10, 2 dp ring #8AB4F8</td><td><code>AppCard.kt</code>, <code>AppAdapter.FOCUS_SCALE</code></td></tr>
+  <tr><td>Bar strip</td><td>#141416 at 86 %, radius 26 dp, 22 dp margin on each side, 14 dp at the top and bottom</td><td><code>DockDecoration.java</code></td></tr>
+  <tr><td>Bottom edge</td><td>bottom of the screen (540 dp); dimming only at the top</td><td>Couchy <code>ScrimTop</code> (<code>LauncherScreen.kt:118–121</code>)</td></tr>
+  <tr><td>Panel</td><td>440 dp, 260 ms slide, 16 dp radius on the left</td><td><code>SettingsSheet.kt:183–199</code> (Couchy)</td></tr>
+</table>
+
+<script>
+  // Tiles: 20 of them, 4 rows of 5 columns. The names are placeholders, not real apps.
+  const apps = [
+    ["Films", "#0F2027", "#2C5364", "tv"],   ["Music", "#41295A", "#D76D77", "apps"],
+    ["Games", "#1B5E20", "#33691E", "apps"],   ["Video", "#0D47A1", "#4A148C", "tv"],
+    ["Camera", "#263238", "#546E7A", "apps"],               ["Photos", "#13547A", "#80D0C7", "apps"],
+    ["Weather", "#37474F", "#263238", "apps"], ["News", "#4E342E", "#3E2723", "apps"],
+    ["Sport", "#1B5E20", "#2E7D32", "apps"],                ["Files", "#2B825B", "#13547A", "apps"],
+    ["Notes", "#4E342E", "#8D6E63", "apps"],              ["Calendar", "#880E4F", "#4A148C", "apps"],
+    ["Museum", "#33691E", "#1B5E20", "tv"],    ["Maps", "#0D47A1", "#42A5F5", "apps"],
+    ["Podcasts", "#3E2723", "#4E342E", "apps"], ["Books", "#0D47A1", "#263238", "apps"],
+    ["Radio", "#880E4F", "#C2185B", "apps"],                ["Timer", "#4A148C", "#880E4F", "apps"],
+    ["Calculator", "#263238", "#37474F", "apps"], ["Settings", "#37474F", "#78909C", "apps"]
+  ];
+  const ICON = {
+    tv: '<path d="M21,3H3C1.9,3 1,3.9 1,5v12c0,1.1 0.9,2 2,2h5v2h8v-2h5c1.1,0 1.99,-0.9 1.99,-2L23,5C23,3.9 22.1,3 21,3zM21,17H3V5h18V17z"/>',
+    apps: '<path d="M4,4h4v4H4zM10,4h4v4h-4zM16,4h4v4h-4zM4,10h4v4H4zM10,10h4v4h-4zM16,10h4v4h-4zM4,16h4v4H4zM10,16h4v4h-4zM16,16h4v4h-4z"/>'
+  };
+
+  const COLS = 5, BAR_TOP = 386.5, ROW_H = 127.5, FOOT_TOP = 540;   // dp: the bar at the bottom; the next row peeks up 18 dp
+  const grid = document.getElementById("grid");
+  const glass = document.getElementById("glass");
+  const gridwrap = document.getElementById("gridwrap");
+  let focusIdx = 0;
+
+  apps.forEach(([name, c1, c2, icon], i) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    const tile = document.createElement("div");
+    const hidden = i === 12;                       // one hidden tile, as an example
+    tile.className = "tile" + (c1 ? " banner" : "") + (hidden ? " hidden" : "");
+    if (c1) { tile.style.setProperty("--c1", c1); tile.style.setProperty("--c2", c2); tile.innerHTML = '<div class="sheen"></div>'; }
+    else tile.innerHTML = '<div class="glyph"><svg viewBox="0 0 24 24">' + ICON[icon] + '</svg></div>';
+    const label = document.createElement("div");
+    label.className = "name";
+    label.textContent = name;
+    cell.append(tile, label);
+    grid.append(cell);
+  });
+
+  // Scrolling: the bar (row 0) stays in place; row r moves into view without going past the footer.
+  function scrollFor(row) {
+    if (row === 0) return 0;
+    const rowBottom = BAR_TOP + (row + 1) * ROW_H;
+    return Math.max(0, rowBottom - FOOT_TOP);
+  }
+
+  function place() {
+    const cells = [...grid.children];
+    cells.forEach((c) => c.classList.remove("focused"));
+    cells[focusIdx].classList.add("focused");
+    const row = Math.floor(focusIdx / COLS);
+    const col = focusIdx % COLS;
+    const t = scrollFor(row);
+    gridwrap.style.transform = t ? "translateY(" + (-t) + "px)" : "none";
+
+    // Focus ring: the tile, taking into account the 1.10 scale and the scroll.
+    const cellW = 872 / COLS;
+    const w = 147 * 1.10 + 4, h = 82.5 * 1.10 + 4;
+    const x = 44 + col * cellW + cellW / 2 - w / 2;
+    const y = BAR_TOP + row * ROW_H + 8 - (h - 82.5) / 2 - 2 - t;
+    glass.style.left = x + "px";
+    glass.style.top = y + "px";
+    glass.style.width = w + "px";
+    glass.style.height = h + "px";
+
+  }
+
+  // Scale the stage to the window and centre it.
+  const stage = document.getElementById("stage");
+  const viewport = document.getElementById("viewport");
+  function layout() {
+    const vw = viewport.clientWidth, vh = viewport.clientHeight;
+    const s = Math.min(vw / 960, vh / 540, 1.6);
+    stage.style.transform = "scale(" + s + ")";
+    stage.style.left = ((vw - 960 * s) / 2) + "px";
+    stage.style.top = ((vh - 540 * s) / 2) + "px";
+    stage.style.transformOrigin = "top left";
+  }
+  window.addEventListener("resize", layout);
+  layout();
+  place();
+
+  // Clock and date from the system time, in English.
+  function tick() {
+    const d = new Date();
+    document.getElementById("clock").textContent = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    const day = d.toLocaleDateString("en-US", { day: "numeric", month: "long" });
+    const wd = d.toLocaleDateString("en-US", { weekday: "long" });
+    document.getElementById("date").innerHTML = day + "<br>" + wd;
+  }
+  tick();
+  setInterval(tick, 30000);
+
+  const veil = document.getElementById("veil");
+  const settings = document.getElementById("settings");
+  const inputs = document.getElementById("inputs");
+  function openPanel(p) { settings.classList.remove("on"); inputs.classList.remove("on"); p.classList.add("on"); veil.classList.add("on"); }
+  function closePanels() { settings.classList.remove("on"); inputs.classList.remove("on"); veil.classList.remove("on"); }
+  document.getElementById("openS").onclick = () => openPanel(settings);
+  document.getElementById("openI").onclick = () => openPanel(inputs);
+  document.getElementById("close").onclick = closePanels;
+  document.getElementById("btnSettings").onclick = () => openPanel(settings);
+  document.getElementById("btnInputs").onclick = () => openPanel(inputs);
+
+  document.addEventListener("keydown", (e) => {
+    const panelOpen = settings.classList.contains("on") || inputs.classList.contains("on");
+    if (e.key === "Escape") { closePanels(); return; }
+    if (e.key === "s" || e.key === "S") { openPanel(settings); return; }
+    if (e.key === "i" || e.key === "I") { openPanel(inputs); return; }
+    if (panelOpen) return;
+    const n = apps.length;
+    if (e.key === "ArrowRight") focusIdx = Math.min(n - 1, focusIdx + 1);
+    if (e.key === "ArrowLeft") focusIdx = Math.max(0, focusIdx - 1);
+    if (e.key === "ArrowDown") focusIdx = Math.min(n - 1, focusIdx + COLS);
+    if (e.key === "ArrowUp") focusIdx = Math.max(0, focusIdx - COLS);
+    place();
+  });
+</script>
+</body>
+</html>
