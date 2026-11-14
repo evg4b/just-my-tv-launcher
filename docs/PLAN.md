@@ -1667,7 +1667,7 @@ fade ends) and the scrim as the only full-screen layers.
     android:gravity="fill" />
 ```
 
-`poster_default.webp`: 1920×1080, the Aurora gradient from Couchy (`#13547A` → `#2B825B` → `#80D0C7`), about 50 KB as WebP.
+`poster_default.webp`: 1920×1080, the Aurora gradient from Couchy (`#13547A` → `#2B825B` → `#80D0C7`), about 50 KB as WebP. **Revised (D83):** replaced by the dithered gradient shape `drawable/aurora.xml`, which needs no bitmap.
 
 ### 11.4. Home screen layout
 
@@ -2069,11 +2069,13 @@ the attribution is visible.
 
 **M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3) including the grid scroll check OPEN-QUESTIONS T16,
 baseline recorded in this file. *Done when:* all items in 12.3 are checked and there are screenshots from the TV.
+**Status 2026-11-13:** Russian strings, settings icons and About are built and pushed; the code pass (D81–D83) is done. The measurements (12.3), T16 and the screenshots wait for the TV (T19).
 
 **M7. Remote service.** `RemoteKeyService` (7.8): manifest entry, `remote_keys.xml`, the "Remote buttons" settings screen
 (button → app), default YouTube → SmartTube. Before enabling it: a new state record (OPERATIONS 3), then `flar2.homebutton`
 is disabled (D25, S2). Closes T2–T5 and T14. *Done when:* every assigned button launches its app from inside another app;
 unassigned buttons behave as before; after a reboot the service is still enabled; PSS of the service process is recorded.
+**Status 2026-11-13:** built and pushed; not yet checked on the TV (T19). `flar2.homebutton` is still enabled: disabling it changes the TV and needs a state record and your go-ahead (OPERATIONS 3, S2).
 
 ---
 

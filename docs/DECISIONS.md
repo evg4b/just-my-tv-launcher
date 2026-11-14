@@ -144,3 +144,15 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D75 | The chosen video's first frame is saved as `poster.webp` (RGB_565 in memory) and is the poster for that video | A return to Home shows the clip's own picture, then the clip, instead of the gradient | PLAN 6.2 |
 | D76 | The default wallpaper is the gradient (the Aurora poster); dimming is 0 / 20 / 40 / 60 %, default 20, and does not apply to the gradient | No file is needed for the default; the gradient is the theme background too, so the cold start does not change colour; 30 is not on the scale | PLAN 9.1, 10.1 |
 | D77 | The "icons appear after the poster" animation (PLAN 6.2 timings) is not done | The grid shows at the first frame; an entrance animation would only delay it | PLAN 6.2 |
+
+## Decisions taken at M6, M7 and the code pass
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D78 | Remote buttons are matched by scancode; assignable: Menu, Bookmark, Gear, TV, Numbers, Layers, Grid, NETFLIX, YouTube, TCL CHANNEL, prime video, Volume +/−, Mute | **Revises the "any button except power" decision**: D-pad, OK, Back and Home are left out, since assigning one would lock the user out of the screen that undoes it. Assistant sends no event | PLAN 7.8, remote-buttons.md |
+| D79 | An assigned button launches on press and swallows the release; if the app is gone the button works as before | The system's own action must not run as well; a removed app must not make a button dead | PLAN 7.8 |
+| D80 | The service shares the assignments with the launcher in memory (same process) and reads `launcher_state.json` when it starts | No second file, no IPC | PLAN 7.8, 9.1 |
+| D81 | Tiles are drawn with a `BitmapShader` round rect and rounded drawables, not `clipToOutline` | The outline clip cost about 4 ms of GPU per frame on the TV (M1 measurement) | PLAN 7.3 |
+| D82 | `TopFade` keeps its hardware layer only while rows are scrolled up | At rest the layer was a full-screen offscreen pass for nothing | PLAN 7.5 |
+| D83 | The default wallpaper and window background are the dithered gradient shape `aurora.xml`; `poster_default.webp` is removed | **Revises D58:** the bitmap held 8 MB of RAM for a gradient; banding to be checked on the TV (T19) | PLAN 6.2, 11.3 |
+| D84 | Settings root has 9 items: Wallpaper, Weather, Apps, Appearance, Inputs, Remote buttons, Clock, About, TV settings | Remote buttons (M7) joins the 8 of PLAN 10.1 | PLAN 10.1 |
