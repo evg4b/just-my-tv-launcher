@@ -106,11 +106,11 @@ This check is run before M1 and repeated after every firmware update and every i
    ```bash
    adb -s <TV_IP>:5555 shell pm list packages -d
    ```
-3. The remote service is enabled (after M0 and M3):
+3. The accessibility services match the record (our remote service exists only after M7):
    ```bash
    adb -s <TV_IP>:5555 shell settings get secure enabled_accessibility_services
    ```
-4. Our remote assignments are in place (after M3).
+4. Our remote assignments are in place (after M7).
 5. Record the result in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md), item T1.
 
 If HOME became the stock one after the reboot, that is an observation, not a reason to change the firmware (RISKS 6, 8).
@@ -150,7 +150,7 @@ The disabling commands are written into the record before they run.
 
 ## 9. Removing the reference projects (`sources/`)
 
-This is done only after M6 and verification on the TV. Rule: the app does not depend on `sources/` (PLAN 1.1).
+This is done only after the last milestone (M7) and verification on the TV. Rule: the app does not depend on `sources/` (PLAN 1.1).
 
 1. Check that there are no references to `sources/` in the code, manifests, resources, scripts, or the build.
    ```bash

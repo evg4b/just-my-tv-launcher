@@ -11,7 +11,7 @@ Date: 13 November 2026, unless stated otherwise.
 |---|---|---|---|
 | D1 | A new standalone launcher, not a PR to CleanYourTV | CleanYourTV forbids network access and video (`AGENTS.md:147–148`), and we need both | PLAN 0, 1 |
 | D2 | Java and Android Views, no Compose or Kotlin | As in CleanYourTV: faster start on a weak CPU, fewer dependencies | PLAN 2, 14 |
-| D3 | `minSdk` 26, `compileSdk` 34, `targetSdk` 34 | Compatibility and modern APIs. The TV runs Android 11 | PLAN 11.5, BEST-PRACTICES 0 |
+| D3 | `minSdk` 26, `compileSdk` 34, `targetSdk` 34 | Compatibility and modern APIs. The TV runs Android 11. **Revised by D54** (compileSdk) | PLAN 11.5, BEST-PRACTICES 0 |
 | D4 | Dependencies: `recyclerview` 1.4.0, `dynamicanimation` 1.1.0, `media3-exoplayer` 1.11.1 | Latest stable versions, older than two weeks on the check date | PLAN 11.5 |
 | D5 | Docker build, debug-key signing, one key via `HOST_KEY_DIR` | As in CleanYourTV: no SDK installation on the Mac | PLAN 11.6 |
 | D6 | APK size is not limited | The user: speed matters most | PLAN 0 |
@@ -88,3 +88,18 @@ Date: 13 November 2026, unless stated otherwise.
 | D47 | When copying, licences are kept: MIT (CleanYourTV), Apache-2.0 (Material Icons), OFL (Outfit). Code from Couchy (GPLv3) is not copied | Licences are mandatory. We write our own code from the description, so GPL does not apply to the project | PLAN 1.1, OPEN-QUESTIONS Q10 |
 | D48 | No distribution except builds on the release page. The user: the project is for personal use; a release is publishing builds | Publishing an APK on a release page is distribution. That is why D47 matters: Couchy code is not copied, so GPL does not spread to the project | PLAN 1.1, OPEN-QUESTIONS Q10 |
 | D49 | Apple and Amazon aerials are wanted. The list (251 links) is copied as data from `assets/aerials.json`. Videos are not stored, they are streamed when enabled. Trust-all TLS is not copied | The user: these links are needed. The streamed videos belong to Apple and Amazon, see RISKS 45 | PLAN 0, 3, 13 |
+
+## Plan review (13 November 2026)
+
+Decisions taken while fixing the review findings in PLAN v2. None of them changes an earlier decision by the user.
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D50 | Settings root has 8 items everywhere | D29 added "TV settings"; §0 and M3 still said 7 | PLAN 0, 10.1, 15 |
+| D51 | Columns (4–7) are the only size setting; `uiScale` is removed | With a fixed column count a scale only changes the gaps, so the two settings fought | PLAN 7.2, 10.1 |
+| D52 | Cut: "Close app" menu item, our own `VIEW_INPUTS` activity, weather interval setting (fixed 30 min), "Check video" button | Not asked for. "App details" has Force stop; the `VIEW_INPUTS` activity would catch its own fallback; the API updates every 15 min anyway | PLAN 7.7, 8, 10.1, 14 |
+| D53 | Aerials (D49) get their own section 6.3 and go into M4; the remote service (D24) gets milestone M7 | Both were decided but had no milestone | PLAN 6.3, 15 |
+| D54 | `compileSdk` 36, AGP 8.13.2, Gradle 8.13, build tools 36.0.0; `targetSdk` stays 34 | AAR metadata: Media3 1.11.1 and 1.10.1 need `minCompileSdk=36`, RecyclerView 1.4.0 needs 35. AGP 8.5.2 cannot compile against 36. AGP 9 is not taken: a new DSL for no gain | PLAN 11.5, 11.6, BEST-PRACTICES 0 |
+| D55 | The app scan does not wait for the first video frame; the window background is removed after the first frame | Speed: with no video there is no first frame, and the window background was a fourth full-screen layer | PLAN 6.2, 11.3 |
+| D56 | Persistence is split: `LauncherState` (file I/O, `AtomicFile`) and `StateJson` (pure, JVM-tested) | `android.util.AtomicFile` is a stub in plain JVM tests | PLAN 9.2, 12.1 |
+

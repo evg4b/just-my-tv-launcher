@@ -21,9 +21,9 @@ What is known about the TV (`docs/PLAN.md`, section 18): Android 11, API 30, a 3
 | Parameter | Value | Why |
 |---|---|---|
 | `minSdk` | 26 | Compatibility, as in CleanYourTV. The Google Play TV-PS criterion requires 31 or lower: 26 fits. |
-| `compileSdk` | 34 | Modern APIs are available, including `java.lang.Record`. |
+| `compileSdk` | 36 | Required by the dependencies: `media3-exoplayer` 1.11.1 declares `minCompileSdk=36` (AAR metadata), `recyclerview` 1.4.0 declares 35. Needs AGP 8.13 (PLAN 11.5). |
 | `targetSdk` | 34 | As in CleanYourTV. The behaviour of newer Android versions on a TV running Android 11 does not change, but manifest fields (for example `exported`) are checked. |
-| `buildTools` | 34.0.0 | As in CleanYourTV. |
+| `buildTools` | 36.0.0 | Matches `compileSdk`; AGP 8.13 needs 35.0.0 or newer. |
 
 **Rule for newer APIs.** APIs above 26 are used only behind a version check:
 
@@ -52,7 +52,8 @@ For Android TV 11 and the HOME intent, see [docs/RISKS.md](RISKS.md), items 1–
   and `android:accessibilityFeedbackType` ([guide](https://developer.android.com/guide/topics/ui/accessibility/service)).
 - **Official:** "Be careful: using `typeAllMask` can be resource intensive because it forces the system to notify
   your application of every accessibility event that occurs across the entire OS."
-  The remote service needs no UI events at all: `android:accessibilityEventTypes="typeNone"`.
+  The remote service needs no UI events at all, so `android:accessibilityEventTypes` is **left out** (0), as in CleanYourTV
+  `input_key_service.xml`. There is no `typeNone` value in the attribute's flag list.
 - `canRetrieveWindowContent="false"`: the service does not read screen content. This is what we need.
 
 ### 1.2. About keys (community, to verify)
@@ -72,7 +73,8 @@ For Android TV 11 and the HOME intent, see [docs/RISKS.md](RISKS.md), items 1–
 
 1. Manifest: `android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"`, `android:exported="false"` for the
    service, and a `<meta-data android:name="android.accessibilityservice">` pointing to the XML configuration.
-2. XML: `accessibilityEventTypes="typeNone"`, `canRetrieveWindowContent="false"`, `accessibilityFlags="flagRequestFilterKeyEvents"`.
+2. XML: `accessibilityFlags="flagRequestFilterKeyEvents"` **and** `canRequestFilterKeyEvents="true"` (without the second one
+   `onKeyEvent` is never called), `canRetrieveWindowContent="false"`, no `accessibilityEventTypes`.
    `notificationTimeout` is not needed (there are no UI events).
 3. `onKeyEvent`: a cheap check first (a map from code to package), then the launch. The map is built at startup from the settings,
    not read from a file on every press.
@@ -254,7 +256,7 @@ Decision: add the Baseline Profile in M6 (section 15 of the plan), once there is
 
 ## 7. Gradle, R8, and the language
 
-- **Java 17** as `sourceCompatibility` (AGP 8.5 supports it, as in CleanYourTV).
+- **Java 17** as `sourceCompatibility` (AGP 8.13 requires JDK 17, as in CleanYourTV).
 - **Records:** according to the Android Developers article ([records](https://android-developers.googleblog.com/2023/06/records-in-android-studio-flamingo.html)),
   D8 and R8 rewrite them into ordinary classes. AGP support starts from version 8.1, and compiling needs SDK 34.
   So records technically work. The plan earlier said "no `record`, because of a risk on Android 11". **That was not accurate:**
@@ -282,7 +284,7 @@ Decision: add the Baseline Profile in M6 (section 15 of the plan), once there is
 | "No `record`: a runtime risk on Android 11" | Records technically work (AGP 8.1 or later, SDK 34). We simply do not use them, because of complexity, not the runtime | plan section 9.2, plan section 14 |
 | Media3 version 1.11.1 | Matches the official example | plan section 11.5 |
 | No requirement for the TV banner was listed | Official: a 320×180 px banner with the app name (TV-LB, TV-BN) | section 2 of this file, plan section 11.2 |
-| No event types were specified for the service | For the remote service, `typeNone` and `canRetrieveWindowContent="false"` | section 1 of this file, plan section 7.8 |
+| No event types were specified for the service | For the remote service, no `accessibilityEventTypes` (0), `canRequestFilterKeyEvents="true"` and `canRetrieveWindowContent="false"` | section 1 of this file, plan section 7.8 |
 
 ## Sources
 

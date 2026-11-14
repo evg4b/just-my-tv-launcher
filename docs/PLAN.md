@@ -24,7 +24,7 @@ We take:
 - **The grid with a bar** (`dock_row`): at rest the bar sits at the bottom edge, and the next row peeks up from below; scrolling down expands the grid. Move / App info menu on a long OK press (`tile_menu`).
 - **Video wallpapers** from Couchy (`sources/couchy-launcher`): ExoPlayer (Media3), `SurfaceView`, no sound,
   the player is released when the screen is left. Rewritten for Views.
-- **The sliding settings panel on the right** from Couchy: 440 dp, a 260 ms slide. Simplified to 7 items.
+- **The sliding settings panel on the right** from Couchy: 440 dp, a 260 ms slide. Simplified to 8 items (10.1).
 - **Weather** from Open-Meteo: no key, no registration, no device geolocation.
 - **Input switching** (HDMI and others) as a launcher feature (section 7.7).
 
@@ -40,7 +40,7 @@ The review of version 1 found contradictions and gaps. The decisions that are no
 | # | Question | In v1 | In v2 | Basis |
 |---|---|---|---|---|
 | 1 | How the bar works | "pinned at the top" | The bar is **the first row of the grid** (`position < columns`), the same `RecyclerView`. At rest it sits **at the bottom edge of the screen**; the next row peeks up from below by 18 dp. Scrolling down expands the grid. There is no name above the bar (`dock_title` is off) | `MainActivity.java:706–709`, `config.xml:413`, `config.xml:417` |
-| 2 | Tile size | 150 dp fixed, and "from the width and columns" | Only the formula: `tileW = min(180 dp, (cell − 12 dp) / 1.10)`, `cell = innerWidth / columns`. The "size" setting is a scale of 0.9 / 1.0 / 1.15 | `AppAdapter.java:108–114` |
+| 2 | Tile size | 150 dp fixed, and "from the width and columns" | Only the formula: `tileW = min(180 dp, (cell − 12 dp) / 1.10)`, `cell = innerWidth / columns`. The only size setting is the column count (4–7); there is no separate scale | `AppAdapter.java:108–114` |
 | 3 | Gaps | 10 dp (`GAP_SIZES[1]`) | No gap setting. Cell = `innerWidth / columns`, the tile is centred in its cell. Gap = `cell − tileW` (≈27 dp with 5 columns) | `AppAdapter.java:111`; Couchy stretches the gap to fill the row (`LauncherScreen.kt:998`) |
 | 4 | Corner radius | "squircle `SmoothCornerShape`" | Views cannot draw squircles. The corner radius is 16 dp × `min(1, tileW/180)`, via `ViewOutlineProvider` | `AppAdapter.java:899–901`, `SmoothCornerShape.kt:10–17` |
 | 5 | Poster at startup | The poster is the theme's `windowBackground` | `windowBackground` is a **static resource** (fixed at build time), so it does not work for a video the user chose. The poster is an `ImageView` above the `SurfaceView`. A cold start still shows the theme's frame; see 6.2 | Android: the theme is set at build time |
@@ -74,7 +74,7 @@ this is the launcher with video wallpapers that you had in mind.
   Material Icons. Their licence is **Apache-2.0** (`LICENSE` in the `google/material-design-icons` repository, checked
   with WebFetch). A `NOTICE` file mentioning Apache-2.0 is needed.
 - **Couchy (GPLv3):** the code may not be copied if the APK is distributed. For personal sideloading over ADB it is allowed,
-  but the question must be settled before the first commit. **Recommendation: write it yourself from the description in this document.** The document
+  but releases are planned (D48). **Decided (D47): Couchy code is not copied; we write our own from the description in this document.** The document
   contains no copied fragment of Couchy, only values (colours, sizes, timings), and those are not protected by a licence.
 - **Outfit (SIL OFL 1.1):** the font files go in `res/font/` plus `FONT-LICENSE-OFL.txt`, as in CleanYourTV
   (`launcher/app/src/main/res/FONT-LICENSE-OFL.txt`, "Copyright 2021 The Outfit Project Authors").
@@ -116,7 +116,7 @@ Once copied, a file belongs to us. It lives at its own path in our repository an
 **Releases.** An APK built and published on the release page is a distribution, even if the repository is private and carries no ads. A release
 with an APK includes `LICENSE` (ours, and the MIT one from CleanYourTV) and `NOTICE` (Apache-2.0, OFL).
 
-**Removal after implementation.** When the app is built, verified on the TV, and has passed M6, the folder is removed. The order:
+**Removal after implementation.** When the app is built, verified on the TV, and has passed the last milestone (M7), the folder is removed. The order:
 
 1. Check that there are no references: `grep -rn "sources/" --include=*.java --include=*.xml --include=*.gradle --include=*.sh --include=Dockerfile .`. The result must be empty.
 2. `git submodule deinit -f sources/cleanyourtv sources/couchy-launcher`
@@ -572,7 +572,7 @@ Taken from CleanYourTV (`launcher/app/src/main/res/drawable/`, Material Icons, A
 | `ic_swap_vert.xml` | two arrows | the "Move" mode |
 | `ic_lock.xml` | padlock | "Hide" (closed) |
 | `ic_lock_open.xml` | open padlock | "Show" |
-| `ic_input.xml` | by its shape, like a remote | **check on the TV**; a different icon may suit "Inputs" better (section 13) |
+| `ic_input.xml` | by its shape, like a remote | **check on the TV**; a different icon may suit "Inputs" better (OPEN-QUESTIONS Q4) |
 | `ic_av.xml` | connectors | "More" (AV inputs) |
 | `ic_picture.xml` | **a TV icon**, not a picture | do not use for "Wallpaper"; a different icon is needed |
 
@@ -672,22 +672,27 @@ final class VideoWallpaper {
     private final ImageView poster;
     private final Handler main = new Handler(Looper.getMainLooper());
     private ExoPlayer player;
-    private boolean resumed;
+    private boolean resumed, rendered;
 
     private final Runnable watchdog = () -> {
-        if (resumed) fallback("no first frame in " + WATCHDOG_MS + " ms");
+        if (resumed && !rendered) fallback("no first frame in " + WATCHDOG_MS + " ms");
     };
 
     VideoWallpaper(Context ctx, SurfaceView surface, ImageView poster) {
         this.ctx = ctx; this.surface = surface; this.poster = poster;
     }
 
-    void onResume() { resumed = true; }
+    void onResume() {
+        resumed = true;
+        // the watchdog may have fired while not resumed and done nothing: arm it again
+        if (player != null && !rendered) { main.removeCallbacks(watchdog); main.postDelayed(watchdog, WATCHDOG_MS); }
+    }
     void onPause()  { resumed = false; }
 
     /** ON_START: build the player and prepare the first frame; no sound. */
     void start(Uri uri) {
         if (uri == null || player != null) return;
+        rendered = false;
         player = new ExoPlayer.Builder(ctx)
                 .setRenderersFactory(new DefaultRenderersFactory(ctx).setEnableDecoderFallback(true))
                 .setLoadControl(new DefaultLoadControl.Builder()
@@ -700,6 +705,7 @@ final class VideoWallpaper {
         player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
         player.addListener(new Player.Listener() {
             @Override public void onRenderedFirstFrame() {
+                rendered = true;
                 main.removeCallbacks(watchdog);
                 hidePoster();
             }
@@ -748,8 +754,9 @@ What matters here:
   the `SurfaceView` has no surface, and no frames will arrive.
 - `onRenderedFirstFrame()` with no arguments is the Media3 API that Couchy already uses (line 1454).
 
-**Fallback to a picture.** If the clip has failed to start twice in a row, `fallback` runs, and the user gets the poster or a
-picture from `wallpaper.image` (JPG/WebP, `BitmapFactory` with `inSampleSize`, with no extra dependencies).
+**Fallback to a picture.** The first failure (a player error, or no first frame within the watchdog time) runs `fallback`
+at once: the user gets the poster or a picture from `wallpaper.image` (JPG/WebP, `BitmapFactory` with `inSampleSize`, with no
+extra dependencies). There is no retry loop: the next attempt is the next `onStart`.
 
 ### 6.2. Smooth start: no black screen and no intermediate gradient
 
@@ -778,6 +785,7 @@ FrameLayout
  ├─ ImageView    (poster, opaque, above the video)       ← hidePoster() after 900 ms
  ├─ View         (scrim: 60 % → 0 by 20 % of the height) ← LauncherScreen.kt:118–121
  ├─ RecyclerView (the grid, bar = row 1)
+ ├─ FrameLayout  (glass_host: the focus ring, 7.4)
  ├─ LinearLayout (header: clock and date on the left, icons on the right; weather under the clock)
  └─ FrameLayout  (panels: settings, inputs; hidden)
 ```
@@ -788,8 +796,8 @@ FrameLayout
 |---|---|---|
 | The poster fades after the first frame | 900 ms, ease-in-out | v1; Couchy: 1100 ms in |
 | Icons and labels appear after the poster | after 200 ms, fade plus a 300 ms slide | v1 |
-| App scan | after the first video frame (`onRenderedFirstFrame`) | v1 |
-| If the banner cache exists (second launch) | the row of tiles is shown at once | v1 |
+| Tiles | at the first frame, from the saved `order` and the banner cache on disk; with no cache, coloured fallback tiles (5.3) | review of v2 |
+| App scan | starts in `onStart` on the background pool, **in parallel** with the video; never waits for `onRenderedFirstFrame` (with a picture or gradient wallpaper, or a failed clip, there is no first frame) | review of v2 |
 | Boot logo | **none** | Couchy `LauncherScreen.kt:900–909` and `:1524–1545` |
 
 **Check (required on the TV, not by eye):**
@@ -804,8 +812,30 @@ Then frame by frame (`ffmpeg -i shots/start.mp4 -vf fps=10 shots/f_%03d.png`): b
 there must be no frame in which the average brightness of the centre is more than 5% below the brightness of the poster. For a scripted
 check use `ffprobe` and `signalstats` (YAVG). The criterion and the tool are recorded in `docs/PLAN.md` after M4.
 
-**Not done:** Live Wallpaper (a separate process with its own lifecycle), `TextureView` (draws on the UI thread and stutters under load), and network
-streaming in the MVP.
+**Not done:** Live Wallpaper (a separate process with its own lifecycle), `TextureView` (draws on the UI thread and stutters under load), and
+streaming from arbitrary URLs. The only network video is the fixed aerial list (6.3).
+
+### 6.3. Aerials: streamed Apple and Amazon clips (D49)
+
+**Data.** `res/raw/aerials.json`, copied as data from Couchy `assets/aerials.json` (a list of links, not code; WALLPAPERS,
+group D). Each entry is `{"t": title, "u": https link, "s": set}`. We keep sets `A` (Apple, 139) and `Z` (Amazon, 112); the
+community sets `C1`/`C2` are not copied until Q19 is decided. Drop the one Apple `4K` entry while copying: the TV renders 1080p.
+
+**Format (checked by reading the file).** All links are progressive files over HTTPS (`.mov`, `.mp4`, `.m4v`), no HLS. Apple
+entries are `SDR_2K_AVC`, Amazon entries are under `/content/FHD/`. So `media3-exoplayer` alone plays them; no
+`media3-exoplayer-hls`, no OkHttp (the default `DefaultHttpDataSource` uses `HttpURLConnection`).
+
+**Playback.** The same `VideoWallpaper` (6.1) with an `https` URI, with two differences:
+
+- `REPEAT_MODE_OFF`; on `STATE_ENDED` the next random entry is played (never the same one twice in a row);
+- the watchdog is **8 s** instead of 3 s: a network start is slower. Verify on the TV at M4.
+
+**Network and TLS.** Platform TLS only: trust-all is never copied (section 3). Couchy's comment says `sylvan.apple.com` serves a
+chain that many TV trust stores reject; if that happens on this TV, the Apple entries are skipped and Amazon entries stay.
+With no network (`ConnectivityManager`), the aerials type shows the poster and makes no requests. Streams run only while Home is
+visible and the "Aerials" wallpaper type is chosen; the player is released on `ON_STOP` as usual.
+
+**Attribution** in "About": the clips belong to Apple and Amazon and are streamed from their servers (RISKS 45).
 
 ---
 
@@ -850,7 +880,9 @@ tileW      = clamp((cell − 12) / 1.10, 80, 180)      // 12 dp is the room for 
 tileH      = tileW × 101 / 180                       // 16:9, rounded
 itemH      = tileH + 45                              // 45 dp: padding, gap, label (ITEM_EXTRA_DP)
 
-barTop     = screenHeightDp − itemH − 26             // 8 dp tile padding + 18 dp peek of the next row: 386.5 dp with 5 columns
+rowsBelow  = ui.rowsBelow (0–3, default 0)          // `rows_below_dock` in CleanYourTV
+barTop     = screenHeightDp − (1 + rowsBelow) × itemH − 26
+           // 8 dp tile padding + 18 dp peek of the next row: 386.5 dp with 5 columns and rowsBelow = 0
 // RecyclerView: paddingTop = barTop, paddingBottom = 0
 ```
 
@@ -861,8 +893,9 @@ barTop     = screenHeightDp − itemH − 26             // 8 dp tile padding + 
 | 6 | 145.3 dp | 121 × 68 dp | 113 dp | 4.8 |
 | 7 | 124.6 dp | 102 × 57 dp | 102 dp | 5.3 |
 
-**The size setting.** The scale `uiScale` of 0.9 / 1.0 / 1.15 multiplies `tileW` before the clamp. The columns adjust themselves.
-There is no separate "icon size" setting (like Couchy's `ICON_SIZES` steps).
+**The size setting.** The column count (4–7, "Appearance") is the only size setting: fewer columns means bigger tiles.
+There is no separate scale and no "icon size" setting (like Couchy's `ICON_SIZES` steps): with a fixed column count a scale
+would only change the gaps, so the two settings would fight.
 
 **Gaps.** There is no setting. The tile is centred in its cell, and the gap = `cell − tileW` (≈27 dp with 5 columns).
 This is the same as CleanYourTV, `AppAdapter.java:111`. Couchy stretches the gap to fill the row
@@ -904,10 +937,11 @@ two lists would mean two focus mechanisms and two scrolls. There is no name abov
             android:visibility="gone" />
     </FrameLayout>
 
+    <!-- marginTop is set in code: 8 + tileH + 7 dp. CleanYourTV hard-codes 108 dp for its fixed 101 dp tile;
+         with a computed tile that value is wrong. -->
     <TextView android:id="@+id/name"
         android:layout_width="match_parent" android:layout_height="22dp"
         android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="108dp"
         android:gravity="center" android:singleLine="true" android:ellipsize="end"
         android:includeFontPadding="false"
         android:alpha="0"
@@ -916,28 +950,38 @@ two lists would mean two focus mechanisms and two scrolls. There is no name abov
 </FrameLayout>
 ```
 
-The size of `card` (width and height) is set in code at bind time, using the formula in 7.2: `card.getLayoutParams().width = tileW`,
-`height = tileH`. The cell (a `FrameLayout` with `layout_width="match_parent"`) stretches to `cell`, and `card` is centred in it.
+The size of `card` and the label position are set **once, in `onCreateViewHolder`**, using the formula in 7.2:
+`card` gets `tileW` × `tileH`, and the label gets `topMargin = 8 dp + tileH + 7 dp` (the label then ends exactly at
+`itemH − 8 dp`, matching `ITEM_EXTRA_DP` = 45). The cell (a `FrameLayout` with `layout_width="match_parent"`) stretches
+to `cell`, and `card` is centred in it. When the column count changes, the adapter is recreated.
 
 ```java
-// AppAdapter.java: a fragment; onBind does no layout work
+// AppAdapter.java: a fragment. Sizes, outline and listeners are set once per holder; onBind only sets content.
+@NonNull @Override
+public Holder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
+    Holder h = new Holder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent, false));
+    ViewGroup.LayoutParams lp = h.card.getLayoutParams();
+    lp.width = tileW; lp.height = tileH;                       // 7.2, computed once per column count
+    ((ViewGroup.MarginLayoutParams) h.name.getLayoutParams()).topMargin = labelTop;   // 8 dp + tileH + 7 dp
+    h.card.setOutlineProvider(roundOutline(cornerPx));
+    h.card.setClipToOutline(true);
+    h.card.setOnClickListener(v -> AppLauncher.launch(v.getContext(), items.get(h.getBindingAdapterPosition()).pkg));
+    h.card.setOnLongClickListener(v -> {
+        int p = h.getBindingAdapterPosition();
+        listener.onMenu(items.get(p).pkg, p);
+        return true;
+    });
+    h.card.setOnFocusChangeListener((v, has) -> focused(v, has, h.name));
+    return h;
+}
+
 @Override
 public void onBindViewHolder(@NonNull Holder h, int pos) {
     App a = items.get(pos);
-    ViewGroup.LayoutParams lp = h.card.getLayoutParams();
-    lp.width = tileW;               // computed once in onMeasure / onSizeChanged, see below
-    lp.height = tileH;
-    h.card.setLayoutParams(lp);
-    h.card.setOutlineProvider(roundOutline(cornerPx));
-    h.card.setClipToOutline(true);
-
     if (a.banner != null) { h.banner.setImageBitmap(a.banner); h.banner.setVisibility(View.VISIBLE); }
     else { h.banner.setVisibility(View.GONE); /* a tile with an icon, see 5.3 */ }
 
     h.name.setText(a.label);
-    h.card.setOnClickListener(v -> AppLauncher.launch(v.getContext(), a.pkg));
-    h.card.setOnLongClickListener(v -> { listener.onMenu(a.pkg, h.getBindingAdapterPosition()); return true; });
-    h.card.setOnFocusChangeListener((v, has) -> focused(v, has, h.name));
 }
 
 private static ViewOutlineProvider roundOutline(float r) {
@@ -960,7 +1004,10 @@ At 147 dp this is 13.1 dp.
 
 ### 7.4. Code: focus ring (spring)
 
-One "glass" View for the whole screen, not one per tile:
+One "glass" View for the whole screen, not one per tile. **Where it lives:** in `glass_host`, which sits **above** the
+`RecyclerView` (section 11.4). It cannot go under the grid: `BarBand` is drawn by the `RecyclerView` at 85 % opacity and
+would cover the ring on the bar row. Above the grid, the ring is a stroke with a transparent middle, so it frames the
+tile without hiding it.
 
 ```java
 // FocusGlass.java: a 2 dp ring and a 6 dp glow, moved by a spring
@@ -969,15 +1016,15 @@ final class FocusGlass {
     private final SpringAnimation sx, sy;
     private final float pad;      // 6 dp: the glow around the tile
 
-    FocusGlass(FrameLayout root, float density) {
+    FocusGlass(FrameLayout host, float density) {      // host = glass_host, above the grid
         pad = 6 * density;
-        view = new View(root.getContext());
+        view = new View(host.getContext());
         GradientDrawable g = new GradientDrawable();
         g.setCornerRadius(16 * density);
         g.setStroke((int) (2 * density), 0xFF8AB4F8);     // Couchy's default accent
         view.setBackground(g);
         view.setElevation(0);
-        root.addView(view, 0);                              // under the grid: the tile is drawn on top
+        host.addView(view, new FrameLayout.LayoutParams(0, 0));
         sx = new SpringAnimation(view, DynamicAnimation.TRANSLATION_X)
                 .setSpring(new SpringForce().setStiffness(260f).setDampingRatio(0.58f));
         sy = new SpringAnimation(view, DynamicAnimation.TRANSLATION_Y)
@@ -985,9 +1032,12 @@ final class FocusGlass {
     }
 
     void follow(View card) {
-        View root = (View) view.getParent();
+        // glass_host and the grid are siblings: convert through the common parent, then into the host
+        ViewGroup host = (ViewGroup) view.getParent();
+        ViewGroup common = (ViewGroup) host.getParent();
         Rect r = new Rect(0, 0, card.getWidth(), card.getHeight());
-        ((ViewGroup) root).offsetDescendantRectToMyCoords(card, r);
+        common.offsetDescendantRectToMyCoords(card, r);
+        r.offset(-host.getLeft(), -host.getTop());
         float s = 1.10f;
         float w = card.getWidth() * s + 2 * pad, h = card.getHeight() * s + 2 * pad;
         ViewGroup.LayoutParams lp = view.getLayoutParams();
@@ -1015,7 +1065,7 @@ While scrolling, the ring must be recalculated: `RecyclerView.addOnScrollListene
 | Hidden tile | mask `#99000000` (60 %) | Couchy `AppCard.kt` (`isHidden`) |
 | Label | 14 sp, Outfit medium, one line, `ellipsize=end`, shown only for the focused tile | `item_app.xml`, `always_show_names=false` |
 | Weather | top left, under the clock and date; temperature 18 sp medium, city 13 sp light | our own decision |
-| Bar strip |
+| Bar band | `#141416` at 85 %, radius 26 dp, 22 dp beyond the tiles at the sides and 14 dp above and below (verify the colour on the TV) | `BarBand`, 2.2 |
 | Fade of rows under the bar | gradient 36–48 dp from the top | `TopFade`, CleanYourTV `MainActivity.java:693` |
 | Scrim | top `#99000000` (60 %) → 0 at 20 % of the height | Couchy `LauncherScreen.kt:118–121` |
 
@@ -1114,9 +1164,9 @@ static void switchTo(Context ctx, String inputId) {
 }
 ```
 
-**Fallback:** if switching fails, show the message "Input did not open" and a button "System input selection"
-(`com.android.tv.action.VIEW_INPUTS`, as `InputsRequestActivity` in CleanYourTV). In the manifest this
-`Activity` is disabled by default (`android:enabled="false"`), see CleanYourTV `AndroidManifest.xml`.
+**Fallback:** if switching fails, show the message "Input did not open" and a button "System input selection", which sends
+`new Intent("com.android.tv.action.VIEW_INPUTS")` to the system. We do **not** declare an activity for `VIEW_INPUTS` ourselves
+(CleanYourTV's `InputsRequestActivity`): once enabled it would catch this very intent, and the fallback would open our own panel.
 
 **"Inputs" panel:** on the right, 440 dp, with the same slide as the settings (section 10). Rows: HDMI 1–3 with `loadLabel()`,
 the state as a dot (green: connected, grey: waiting), and a "More" row for AV. The "Connected only" option hides waiting HDMI inputs.
@@ -1132,7 +1182,7 @@ the picture changed. Also check that an empty port does not appear when the "Con
 ### 7.8. Remote buttons (recorded, implementation later)
 
 The full table of buttons, codes and behaviour is recorded in [docs/remote-buttons.md](remote-buttons.md). The raw records are in
-`docs/remote-captures/`. Implementation is postponed to a separate stage.
+`docs/remote-captures/`. Implementation is the separate milestone M7 (section 15).
 
 Decisions (from the user's answers):
 
@@ -1163,14 +1213,16 @@ Three parts. All three are needed, otherwise the service will not receive the ke
 </service>
 ```
 
-2. **Service settings** (`res/xml/remote_keys.xml`). The `flagRequestFilterKeyEvents` flag gives access to the keys.
+2. **Service settings** (`res/xml/remote_keys.xml`). Keys arrive only when **both** `flagRequestFilterKeyEvents` and
+   `canRequestFilterKeyEvents="true"` are set; without the second one `onKeyEvent` is never called (CleanYourTV
+   `input_key_service.xml`). `accessibilityEventTypes` is left out (0), so the system sends no accessibility events.
    `canRetrieveWindowContent="false"`: the service does not read the content of the screens.
 
 ```xml
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="false"
-    android:accessibilityEventTypes="typeNone"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:description="@string/remote_service_desc" />
 ```
@@ -1191,9 +1243,8 @@ Items (in the order of Couchy `Menus.kt:54–59`, without removal):
 
 3. **Hide** / **Show**: we write the package to `hidden` (section 9).
 4. **App details**: `ACTION_APPLICATION_DETAILS_SETTINGS` with a `package:` URI
-   (`AppAdapter.java:519–523`, CleanYourTV).
-5. **Close app**: `ActivityManager.killBackgroundProcesses(pkg)`; permission `KILL_BACKGROUND_PROCESSES`
-   (Couchy `AndroidManifest.xml:28`). Best effort.
+   (`AppAdapter.java:519–523`, CleanYourTV). "Force stop" is there, so there is no "Close app" item of our own:
+   `killBackgroundProcesses` is best effort and, from Android 14, can only stop the caller's own processes.
 
 **No uninstall in the MVP.** If it is needed later: `REQUEST_DELETE_PACKAGES` with the system dialog (Couchy
 `AndroidManifest.xml:30`), not `pm uninstall`.
@@ -1239,7 +1290,7 @@ Couchy). An example with real default values:
   "hidden":  ["com.example.bloat"],
   "known":   ["com.example.films", "com.example.music", "com.example.bloat"],
   "wallpaper": {
-    "type": "video",
+    "type": "video",                       // video | aerials | picture | gradient
     "uri": "content://com.android.externalstorage.documents/document/primary%3AMovies%2Fwall.mp4",
     "dim": 30,
     "poster": "poster.webp",
@@ -1248,11 +1299,11 @@ Couchy). An example with real default values:
   "gradient": { "colors": ["#13547A", "#2B825B", "#80D0C7"] },
   "weather": {
     "enabled": true, "name": "City", "admin1": "", "lat": 52.52, "lon": 13.41,
-    "fahrenheit": false, "refreshMin": 30,
+    "fahrenheit": false,
     "last": "{\"current\":{...}}", "fetchedAt": 1763000000000
   },
-  "clock": { "h24": true, "showDate": false },
-  "ui": { "uiScale": 1.0, "columns": 5, "labels": true, "corner": 16, "showInputsButton": true,
+  "clock": { "h24": true, "showDate": true, "greeting": false },
+  "ui": { "columns": 5, "rowsBelow": 0, "labels": true, "corner": 16, "showInputsButton": true,
           "inputsConnectedOnly": false, "inputsHideAv": false },
   "inputs": { "lastId": "" },
   "lastFocused": "com.example.films"
@@ -1261,7 +1312,8 @@ Couchy). An example with real default values:
 
 Default values: `wallpaper.dim` = 30 (dimming from the top, in percent; the scale 0 / 20 / 40 / 60 is in section 10.1),
 `gradient.colors` = the Aurora colours from Couchy (`Theme.kt`, `WALLPAPERS[1]`), `clock.h24` = true (Couchy
-`LauncherConfig.h24 = true`), `ui.columns` = 5, `ui.corner` = 16.
+`LauncherConfig.h24 = true`), `ui.columns` = 5, `ui.rowsBelow` = 0, `ui.corner` = 16, `clock.showDate` = true. `ui.labels` = true means "label under
+the focused tile" (7.5); false hides it everywhere. The example shows comments for reading only: the real file is plain JSON.
 
 `known` is the list of packages that were installed at the last scan. It is **not** "all packages ever seen": otherwise a
 reinstalled app would not move to the end of the list. Couchy has the same idea in `knownApps` (`Config.kt:36`).
@@ -1275,12 +1327,12 @@ final class LauncherState {
 
     LauncherState(Context ctx) { file = new AtomicFile(new File(ctx.getFilesDir(), "launcher_state.json")); }
 
-    /** A corrupt or missing file → an empty object: the defaults come from the getters. */
-    JSONObject read() {
+    /** A missing file → an empty string; StateJson.parse turns a corrupt or empty string into the defaults. */
+    String read() {
         try {
-            return new JSONObject(new String(file.readFully(), StandardCharsets.UTF_8));
-        } catch (IOException | JSONException e) {
-            return new JSONObject();
+            return new String(file.readFully(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return "";
         }
     }
 
@@ -1310,7 +1362,10 @@ requests, with `CATEGORY_LEANBACK_LAUNCHER` and `CATEGORY_LAUNCHER`, deduplicati
 
 ```java
 // AppScanner.java
-static final class Found { final String pkg; final boolean leanback; final long lastUpdate; Found(String p, boolean l, long u) { pkg = p; leanback = l; lastUpdate = u; } }
+static final class Found {
+    final String pkg; final boolean leanback; final long firstInstall, lastUpdate;
+    Found(String p, boolean l, long f, long u) { pkg = p; leanback = l; firstInstall = f; lastUpdate = u; }
+}
 
 static List<Found> scan(Context ctx) {
     PackageManager pm = ctx.getPackageManager();
@@ -1321,14 +1376,21 @@ static List<Found> scan(Context ctx) {
             if (ri.activityInfo == null || !ri.activityInfo.exported) continue;
             String pkg = ri.activityInfo.packageName;
             if (pkg.equals(ctx.getPackageName()) || out.containsKey(pkg)) continue;
-            long upd = 0;
-            try { upd = pm.getPackageInfo(pkg, 0).lastUpdateTime; } catch (PackageManager.NameNotFoundException ignored) { }
-            out.put(pkg, new Found(pkg, leanback, upd));
+            long first = 0, upd = 0;
+            try {
+                PackageInfo pi = pm.getPackageInfo(pkg, 0);
+                first = pi.firstInstallTime; upd = pi.lastUpdateTime;
+            } catch (PackageManager.NameNotFoundException ignored) { }
+            out.put(pkg, new Found(pkg, leanback, first, upd));
         }
     }
-    return new ArrayList<>(out.values());
+    List<Found> list = new ArrayList<>(out.values());
+    list.sort((x, y) -> Long.compare(x.firstInstall, y.firstInstall));   // merge() expects install order (9.3)
+    return list;
 }
 ```
+
+`scan` runs on the banner thread pool (5.2), never on the main thread: `getPackageInfo` per package is slow on the TV.
 
 On Android 11, `queryIntentActivities` needs a `<queries>` block in the manifest (section 11). Without it the list will be incomplete.
 
@@ -1399,10 +1461,10 @@ Reference: `couchy-launcher/app/src/main/java/com/conreo/couchytv/ui/SettingsShe
 
 | # | Item | Subsection | Contents |
 |---|---|---|---|
-| 1 | **Wallpaper** | yes | type (video / picture / gradient), "Choose video…" (SAF), "Choose picture…", dimming 0 / 20 / 40 / 60 %, "Check video" (codec, resolution) |
-| 2 | **Weather** | yes | on/off, "City…" (input → geocoding → list), °C / °F, interval 15 / 30 / 60 min, "Refresh now", attribution |
+| 1 | **Wallpaper** | yes | type (video / aerials / picture / gradient), "Choose video…" (SAF; the codec warning from 6.1 is shown on selection), "Choose picture…", dimming 0 / 20 / 40 / 60 % |
+| 2 | **Weather** | yes | on/off, "City…" (input → geocoding → list), °C / °F, "Refresh now", attribution. The interval is fixed at 30 min (4.6) |
 | 3 | **Apps** | yes | list with switches, "Order", "Show all" (9.5) |
-| 4 | **Appearance** | yes | scale 0.9 / 1.0 / 1.15, columns 4–7, rows below the bar 0–3 (`rows_below_dock`, default 0), labels on/off, radius 0 / 8 / 16 dp |
+| 4 | **Appearance** | yes | columns 4–7, rows below the bar 0–3 (`rows_below_dock`, default 0), labels on/off, radius 0 / 8 / 16 dp |
 | 5 | **Inputs** | yes | the "Inputs" icon at the top right on/off; "connected only"; hide AV |
 | 6 | **Clock** | no | 12 / 24 h; show the date (default yes); greeting above the clock (default no) |
 | 7 | **About** | no | version, build, attributions (Open-Meteo CC BY 4.0; Material Icons Apache-2.0; Media3 Apache-2.0; Outfit OFL 1.1) |
@@ -1475,9 +1537,9 @@ Practices for services, APIs and performance: [docs/BEST-PRACTICES.md](BEST-PRAC
 just-my-tv-launcher/
 ├── launcher/                    # new launcher (Gradle project)
 │   ├── settings.gradle          # copy from CleanYourTV, rootProject.name = "tvhome"
-│   ├── build.gradle             # AGP 8.5.2 (as in CleanYourTV)
+│   ├── build.gradle             # AGP 8.13.2 (CleanYourTV has 8.5.2, too old for compileSdk 36, see 11.5)
 │   ├── gradle.properties        # org.gradle.jvmargs=-Xmx2g, android.useAndroidX=true
-│   ├── gradlew, gradle/wrapper  # Gradle 8.9 (as in CleanYourTV)
+│   ├── gradlew, gradle/wrapper  # Gradle 8.13 (the minimum for AGP 8.13)
 │   └── app/
 │       ├── build.gradle
 │       ├── proguard-rules.pro   # -dontobfuscate (as in CleanYourTV)
@@ -1512,8 +1574,6 @@ Package name: `com.<you>.tvhome`. Not `com.gathin.tvhome` (that is the CleanYour
     <!-- Weather. No location access and no Wi-Fi name (SSID), so FINE_LOCATION is not needed. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- The "Close app" menu item (best effort, CleanYourTV: Couchy AndroidManifest.xml:28). -->
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
 
     <!-- Android 11+: package visibility. Without this block the app list is incomplete. -->
     <queries>
@@ -1567,19 +1627,7 @@ Package name: `com.<you>.tvhome`. Not `com.gathin.tvhome` (that is the CleanYour
             </intent-filter>
         </activity>
 
-        <!-- System input selection: disabled by default, enabled only by the fallback (7.7). -->
-        <activity
-            android:name=".InputsRequestActivity"
-            android:enabled="false"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:noHistory="true"
-            android:theme="@android:style/Theme.NoDisplay">
-            <intent-filter>
-                <action android:name="com.android.tv.action.VIEW_INPUTS" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        <!-- The remote service (7.8) is added at M7. -->
     </application>
 </manifest>
 ```
@@ -1601,6 +1649,17 @@ Why `android:banner` and `banner_tv`: this is the app banner in the TV list. We 
 </resources>
 ```
 
+**Overdraw.** Speed is the one hard requirement, and a weak GPU pays for every full-screen layer. The window background is
+needed only until our first frame. Once the poster `ImageView` has its image and the first frame is drawn, remove it:
+
+```java
+// MainActivity.onCreate, after the poster image is set
+getWindow().getDecorView().post(() -> getWindow().setBackgroundDrawable(null));
+```
+
+The root `FrameLayout` has no background (the opaque poster or the video covers the screen). That leaves the poster (until its
+fade ends) and the scrim as the only full-screen layers.
+
 ```xml
 <!-- res/drawable/window_bg.xml -->
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
@@ -1617,8 +1676,8 @@ Why `android:banner` and `banner_tv`: this is the app banner in the TV list. We 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FF000000">
+    android:layout_height="match_parent">
+    <!-- no background: the poster or the video covers the screen (overdraw, 11.3) -->
 
     <SurfaceView
         android:id="@+id/video"
@@ -1637,11 +1696,6 @@ Why `android:banner` and `banner_tv`: this is the app banner in the TV list. We 
         android:layout_height="match_parent"
         android:background="@drawable/scrim_top" />
 
-    <FrameLayout
-        android:id="@+id/glass_host"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/grid"
         android:layout_width="match_parent"
@@ -1649,8 +1703,14 @@ Why `android:banner` and `banner_tv`: this is the app banner in the TV list. We 
         android:clipToPadding="false"
         android:paddingStart="44dp"
         android:paddingEnd="44dp"
-        <!-- paddingTop is set in code: barTop (section 7.2) -->
-        android:paddingBottom="40dp" />
+        android:paddingBottom="0dp" />
+    <!-- grid: paddingTop is set in code to barTop (section 7.2). An XML comment cannot go inside a tag. -->
+
+    <!-- focus ring (7.4): above the grid, so the bar band does not cover it; not focusable -->
+    <FrameLayout
+        android:id="@+id/glass_host"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/topbar"
@@ -1659,8 +1719,10 @@ Why `android:banner` and `banner_tv`: this is the app banner in the TV list. We 
         android:layout_gravity="top"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp">
+        android:paddingStart="56dp"
+        android:paddingEnd="56dp">
+        <!-- 56 dp: the clock, the weather (marginStart 56 dp) and the first tile's left edge
+             (44 + (cell − tileW) / 2 ≈ 57 dp at 5 columns) line up on one vertical -->
         <!-- header: clock and date on the left; round icons on the right: inputs, network, settings -->
         <!-- weather and city on the left, under the clock and date: LinearLayout with layout_gravity="top|start", marginStart 56 dp, marginTop 100 dp -->
     </LinearLayout>
@@ -1709,7 +1771,7 @@ plugins {
 
 android {
     namespace 'com.<you>.tvhome'
-    compileSdk 34
+    compileSdk 36                       // required: Media3 1.11.1 has minCompileSdk=36 in its AAR metadata
 
     defaultConfig {
         applicationId 'com.<you>.tvhome'
@@ -1752,15 +1814,18 @@ dependencies {
 
 - The versions are stable and at least two weeks old on 2026-11-13. Media3 1.11.1 was released on 10 September 2026 (checked with WebFetch
   on the release notes). RecyclerView 1.4.0 and DynamicAnimation 1.1.0 are the latest stable versions in the `dl.google.com` metadata.
-- **Check on the first build:** that Media3 1.11.1 works with AGP 8.5.2 and compileSdk 34. If Gradle requires something newer,
-  raise AGP or compileSdk (keep `targetSdk` at 34). If that does not work, roll back to **1.10.1** (stable, 12 May 2026).
+- **compileSdk 36 is required, not optional.** Checked in the AAR metadata (`META-INF/com/android/build/gradle/aar-metadata.properties`,
+  dl.google.com, 2026-11-13): `media3-exoplayer` 1.11.1 and 1.10.1 both declare `minCompileSdk=36`, and `recyclerview` 1.4.0
+  declares 35. So rolling back to 1.10.1 does not help. AGP 8.5.2 (CleanYourTV) does not support API 36; **AGP 8.13.2** does
+  (max API 36.1, Gradle 8.13, JDK 17, build tools 35.0.0 or newer; AGP release notes). We stay on AGP 8.x: AGP 9 changes the
+  build DSL and gains nothing here. `compileSdk` only changes which APIs compile; `targetSdk` stays 34 and the TV stays on API 30.
 - No Compose, no Kotlin, no OkHttp, no DataStore.
 
 ### 11.6. Docker and the build
 
 Copy into `tools/` from CleanYourTV (a copy, not a link, section 1.1): `docker/Dockerfile`, `docker-build.sh`, `docker-build.md`, `tv.py`,
-`requirements.txt`. Versions from the Dockerfile: Temurin 17, Android SDK `platforms;android-34`,
-`build-tools;34.0.0`, a Gradle Docker volume. On Apple Silicon the script builds `linux/amd64` by itself.
+`requirements.txt`. Versions in the Dockerfile, **raised from CleanYourTV's**: Temurin 17, Android SDK `platforms;android-36`,
+`build-tools;36.0.0`, a Gradle Docker volume. On Apple Silicon the script builds `linux/amd64` by itself.
 
 ```bash
 tools/docker-build.sh launcher assembleRelease
@@ -1827,14 +1892,27 @@ public class AppListMergerTest {
         assertEquals(Arrays.asList("a", "c", "d"), r.visible);
     }
 
-    @Test public void hiddenStaysHiddenAndReinstallGoesLast() {
+    @Test public void hiddenStaysHidden() {
         AppListMerger.Result r = AppListMerger.merge(
                 Arrays.asList("a", "b"),
-                new HashSet<>(Arrays.asList("a")),     // b was removed last time
-                new HashSet<>(Arrays.asList("a")),
-                Arrays.asList("a", "b"));              // b reinstalled
+                new HashSet<>(Arrays.asList("a", "b")),
+                new HashSet<>(Arrays.asList("a")),     // a is hidden
+                Arrays.asList("a", "b"));
         assertEquals(Arrays.asList("a", "b"), r.order);
         assertEquals(Collections.singletonList("b"), r.visible);
+    }
+
+    @Test public void reinstallGoesLast() {
+        // scan 1: b is removed, so it leaves order and known
+        AppListMerger.Result r1 = AppListMerger.merge(
+                Arrays.asList("b", "a", "c"),
+                new HashSet<>(Arrays.asList("a", "b", "c")),
+                new HashSet<>(),
+                Arrays.asList("a", "c"));
+        assertEquals(Arrays.asList("a", "c"), r1.order);
+        // scan 2: b is installed again and goes to the end, not back to the front
+        AppListMerger.Result r2 = AppListMerger.merge(r1.order, r1.known, new HashSet<>(), Arrays.asList("a", "b", "c"));
+        assertEquals(Arrays.asList("a", "c", "b"), r2.order);
     }
 }
 ```
@@ -1874,8 +1952,12 @@ public class AppListMergerTest {
 `testImplementation 'org.json:json:20240303'` (for tests only, so it does not end up in the APK), or move the parsing
 into a separate class without `android.*`. **Recommendation:** `testImplementation 'org.json:json:20240303'`.
 
-Required tests: `AppListMerger` (9.3), `WeatherCode` (4.5), `WeatherParser` (4.5), `LauncherState`
-(a corrupt file → default values).
+Required tests: `AppListMerger` (9.3), `WeatherCode` (4.5), `WeatherParser` (4.5), `StateJson`
+(a corrupt or empty string → default values).
+
+`LauncherState` itself cannot be tested on the plain JVM: `android.util.AtomicFile` is only a stub there. So the file is split
+in two: `LauncherState` does the file I/O through `AtomicFile` (no logic), and `StateJson` turns a `String` into
+settings with defaults and back (no `android.*`, tested). No Robolectric.
 
 **Lint:** `lintRelease` with no errors.
 
@@ -1909,26 +1991,14 @@ TV_HOST=<TV_IP> tools/tv.py --screenshot shots/after_right.png DPAD_RIGHT
 | HDMI 1 → 2 switch | screenshot after the switch | the picture changed |
 
 **Couchy baseline** on this TV, **before** we build our own: `am start -W` and `dumpsys meminfo` for
-`com.conreo.couchytv`. The user has not yet answered whether a measurement is needed (section 13, item 10).
+`com.conreo.couchytv`. The user answered "not yet" (OPEN-QUESTIONS Q7).
 
 ---
 
 ## 13. Decisions needed from you
 
-You can start without these answers, but on assumptions (in brackets, what is chosen by default).
-
-1. ~~TV model, Android version, RAM~~ **Closed** (section 18).
-2. ~~Apple/Amazon aerials.~~ **Decided: needed** (D49). The Apple and Amazon lists are carried over as data. The community set is Q19.
-3. **Interface language:** Russian only, English only, or both. (Default: Russian + English, `values/` and `values-ru/`.)
-4. **Weather: city name or coordinates.** (Default: city name entered through geocoding; coordinates are stored.)
-5. **Weather units.** (Default: °C.)
-6. **Licence.** Distribute the APK, or only install it yourself? (Default: a personal sideload; the code is written in our own words from the description.)
-7. ~~APK size~~ **Decided: no limit.**
-8. **Wallpaper videos:** which files will you put there (length, resolution, codec)? (Default: 1080p H.264 with no sound, 20–60 s, section 6.1.)
-9. **Removing apps from the launcher.** (Default: hiding only.)
-10. **Couchy measurement on the TV as a baseline before M0.** The user answered "not yet". (Default: not done before the first working M1, so the comparison will be against a finished build.)
-11. **"Inputs" icon.** `ic_input.xml` looks like a remote in shape. Use a different one (Material "input")? (Default: keep `ic_input.xml` and replace it after checking on the TV.)
-12. **"Wallpaper" icon.** `ic_picture.xml` is a TV icon. (Default: take the Material Icons "image" or "wallpaper" icon, exported to VectorDrawable.)
+Open questions are kept only in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md), and settled ones in [DECISIONS.md](DECISIONS.md).
+This section used to repeat them and drifted out of date, so it now only points there.
 
 ---
 
@@ -1956,6 +2026,9 @@ You can start without these answers, but on assumptions (in brackets, what is ch
 - Compose, Kotlin, `record`.
 - Device location and the Wi-Fi SSID (would need `ACCESS_FINE_LOCATION`).
 - WorkManager, analytics, telemetry. The background remote service (section 7.8) is a deliberate exception.
+- A "Close app" menu item (`killBackgroundProcesses`): "App details" has "Force stop" (section 8).
+- Our own `VIEW_INPUTS` activity (`InputsRequestActivity` in CleanYourTV): the fallback uses the system one (7.7).
+- A UI scale setting (columns are the only size setting, 7.2), a weather interval setting (fixed 30 min), a "Check video" button.
 - Uninstalling apps (only `REQUEST_DELETE_PACKAGES`, if it is ever needed).
 - Changing the video speed.
 
@@ -1974,13 +2047,15 @@ Each stage is built and checked on the TV. The check commands are in section 12.
 **M2. Menu and hiding.** Long OK → menu (8), `LauncherState` (9.2), `AppListMerger` (9.3), reinstall and removal.
 *Done when:* the `AppListMerger` unit tests are green; hiding survives a restart.
 
-**M3. Settings panel and inputs.** `SidePanel` 440 dp (10.2), a root of 7 items, the "Apps" subsection,
+**M3. Settings panel and inputs.** `SidePanel` 440 dp (10.2), a root of 8 items (10.1), the "Apps" subsection,
 the "Inputs" panel (7.7), the "Inputs" icon at the top right. *Done when:* the panel opens and closes with the button and BACK;
 focus works with the D-pad; switching HDMI 1 → HDMI 2 is verified with a screenshot.
 
-**M4. Video wallpapers.** SAF (6.1), `VideoWallpaper` (6.1), poster (6.2), 3 s watchdog, scrim, picture fallback.
+**M4. Video wallpapers.** SAF (6.1), `VideoWallpaper` (6.1), poster (6.2), 3 s watchdog, scrim, picture fallback,
+the "Aerials" type (6.3: `res/raw/aerials.json`, shuffle on end, 8 s watchdog, platform TLS only).
 *Done when:* 30 minutes of a looped clip with no sound and no crashes; the decoder is released in the background; the
-`screenrecord` measurement is recorded in this file (section 6.2); memory metrics are recorded.
+`screenrecord` measurement is recorded in this file (section 6.2); memory metrics are recorded; an Apple and an Amazon aerial
+each play on the TV, or the failing set is skipped and the reason (for example the TLS error) is recorded in RISKS 45.
 
 **M5. Weather.** Geocoding, `HttpURLConnection`, `WeatherParser` (4.5), WMO icons (our own VectorDrawable), cache,
 attribution. *Done when:* the parser unit tests on the fixture pass; with the network off, the cache is shown with its update time;
@@ -1988,6 +2063,11 @@ the attribution is visible.
 
 **M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3),
 baseline recorded in this file. *Done when:* all items in 12.3 are checked and there are screenshots from the TV.
+
+**M7. Remote service.** `RemoteKeyService` (7.8): manifest entry, `remote_keys.xml`, the "Remote buttons" settings screen
+(button → app), default YouTube → SmartTube. Before enabling it: a new state record (OPERATIONS 3), then `flar2.homebutton`
+is disabled (D25, S2). Closes T2–T5 and T14. *Done when:* every assigned button launches its app from inside another app;
+unassigned buttons behave as before; after a reboot the service is still enabled; PSS of the service process is recorded.
 
 ---
 
@@ -2005,17 +2085,17 @@ baseline recorded in this file. *Done when:* all items in 12.3 are checked and t
 | Input switching does not work on the TCL | Medium | `setPackage("com.tcl.tv")`, fallback to the system selection, screenshot check at M3 |
 | A chooser when switching input (the channel URI opens Fluffy) | Medium | `setPackage` to `com.tcl.tv`; without a package only on error |
 | The Home intent does not work on the TCL | Low | Intent filters from CleanYourTV (HOME + COMMON_HOME + DEFAULT); check at M0 |
-| Media3 1.11.1 does not build with AGP 8.5.2 | Medium | Check at M0; roll back to 1.10.1 |
+| The build needs compileSdk 36 and AGP 8.13 (checked, 11.5) | Known | Docker image with `platforms;android-36`; `targetSdk` stays 34 |
 | Licences (Couchy GPLv3, Open-Meteo CC BY, Material Icons Apache, Outfit OFL) | Medium | Section 1, our own wording, `NOTICE`, attributions in "About" |
-| The Docker build on a Mac is slow | Low | A native build with JDK 17 + SDK 34 as the fallback |
+| The Docker build on a Mac is slow | Low | A native build with JDK 17 + SDK 36 as the fallback |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` when switching between Docker and native builds | Medium | One key via `HOST_KEY_DIR`, see `tools/docker-build.md` |
-
----
+| Aerial streams fail (Apple TLS chain, network) | Medium | Platform TLS only; skip Apple entries if they fail, keep Amazon; poster without a network (6.3, RISKS 45) |
 | A TV reboot returns HOME to Couchy or to the stock launcher | Medium | Check after reboot (section 20). We do not change the firmware; we only observe and record |
-| The remote service runs all the time and uses memory | Low | One key subscription, PSS measurement at M6 |
+| The remote service runs all the time and uses memory | Low | One key subscription, PSS measurement at M7 |
 | After a forced stop, the TCL brings back its own HOME | Medium | We observe and document it; we do not change the firmware |
 | Rollback does not work without a recorded state | Medium | The record is made before the first change (section 11.8) |
 
+---
 
 A detailed review of the problem cases and how to handle them: [docs/RISKS.md](RISKS.md). This is a reference, not requirements.
 
@@ -2057,7 +2137,7 @@ A detailed review of the problem cases and how to handle them: [docs/RISKS.md](R
 - Outfit, SIL OFL 1.1: `res/FONT-LICENSE-OFL.txt` in CleanYourTV
 
 **Not yet verified, marked "check on the TV":** HDMI switching through `TvContract` with `com.tcl.tv`;
-whether `ic_input.xml` works as the "Inputs" icon; Media3 1.11.1 support with AGP 8.5.2; the black-frame time at cold start;
+whether `ic_input.xml` works as the "Inputs" icon; the black-frame time at cold start;
 `set-home-activity` on the TCL.
 
 ---
@@ -2089,7 +2169,7 @@ after each session.
 **Conclusions for the plan:**
 
 1. Section 13, item 1 is closed.
-2. The reference point for speed is Couchy on this same TV (section 12.3, and item 10 in section 13).
+2. The reference point for speed is Couchy on this same TV (section 12.3, OPEN-QUESTIONS Q7).
 3. Installation: `adb install -r` of an APK with no native code (it fits armeabi-v7a).
 4. Choosing a video: through `ACTION_OPEN_DOCUMENT` (Fluffy); the fallback path is `/sdcard/Movies`.
 
@@ -2118,11 +2198,11 @@ Checklist for the next iteration:
 - [ ] Switching HDMI 1 → HDMI 2 through `TvContract` with `setPackage("com.tcl.tv")`: the picture changes.
 - [ ] `ACTION_OPEN_DOCUMENT` opens Fluffy; the video is chosen and plays.
 - [ ] Black frame at cold start with the chosen video: `screenrecord` (6.2).
-- [ ] Media3 1.11.1 builds with AGP 8.5.2 and compileSdk 34.
-- [ ] `ic_input.xml` and `ic_picture.xml` look right (section 13, items 11–12).
+- [ ] The Docker build passes with AGP 8.13.2, Gradle 8.13 and compileSdk 36 (11.5).
+- [ ] `ic_input.xml` and `ic_picture.xml` look right (OPEN-QUESTIONS Q4, Q5).
 - [ ] The state record was made before installation (section 11.8).
 - [ ] After a TV reboot: the Home button opens our launcher. Check: `adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME` (read-only).
 - [ ] After a reboot `launcherx` is still disabled: `adb shell pm list packages -d`.
-- [ ] After a reboot the remote service is enabled: `adb shell settings get secure enabled_accessibility_services`.
+- [ ] After a reboot `enabled_accessibility_services` matches the record (only `flar2.homebutton` before M7; our service after M7): `adb shell settings get secure enabled_accessibility_services`.
 - [ ] The rollback `tools/restore.sh` returns HOME to Couchy; `launcherx` stays disabled.
 

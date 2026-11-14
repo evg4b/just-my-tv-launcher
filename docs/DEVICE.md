@@ -16,7 +16,7 @@ Check dates: 13 November 2026.
 | Memory | `MemTotal` 2,097,152 kB (about 2 GB), `MemAvailable` about 480 MB under the load at the time | Memory budgets in PLAN 12.3, `onTrimMemory` in PLAN 5.6 |
 | Display | mode `1920x1080@60` (the only one), `wm size` 1920×1080, density 320 → 960×540 dp | Layout is in dp. The panel is 4K by model, but Android renders 1080p and the TV upscales |
 | System size property | `sys.display-size=3840x2160` | The TV settings are set to 4K (confirmed by the user) |
-| Features | `android.software.leanback`, `leanback_only`, `wifi`, `wifi.direct` | `leanback` is required in the manifest; there is no touchscreen |
+| Features | `android.software.leanback`, `leanback_only`, `wifi`, `wifi.direct` | `leanback` and `touchscreen` are declared in the manifest with `required="false"`, as in CleanYourTV (it only matters for store filtering; we sideload); there is no touchscreen |
 | Video decoder | `OMX.realtek.video.decoder`, hardware: AVC up to High 5.1, HEVC, AV1, 3GPP | 1080p H.264 from PLAN 6.1 decodes in hardware |
 | Remote | `TCL_RC902N_M1`, Bluetooth, with a microphone, input device `/dev/input/event3` | See [remote-buttons.md](remote-buttons.md) |
 

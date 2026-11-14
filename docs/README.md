@@ -9,7 +9,7 @@ is not stored in git.
 
 | File | What it contains | What to read it for |
 |---|---|---|
-| [PLAN.md](PLAN.md) | The main plan: architecture, screens, video, weather, inputs, remote, build, rollback, tests, milestones M0–M6 | The primary document. Everything else supplements it |
+| [PLAN.md](PLAN.md) | The main plan: architecture, screens, video, weather, inputs, remote, build, rollback, tests, milestones M0–M7 | The primary document. Everything else supplements it |
 | [DECISIONS.md](DECISIONS.md) | Decision log: what was decided, when, and why | So that settled questions are not asked again |
 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions and what each one blocks | What must be settled before M0 and before M1 |
 | [DEVICE.md](DEVICE.md) | Facts about the TV, collected over ADB (read-only) | Compatibility, packages, inputs, HOME, memory |
@@ -28,7 +28,7 @@ is not stored in git.
 |---|---|---|
 | Documentation | in progress | Close the open questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) |
 | M0 (the `launcher/` skeleton) | not started | Permission to start, a recorded TV state, HOME decisions |
-| M1–M6 | not started | See section 15 of [PLAN.md](PLAN.md) |
+| M1–M7 | not started | See section 15 of [PLAN.md](PLAN.md) |
 
 ## How to read the status labels
 
