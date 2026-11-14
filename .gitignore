@@ -1,2 +1,9 @@
 private/
 .DS_Store
+tools/venv/
+tools/adbkey*
+__pycache__/
+launcher/.gradle/
+launcher/build/
+launcher/app/build/
+launcher/local.properties
