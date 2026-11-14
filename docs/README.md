@@ -1,7 +1,7 @@
 # Documentation: a custom home screen for Android TV
 
-The project is documentation-only for now. The app code has not been written. This folder holds everything that has
-been decided, verified, and left open. Personal values (IP addresses, personal package names, device identifiers) are
+The app is in `launcher/` and every milestone is built; most of it still has to be checked on the TV. This folder holds
+the plan and everything that has been decided, verified, and left open, plus the [user guide](USER-GUIDE.md). Personal values (IP addresses, personal package names, device identifiers) are
 replaced with placeholders such as `<TV_IP>`. The original values are in the local file `private/redactions.md`, which
 is not stored in git.
 
@@ -9,9 +9,10 @@ is not stored in git.
 
 | File | What it contains | What to read it for |
 |---|---|---|
+| [USER-GUIDE.md](USER-GUIDE.md) | How to use the launcher: navigation, every setting, video preparation, remote buttons | Using TV Home |
 | [PLAN.md](PLAN.md) | The main plan: architecture, screens, video, weather, inputs, remote, build, rollback, tests, milestones M0–M7 | The primary document. Everything else supplements it |
 | [DECISIONS.md](DECISIONS.md) | Decision log: what was decided, when, and why | So that settled questions are not asked again |
-| [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions and what each one blocks | What must be settled before M0 and before M1 |
+| [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions, and the checks still to run on the TV (T16–T19) | What is not settled or not verified |
 | [DEVICE.md](DEVICE.md) | Facts about the TV, collected over ADB (read-only) | Compatibility, packages, inputs, HOME, memory |
 | [OPERATIONS.md](OPERATIONS.md) | Installation, state recording, rollback, checks after a reboot | How to change the TV safely |
 | [RISKS.md](RISKS.md) | 43 problem cases with handling and verification status | What can go wrong and how to handle it |
@@ -26,9 +27,10 @@ is not stored in git.
 
 | Milestone | Status | What is needed |
 |---|---|---|
-| Documentation | in progress | Close the open questions in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) |
-| M0 (the `launcher/` skeleton) | not started | Permission to start, a recorded TV state, HOME decisions |
-| M1–M7 | not started | See section 15 of [PLAN.md](PLAN.md) |
+| M0 (skeleton) | done, checked on the TV | HOME after a reboot (T1) |
+| M1 (grid with the bar) | done, checked on the TV | The 60-app scroll check (T16) |
+| M2–M5 (menu, settings, inputs, wallpapers, weather) | built, not yet on the TV | T17, T18 |
+| M6, M7 (polish, remote buttons) | built, not yet on the TV | Measurements (T16), T19 |
 
 ## How to read the status labels
 
