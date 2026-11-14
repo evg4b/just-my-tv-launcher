@@ -48,6 +48,7 @@ Blocks **M0**: the skeleton cannot start. Blocks **M1**: the grid cannot start. 
 | T13 | Overscan: how much the TV crops at the edges | M1 | Test stripes |
 | T14 | `flar2.homebutton` does not interfere with the remote service when disabled | M7 | Disable it and check the assignments |
 | T15 | The tile list matches the launcher through `<queries>` without `QUERY_ALL_PACKAGES` | M1 | Compare `queryIntentActivities` with the list |
+| T16 | Grid scroll performance, tested after all features are in (user's request at M1). Read GPU time and "Frame deadline missed" from `dumpsys gfxinfo`, not "Janky frames": keys sent with `adb shell input` mark every frame as high input latency. Last numbers at M1 (15 apps): GPU median 7–11 ms; 19 ms with the full-screen scrim and the `TopFade` hardware layer; cold start 1.0–1.3 s after the first run. If it is too slow: replace `TopFade`'s hardware layer with a per-row alpha fade, and draw the rounded tiles with a `BitmapShader` instead of `clipToOutline` | M6 | `gfxinfo` while scrolling 60 apps down and up, on the real remote too |
 
 ## Decided but not yet done
 

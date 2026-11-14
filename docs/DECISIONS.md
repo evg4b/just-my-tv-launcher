@@ -111,3 +111,13 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D57 | Package and application ID `com.justmytv.tvhome` | The owner's handle is on the redaction list, so it does not go into the package name; not `com.gathin.tvhome` (CleanYourTV) | PLAN 11.1, 11.5 |
 | D58 | Own banner and icon: the Aurora gradient with the Material "home" glyph; `poster_default.webp` is generated (diagonal Aurora, 1-bit dither, about 8 KB) | CleanYourTV's `banner_tv.xml` is its Live TV banner (magenta, Live TV glyph), not an app banner | PLAN 11.2, 11.3; OPEN-QUESTIONS T12 |
 | D59 | Commit by logical steps and push to `main` | The user's answer to Q2 | OPEN-QUESTIONS Q2 |
+
+## Decisions taken at M1
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D60 | Focus scrolling uses CleanYourTV's fixed rule: a row already on screen stays put; a row above the header stops at a 120 dp ceiling; the bar goes back to its line | The plan's rule pulled rows down to the bar line on Up, which CleanYourTV had found to be a bug | PLAN 2.2 |
+| D61 | Bitmaps are dropped at `TRIM_MEMORY_BACKGROUND`, not `UI_HIDDEN` | `UI_HIDDEN` comes after every app launch, so every return to Home would reload all tiles | PLAN 5.6 |
+| D62 | The scrim view is the top 20 % of the screen, not full screen; the bar band reaches 36 dp below the tiles to cover the focused label | Full-screen transparent fill cost GPU time; the label sat across the band's edge | PLAN 7.5, 11.4 |
+| D63 | Until M3 the header icons open the system screens (inputs picker, Wi-Fi, Settings) | The panels are M3; the icons should not do nothing | PLAN 7.7, 10 |
+| D64 | Grid scroll performance is tested after all features are in (OPEN-QUESTIONS T16) | The user's request at M1 | PLAN 15 (M6) |

@@ -2044,6 +2044,7 @@ Each stage is built and checked on the TV. The check commands are in section 12.
 **M1. Grid with the bar.** Scan (9.3), banners and the WebP cache (5), `RecyclerView` + `BarGridLayoutManager` (2.2),
 `BarBand` (2.2), tile and label (7.3), focus ring (7.4). 5 columns, the formula from 7.2.
 *Done when:* at rest the bar is visible and the next row peeks up from below; scrolling down expands the grid; the header has the clock and date on the left and the icons on the right, centred; the weather is on the left under the clock; D-pad works across the whole grid without jerks; scrolling down through 60 apps is smooth (`gfxinfo`); with 5 apps it looks like one row; a screenshot from the TV matches `docs/screen-mockup.html` in layout.
+**Status 2026-11-13:** on the TV: scan, banners and icon tiles with the WebP cache, the bar band, the focus ring, the header (clock, date, three icons that open the system screens until M3), D-pad across the whole grid with row wrap, OK launches and Home returns to the same tile. Not done: the weather under the clock (M5), the 60-app scroll check (T16, deferred to M6 at the user's request).
 
 **M2. Menu and hiding.** Long OK → menu (8), `LauncherState` (9.2), `AppListMerger` (9.3), reinstall and removal.
 *Done when:* the `AppListMerger` unit tests are green; hiding survives a restart.
@@ -2062,7 +2063,7 @@ each play on the TV, or the failing set is skipped and the reason (for example t
 attribution. *Done when:* the parser unit tests on the fixture pass; with the network off, the cache is shown with its update time;
 the attribution is visible.
 
-**M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3),
+**M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3) including the grid scroll check OPEN-QUESTIONS T16,
 baseline recorded in this file. *Done when:* all items in 12.3 are checked and there are screenshots from the TV.
 
 **M7. Remote service.** `RemoteKeyService` (7.8): manifest entry, `remote_keys.xml`, the "Remote buttons" settings screen
