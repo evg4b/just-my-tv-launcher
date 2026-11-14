@@ -255,10 +255,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     private String readRaw(int id) {
         try (java.io.InputStream in = getResources().openRawResource(id)) {
-            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-            byte[] buf = new byte[8192];
-            for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
-            return out.toString("UTF-8");
+            String text = WeatherClient.read(in, Integer.MAX_VALUE);
+            return text == null ? "" : text;
         } catch (java.io.IOException e) {
             return "";
         }
@@ -382,10 +380,12 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));
         started = true;
-        startVideo();
         if (artDropped) {
             artDropped = false;
             loadArt(installed, generation);
+            applyWallpaper();   // decodes the picture or poster again, and starts the video
+        } else {
+            startVideo();
         }
     }
 
@@ -432,6 +432,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (level < TRIM_MEMORY_BACKGROUND || artDropped) return;
         for (App a : installed) a.art = null;
         adapter.notifyDataSetChanged();
+        wallpaperGen++;   // a decode still running is dropped too
+        poster.setImageResource(R.drawable.aurora);   // the picture or poster frame: up to 8 MB
         artDropped = true;
     }
 
@@ -445,14 +447,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     @Override
     public boolean onKeyDown(int code, KeyEvent e) {
         // a panel over Move mode would leave the arrows moving the tile behind it
-        if (movingPkg != null && (code == KeyEvent.KEYCODE_MENU || code == KeyEvent.KEYCODE_TV_INPUT)) endMove();
+        if (movingPkg != null && code == KeyEvent.KEYCODE_MENU) endMove();
+        // TV_INPUT is left to the system: TCL's own source bar opens for it anyway, over anything we show (D89)
         if (code == KeyEvent.KEYCODE_MENU) {   // the gear's key, where the remote has one (PLAN 7.6)
             if (panel.isOpen()) panel.close();
             else panel.open(screens.root);
-            return true;
-        }
-        if (code == KeyEvent.KEYCODE_TV_INPUT) {   // only if the system passes it to us
-            panel.open(screens.inputs);
             return true;
         }
         return super.onKeyDown(code, e);

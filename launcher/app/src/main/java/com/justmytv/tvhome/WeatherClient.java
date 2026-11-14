@@ -73,13 +73,7 @@ final class WeatherClient {
                 return null;
             }
             try (InputStream in = c.getInputStream()) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                byte[] buf = new byte[8192];
-                for (int n; (n = in.read(buf)) > 0; ) {
-                    out.write(buf, 0, n);
-                    if (out.size() > MAX_BYTES) return null;
-                }
-                return out.toString(StandardCharsets.UTF_8.name());
+                return read(in, MAX_BYTES);
             }
         } catch (IOException | RuntimeException e) {
             Log.w("Weather", "request failed", e);
@@ -87,5 +81,16 @@ final class WeatherClient {
         } finally {
             if (c != null) c.disconnect();
         }
+    }
+
+    /** A stream as UTF-8 text, or null past max bytes. Also reads the aerials list. */
+    static String read(InputStream in, int max) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        for (int n; (n = in.read(buf)) > 0; ) {
+            out.write(buf, 0, n);
+            if (out.size() > max) return null;
+        }
+        return out.toString(StandardCharsets.UTF_8.name());
     }
 }

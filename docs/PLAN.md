@@ -1,6 +1,7 @@
 # Your own home screen for Android TV: research and plan (version 2)
 
-Status: **plan; the code is not written.** This document is meant so that the next iteration of the model can build the project
+Status: **built.** M0–M7 are implemented in `launcher/` and checked on the TV (2026-11-14); what is left is listed in
+OPEN-QUESTIONS (T16–T19, S1, S5). The plan below is kept as written, with status lines per stage (section 15). This document is meant so that the next iteration of the model can build the project
 without a human writing the code. Every claim is marked with its source:
 
 - `path:line`: a file in `sources/` (CleanYourTV or Couchy), checked by reading;
@@ -1179,7 +1180,7 @@ the picture changed. Also check that an empty port does not appear when the "Con
 
 ---
 
-### 7.8. Remote buttons (recorded, implementation later)
+### 7.8. Remote buttons (implemented in M7)
 
 The full table of buttons, codes and behaviour is recorded in [docs/remote-buttons.md](remote-buttons.md). The raw records are in
 `docs/remote-captures/`. Implementation is the separate milestone M7 (section 15).
@@ -1990,6 +1991,18 @@ TV_HOST=<TV_IP> tools/tv.py --screenshot shots/after_right.png DPAD_RIGHT
 | Black frame at video start | `screenrecord` + frame-by-frame analysis (6.2) | 0 frames |
 | HDMI 1 → 2 switch | screenshot after the switch | the picture changed |
 
+**Measured on the TV, 2026-11-14** (release build, 18 apps):
+
+| Metric | Result |
+|---|---|
+| Cold start (`TotalTime`, 3 runs) | 555–615 ms: within the target |
+| PSS on Home without video | 45 MB with a picture, 49 MB with the gradient |
+| PSS with video after 10 minutes | see below (aerials) |
+| Frames while scrolling | 18 apps, keys over ADB: 3 of 250 frames missed the deadline (1.2 %), GPU median 12 ms. "Janky frames" is not usable with ADB keys (T16); 60 apps not checked |
+| Decoder released in the background | yes, behind an opaque app (`dumpsys media.resource_manager`); kept behind the TV Settings side panel, which leaves Home visible |
+| Black frame at video start | not measurable here: `screencap` and `screenrecord` do not see the video plane on this TV; by eye (T18) |
+| HDMI 1 → 2 | switched; `dumpsys tv_input` shows the session on `hdmi_port=2` |
+
 **Couchy baseline** on this TV, **before** we build our own: `am start -W` and `dumpsys meminfo` for
 `com.conreo.couchytv`. The user answered "not yet" (OPEN-QUESTIONS Q7).
 
@@ -2048,34 +2061,34 @@ Each stage is built and checked on the TV. The check commands are in section 12.
 
 **M2. Menu and hiding.** Long OK → menu (8), `LauncherState` (9.2), `AppListMerger` (9.3), reinstall and removal.
 *Done when:* the `AppListMerger` unit tests are green; hiding survives a restart.
-**Status 2026-11-13:** built (merger and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T17).
+**Status 2026-11-13:** built (merger and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T17). **2026-11-14:** checked on the TV (T17); fixes D86–D89.
 
 **M3. Settings panel and inputs.** `SidePanel` 440 dp (10.2), a root of 8 items (10.1), the "Apps" subsection,
 the "Inputs" panel (7.7), the "Inputs" icon at the top right. *Done when:* the panel opens and closes with the button and BACK;
 focus works with the D-pad; switching HDMI 1 → HDMI 2 is verified with a screenshot.
-**Status 2026-11-13:** built and pushed; not yet checked on the TV (T17). The root has 7 items until M4 adds Wallpaper; Clock and About open as subsections (D65).
+**Status 2026-11-13:** built and pushed; not yet checked on the TV (T17). The root has 7 items until M4 adds Wallpaper; Clock and About open as subsections (D65). **2026-11-14:** checked on the TV (T17); fixes D86–D89.
 
 **M4. Video wallpapers.** SAF (6.1), `VideoWallpaper` (6.1), poster (6.2), 3 s watchdog, scrim, picture fallback,
 the "Aerials" type (6.3: `res/raw/aerials.json`, shuffle on end, 8 s watchdog, platform TLS only).
 *Done when:* 30 minutes of a looped clip with no sound and no crashes; the decoder is released in the background; the
 `screenrecord` measurement is recorded in this file (section 6.2); memory metrics are recorded; an Apple and an Amazon aerial
 each play on the TV, or the failing set is skipped and the reason (for example the TLS error) is recorded in RISKS 45.
-**Status 2026-11-13:** built (aerials and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T18). The aerial list has no 4K entry to drop: every Apple link is `SDR_2K_AVC` ("UHD" in some names is the source), so all 251 are kept (D72).
+**Status 2026-11-13:** built (aerials and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T18). **2026-11-14:** checked on the TV (T18): a file video, Amazon and Apple aerials (Apple after D85), a picture; the black-frame and 30-minute checks need eyes. The aerial list has no 4K entry to drop: every Apple link is `SDR_2K_AVC` ("UHD" in some names is the source), so all 251 are kept (D72).
 
 **M5. Weather.** Geocoding, `HttpURLConnection`, `WeatherParser` (4.5), WMO icons (our own VectorDrawable), cache,
 attribution. *Done when:* the parser unit tests on the fixture pass; with the network off, the cache is shown with its update time;
 the attribution is visible.
-**Status 2026-11-13:** built (WeatherCode and WeatherParser JVM tests green on the fixture; the request URLs checked against the live API), pushed; not yet checked on the TV (T17).
+**Status 2026-11-13:** built (WeatherCode and WeatherParser JVM tests green on the fixture; the request URLs checked against the live API), pushed; not yet checked on the TV (T17). **2026-11-14:** checked on the TV (T17); fixes D86–D89.
 
 **M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3) including the grid scroll check OPEN-QUESTIONS T16,
 baseline recorded in this file. *Done when:* all items in 12.3 are checked and there are screenshots from the TV.
-**Status 2026-11-13:** Russian strings, settings icons and About are built and pushed; the code pass (D81–D83) is done. The measurements (12.3), T16 and the screenshots wait for the TV (T19).
+**Status 2026-11-13:** Russian strings, settings icons and About are built and pushed; the code pass (D81–D83) is done. The measurements (12.3), T16 and the screenshots wait for the TV (T19). **2026-11-14:** the measurements are in 12.3; screenshots were taken during the TV checks.
 
 **M7. Remote service.** `RemoteKeyService` (7.8): manifest entry, `remote_keys.xml`, the "Remote buttons" settings screen
 (button → app), default YouTube → SmartTube. Before enabling it: a new state record (OPERATIONS 3), then `flar2.homebutton`
 is disabled (D25, S2). Closes T2–T5 and T14. *Done when:* every assigned button launches its app from inside another app;
 unassigned buttons behave as before; after a reboot the service is still enabled; PSS of the service process is recorded.
-**Status 2026-11-13:** built and pushed; not yet checked on the TV (T19). `flar2.homebutton` is still enabled: disabling it changes the TV and needs a state record and your go-ahead (OPERATIONS 3, S2).
+**Status 2026-11-13:** built and pushed; not yet checked on the TV (T19). `flar2.homebutton` is still enabled: disabling it changes the TV and needs a state record and your go-ahead (OPERATIONS 3, S2). **2026-11-14:** enabled after a state record and checked with a virtual keyboard (T19); the real remote and a reboot remain. After an app update or a force stop the TV stops running the service (RISKS 46, D91).
 
 ---
 

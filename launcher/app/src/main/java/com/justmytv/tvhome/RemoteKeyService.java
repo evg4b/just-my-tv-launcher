@@ -16,10 +16,19 @@ import java.util.Map;
 public class RemoteKeyService extends AccessibilityService {
     /** scancode -> package; the launcher updates it when the user changes an assignment (same process). */
     static volatile Map<String, String> keys;
+    /** Bound by the system right now. After an app update this TV keeps the service listed but does not bind it. */
+    static volatile boolean running;
 
     @Override
     protected void onServiceConnected() {
+        running = true;
         if (keys == null) keys = StateJson.parse(new LauncherState(this).read()).remote;
+    }
+
+    @Override
+    public void onDestroy() {
+        running = false;
+        super.onDestroy();
     }
 
     @Override

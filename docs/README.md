@@ -15,7 +15,7 @@ is not stored in git.
 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions, and the checks still to run on the TV (T16–T19) | What is not settled or not verified |
 | [DEVICE.md](DEVICE.md) | Facts about the TV, collected over ADB (read-only) | Compatibility, packages, inputs, HOME, memory |
 | [OPERATIONS.md](OPERATIONS.md) | Installation, state recording, rollback, checks after a reboot | How to change the TV safely |
-| [RISKS.md](RISKS.md) | 43 problem cases with handling and verification status | What can go wrong and how to handle it |
+| [RISKS.md](RISKS.md) | 46 problem cases with handling and verification status | What can go wrong and how to handle it |
 | [BEST-PRACTICES.md](BEST-PRACTICES.md) | Practices for services, APIs, images, Media3, and the build | How to write clean code that works on the TV |
 | [WALLPAPERS.md](WALLPAPERS.md) | Register of background images and videos: what is taken from CleanYourTV and Couchy, their licences, and the streamed Apple and Amazon aerials | Choosing the background and checking licences |
 | [remote-buttons.md](remote-buttons.md) | 23 remote buttons: codes, behaviour, requirements | The remote and button remapping |

@@ -310,3 +310,12 @@ A summary by priority:
   **TV check, 2026-11-14:** Amazon links play. Apple links failed with "Trust anchor for certification path not found":
   `sylvan.apple.com` chains to Apple Root CA, which Android 11 does not ship. Fixed without trust-all: the app trusts
   that one root for that one host, next to the system store (D85). After the fix, Apple clips stream too.
+
+### 46. The remote buttons service stops after an update or a force stop
+- **What can happen.** On the TCL (Android 11), `adb install -r` of TV Home leaves `TV Home remote buttons` in
+  `enabled_accessibility_services` but unbound, and `accessibility_enabled` drops to 0. A force stop of the package removes
+  the service from the list entirely. Either way the remote buttons stop working without any message.
+- **How to handle it.** The app cannot rebind itself (that needs `WRITE_SECURE_SETTINGS`). Settings → Remote buttons shows
+  "Turn off and on" when the service is listed but not running (D91), and the user guide says what to do after an update.
+  Over ADB, clearing and re-setting `enabled_accessibility_services` rebinds it.
+- **Status.** verified on the TV, 2026-11-14. Not checked: whether a reboot rebinds it on its own.

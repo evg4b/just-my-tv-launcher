@@ -111,6 +111,9 @@ button service, which Android lets only you turn on:
    settings.
 3. Turn on "TV Home remote buttons" and confirm.
 
+After TV Home is updated, this TV keeps the service switched on but stops running it. If the "Remote button service"
+row says "Turn off and on", do exactly that in the accessibility settings.
+
 Then pick a button from the list and choose an app for it, or "As before" to give the button back its normal job. The
 YouTube button opens SmartTube by default, if SmartTube is installed. A button whose app has been uninstalled works as
 it did before.

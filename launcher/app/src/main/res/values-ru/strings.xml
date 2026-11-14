@@ -52,6 +52,8 @@
     <string name="access_not_kept">После перезапуска файл может не открыться</string>
     <string name="remote">Кнопки пульта</string>
     <string name="remote_service">Служба кнопок пульта</string>
+    <!-- listed in Accessibility but not running, as after an app update -->
+    <string name="remote_restart">Выключите и включите</string>
     <string name="remote_default">Как раньше</string>
     <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, остальные работают как раньше.</string>
     <string name="remote_service_name">Кнопки пульта TV Home</string>

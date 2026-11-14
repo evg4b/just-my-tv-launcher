@@ -86,10 +86,15 @@ final class VideoWallpaper {
         if (player != null || urls.isEmpty()) return;
         aerials = urls;
         build(Player.REPEAT_MODE_OFF, WATCHDOG_AERIALS_MS);
-        String first = Aerials.next(urls, null, random);
-        player.addMediaItem(MediaItem.fromUri(first));
-        player.addMediaItem(MediaItem.fromUri(Aerials.next(urls, first, random)));
+        queueAerials(null);
         go();
+    }
+
+    /** Two random clips, neither the one just played: the rolling playlist of PLAN 6.3. */
+    private void queueAerials(String last) {
+        String first = Aerials.next(aerials, last, random);
+        player.addMediaItem(MediaItem.fromUri(first));
+        player.addMediaItem(MediaItem.fromUri(Aerials.next(aerials, first, random)));
     }
 
     /** ON_STOP: release the decoder; the poster is opaque again. */
@@ -171,9 +176,7 @@ final class VideoWallpaper {
             aerials = rest;
         }
         player.clearMediaItems();
-        String first = Aerials.next(aerials, url, random);
-        player.addMediaItem(MediaItem.fromUri(first));
-        player.addMediaItem(MediaItem.fromUri(Aerials.next(aerials, first, random)));
+        queueAerials(url);
         rendered = false;
         showPoster();
         go();

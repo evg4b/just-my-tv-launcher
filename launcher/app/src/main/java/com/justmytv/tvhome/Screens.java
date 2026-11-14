@@ -158,7 +158,7 @@ final class Screens {
     private void remote(SidePanel p) {
         StateJson st = a.state;
         p.title(s(R.string.remote));
-        p.item(s(R.string.remote_service), s(serviceOn() ? R.string.on : R.string.off),
+        p.item(s(R.string.remote_service), s(!serviceListed() ? R.string.off : RemoteKeyService.running ? R.string.on : R.string.remote_restart),
                 () -> a.start(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         String[] names = a.getResources().getStringArray(R.array.remote_buttons);
         for (int i = 0; i < SCANCODES.length; i++) {
@@ -189,7 +189,7 @@ final class Screens {
         return pkg;
     }
 
-    private boolean serviceOn() {
+    private boolean serviceListed() {
         String on = Settings.Secure.getString(a.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         return on != null && on.contains(a.getPackageName() + "/");
     }

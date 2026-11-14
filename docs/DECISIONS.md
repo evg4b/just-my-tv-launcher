@@ -160,3 +160,6 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D86 | The tile menu is measured and opens above the tile when it does not fit below | Under the bar `showAsDropDown` ran off the screen and showed only "Open" (TV check, T17) | PLAN 8 |
 | D87 | The bar rests no higher than 128 dp (the header ceiling plus the band's 8 dp); "Rows below the bar" that do not fit are cut at the bottom | With 4 columns and 2 rows below the bar covered the clock (code review, confirmed on the TV) | PLAN 7.2 |
 | D88 | The Inputs panel sorts inputs by label | The TV lists HDMI 1, 3, 2 | PLAN 7.7 |
+| D89 | The launcher no longer handles `KEYCODE_TV_INPUT` | TCL's own source bar opens for it over anything we show, so our panel only sat behind it (TV check, T17). The Inputs icon stays | PLAN 7.7 |
+| D90 | Each tile holder keeps one banner background (`RoundArt` with a swappable bitmap over a dark layer of its own) | A bind allocated two drawables per banner tile, and the banner shared the icon tiles' colour drawable (code review) | PLAN 7.3 |
+| D91 | The "Remote button service" row shows On only while the service is bound, and "Turn off and on" when it is listed but not running | On this TV an app update leaves the service listed but unbound until it is switched off and on (RISKS 46) | PLAN 7.8 |

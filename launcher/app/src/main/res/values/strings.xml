@@ -54,6 +54,8 @@
     <string name="access_not_kept">The file may not open after a restart</string>
     <string name="remote">Remote buttons</string>
     <string name="remote_service">Remote button service</string>
+    <!-- listed in Accessibility but not running, as after an app update -->
+    <string name="remote_restart">Turn off and on</string>
     <string name="remote_default">As before</string>
     <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere; the others work as before.</string>
     <string name="remote_service_name">TV Home remote buttons</string>

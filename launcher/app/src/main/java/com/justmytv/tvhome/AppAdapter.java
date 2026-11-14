@@ -79,6 +79,9 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         if (!labels) h.name.setVisibility(View.GONE);
         h.color.setCornerRadius(m.cornerPx);
         h.dust.setCornerRadius(m.cornerPx);
+        h.under.setCornerRadius(m.cornerPx);
+        h.art = new RoundArt(m.cornerPx);
+        h.bannerBg = new LayerDrawable(new Drawable[]{h.under, h.art});
         h.card.setOnClickListener(v -> {
             int p = h.getBindingAdapterPosition();
             if (p != RecyclerView.NO_POSITION) listener.onLaunch(items.get(p));
@@ -113,13 +116,13 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     public void onBindViewHolder(@NonNull Holder h, int pos) {
         App a = items.get(pos);
         boolean banner = a.hasBanner();
-        // banners may be transparent: the dark tile colour stays under them
-        h.card.setBackground(banner ? new LayerDrawable(new Drawable[]{h.color, new RoundArt(a.art, m.cornerPx)}) : h.bg);
+        h.art.setBitmap(banner ? a.art : null);
+        h.card.setBackground(banner ? h.bannerBg : h.bg);
         h.icon.setImageBitmap(banner ? null : a.art);
         h.icon.setVisibility(banner || a.art == null ? View.GONE : View.VISIBLE);
         h.title.setText(a.label);
         h.title.setVisibility(banner ? View.GONE : View.VISIBLE);
-        h.color.setColor(banner ? BANNER_BG : PALETTE[Math.abs(a.pkg.hashCode() % PALETTE.length)]);
+        if (!banner) h.color.setColor(PALETTE[Math.abs(a.pkg.hashCode() % PALETTE.length)]);
         h.name.setText(a.label);
         h.card.setContentDescription(a.label);
         // Up from the bar goes to the header buttons (PLAN 7.6)
@@ -134,6 +137,10 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         // the "dust" over a coloured tile: 10 % white at the top, 14 % black at the bottom (PLAN 5.3)
         final GradientDrawable dust = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0x1AFFFFFF, 0x24000000});
         final Drawable bg = new LayerDrawable(new Drawable[]{color, dust});
+        // banners may be transparent: a dark colour of their own stays under them
+        final GradientDrawable under = new GradientDrawable();
+        RoundArt art;
+        Drawable bannerBg;
 
         Holder(View v) {
             super(v);
@@ -141,6 +148,7 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
             icon = v.findViewById(R.id.icon);
             title = v.findViewById(R.id.title);
             name = v.findViewById(R.id.name);
+            under.setColor(BANNER_BG);
         }
     }
 }
