@@ -313,7 +313,7 @@ A summary by priority:
   that one root for that one host, next to the system store (D85). After the fix, Apple clips stream too.
 
 ### 46. The remote buttons service stops after an update or a force stop
-- **What can happen.** On the TCL (Android 11), `adb install -r` of TV Home leaves `TV Home remote buttons` in
+- **What can happen.** On the TCL (Android 11), `adb install -r` of the launcher leaves `Just My TV Launcher remote buttons` in
   `enabled_accessibility_services` but unbound, and `accessibility_enabled` drops to 0. A force stop of the package removes
   the service from the list entirely. Either way the remote buttons stop working without any message.
 - **How to handle it.** The app cannot rebind itself (that needs `WRITE_SECURE_SETTINGS`). Settings → Remote buttons shows

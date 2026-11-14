@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TV Home</string>
+    <string name="app_name">Just My TV Launcher</string>
     <string name="inputs">Входы</string>
     <string name="network">Сеть</string>
     <string name="settings">Настройки</string>
@@ -33,7 +33,7 @@
     <string name="greeting_evening">Добрый вечер</string>
     <string name="greeting_night">Доброй ночи</string>
     <string name="about">О программе</string>
-    <string name="about_text">Лаунчер для Android TV · версия %1$s\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
+    <string name="about_text">Just My TV Launcher · версия %1$s\nДомашний экран для Android TV без рекламы, аккаунтов и слежки\nИсходный код: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
     <string name="tv_settings">Настройки телевизора</string>
     <string name="wallpaper">Обои</string>
     <string name="wallpaper_type">Тип</string>
@@ -56,8 +56,8 @@
     <string name="remote_restart">Выключите и включите</string>
     <string name="remote_default">Как раньше</string>
     <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, остальные работают как раньше.</string>
-    <string name="remote_service_name">Кнопки пульта TV Home</string>
-    <string name="remote_service_desc">Открывает приложение, назначенное в TV Home, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
+    <string name="remote_service_name">Кнопки пульта Just My TV Launcher</string>
+    <string name="remote_service_desc">Открывает приложение, назначенное в Just My TV Launcher, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
     <string-array name="remote_buttons">
         <item>Меню ≡</item>
         <item>Закладка</item>

@@ -1,4 +1,4 @@
-# TV Home user guide
+# Just My TV Launcher user guide
 
 Everything here works with the D-pad, OK and Back on the remote.
 
@@ -34,7 +34,7 @@ the top right are:
 
 - Inputs, to switch to HDMI or another source. It shows only when the TV reports at least one input.
 - Wi-Fi, which opens the system network settings.
-- Settings, which opens the TV Home settings panel. The Menu (≡) button on the remote does the same.
+- Settings, which opens the launcher settings panel. The Menu (≡) button on the remote does the same.
 
 ## Settings
 
@@ -56,7 +56,7 @@ not apply to the gradient.
 A video plays silently and loops without a break. Whenever Home appears, you first see a still frame taken from the
 start of the clip (black the very first time), and the video fades in over about a second once it is playing. The
 short wait is deliberate: the TV blanks and re-tunes its picture as a video starts, and that now happens out of sight.
-If the clip has not started after three seconds, the still frame stays and TV Home tries again the next time Home
+If the clip has not started after three seconds, the still frame stays and the launcher tries again the next time Home
 opens.
 
 Videos play best in this format: H.264, 1920×1080, 25 or 30 fps, no sound, 20 to 60 seconds long. A clip with a higher
@@ -70,10 +70,10 @@ ffmpeg -i in.mov -an -vf "scale=1920:1080:force_original_aspect_ratio=increase,c
 Copy the result to the TV's `Movies` folder and choose it with "Choose video…".
 
 Aerials streams clips from Apple's and Amazon's servers in random order, one after another, while the home screen is
-visible. Each time Home appears, the screen is black for a few seconds while the clip loads, then the clip fades in;
-the gradient never shows under it. Between clips the picture fades to black and the next clip fades in. Aerials need a
-network; without one you see the gradient and nothing is requested. If Apple's servers fail on your TV, TV Home skips
-them and plays Amazon's clips until it restarts.
+visible. Each time Home appears, the screen is black for a few seconds while the clip loads, then the clip fades in; the
+gradient never shows under it. Between clips the picture fades to black and the next clip fades in. Aerials need a
+network; without one you see the gradient and nothing is requested. If Apple's servers fail on your TV, the launcher
+skips them and plays Amazon's clips until it restarts.
 
 ### Weather
 
@@ -113,10 +113,10 @@ button service, which Android lets only you turn on:
    to the same press.
 2. Open Settings → Remote buttons and press OK on "Remote button service". This opens the TV's accessibility
    settings.
-3. Turn on "TV Home remote buttons" and confirm.
+3. Turn on "Just My TV Launcher remote buttons" and confirm.
 
-After TV Home is updated, this TV keeps the service switched on but stops running it. If the "Remote button service"
-row says "Turn off and on", do exactly that in the accessibility settings.
+After the launcher is updated, this TV keeps the service switched on but stops running it. If the "Remote button
+service" row says "Turn off and on", do exactly that in the accessibility settings.
 
 Then pick a button from the list and choose an app for it, or "As before" to give the button back its normal job. The
 YouTube button opens SmartTube by default, if SmartTube is installed. A button whose app has been uninstalled works as
@@ -138,9 +138,9 @@ About shows the version and the credits. TV settings opens the system settings.
 
 ## Where your settings live
 
-Settings, the grid order and hidden apps are kept in one file inside the app's private storage. Clearing TV Home's
-data or uninstalling it resets everything. The wallpaper files stay where you put them; TV Home only keeps permission
-to read them.
+Settings, the grid order and hidden apps are kept in one file inside the app's private storage. Clearing the launcher's
+data or uninstalling it resets everything. The wallpaper files stay where you put them; the launcher only keeps
+permission to read them.
 
 ## Going back to your old launcher
 

@@ -1,4 +1,6 @@
-# just-my-tv-launcher
+# Just My TV Launcher
+
+![Just My TV Launcher](docs/images/hero.svg)
 
 A home screen for Android TV that opens fast and stays out of the way. It shows your apps as one grid with a bar at
 the bottom, a clock, the weather, and a wallpaper that can be a picture, your own video loop, or streamed aerial
@@ -33,6 +35,19 @@ have not, and a few video checks need someone watching the screen. The on-device
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
   YouTube or NETFLIX button, from anywhere on the TV.
 - English and Russian.
+
+## Screens
+
+The home screen: the bar is the row with the focused tile, one more row sits below it, and the next row peeks up from
+the bottom edge.
+
+![The home screen with the clock, the weather and the app grid](docs/images/home-screen.svg)
+
+The settings panel slides in from the right over the home screen.
+
+![The settings panel over the home screen](docs/images/settings-panel.svg)
+
+These are drawings made to the layout's real sizes, not screenshots.
 
 ## Requirements
 
@@ -76,7 +91,7 @@ adb -s <tv ip>:5555 install -r launcher/app/build/outputs/apk/release/app-releas
 adb -s <tv ip>:5555 shell cmd package set-home-activity com.evg4b.justmytv/.MainActivity
 ```
 
-You can also press Home on the remote, pick TV Home and choose "Always".
+You can also press Home on the remote, pick Just My TV Launcher and choose "Always".
 
 To go back to the launcher you had before, run:
 
@@ -85,8 +100,8 @@ TV_HOST=<tv ip> tools/restore.sh
 ```
 
 It restores the home screen, the accessibility services and the enabled state of the recorded apps. It never removes
-anything; uninstall TV Home in Settings → Apps if you want it gone. [docs/OPERATIONS.md](docs/OPERATIONS.md) has the
-details.
+anything; uninstall Just My TV Launcher in Settings → Apps if you want it gone. [docs/OPERATIONS.md](docs/OPERATIONS.md)
+has the details.
 
 ## Using it
 
@@ -95,9 +110,9 @@ the remote buttons.
 
 ## Network and privacy
 
-TV Home goes online in two cases only. When a city is set, it asks Open-Meteo for the current weather every 30 minutes
-while the home screen is visible, sending the city's coordinates. When the Aerials wallpaper is chosen, it streams
-clips from Apple and Amazon. Nothing else leaves the TV: no analytics, no crash reporting, no accounts.
+Just My TV Launcher goes online in two cases only. When a city is set, it asks Open-Meteo for the current weather every
+30 minutes while the home screen is visible, sending the city's coordinates. When the Aerials wallpaper is chosen, it
+streams clips from Apple and Amazon. Nothing else leaves the TV: no analytics, no crash reporting, no accounts.
 
 The remote buttons service is an accessibility service, because that is the only way to catch a key press inside
 other apps. It declares no event types and cannot read the screen; it looks only at key presses and acts on the
@@ -115,7 +130,7 @@ buttons you assigned. It stays off until you turn it on in the TV's accessibilit
 
 ## Licence and credits
 
-TV Home is released under the [Apache License 2.0](LICENSE). It includes or is based on:
+Just My TV Launcher is released under the [Apache License 2.0](LICENSE). It includes or is based on:
 
 - [CleanYourTV](https://github.com/Gathin23/cleanyourtv) (MIT, [LICENSE-CleanYourTV](LICENSE-CleanYourTV)): the
   grid and build tooling are based on it.
@@ -126,5 +141,5 @@ TV Home is released under the [Apache License 2.0](LICENSE). It includes or is b
 
 [Couchy Launcher](https://github.com/conreo/couchy-launcher) (GPLv3) was a reference for the video wallpaper and the
 settings panel. No code was copied from it, only ideas and values such as colours and timings. The aerial clips belong
-to Apple and Amazon; TV Home only links to them. [launcher/app/NOTICE](launcher/app/NOTICE) lists the notices that ship
-with the app.
+to Apple and Amazon; the launcher only links to them. [launcher/app/NOTICE](launcher/app/NOTICE) lists the notices that
+ship with the app.

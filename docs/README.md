@@ -9,7 +9,7 @@ is not stored in git.
 
 | File | What it contains | What to read it for |
 |---|---|---|
-| [USER-GUIDE.md](USER-GUIDE.md) | How to use the launcher: navigation, every setting, video preparation, remote buttons | Using TV Home |
+| [USER-GUIDE.md](USER-GUIDE.md) | How to use the launcher: navigation, every setting, video preparation, remote buttons | Using the launcher |
 | [PLAN.md](PLAN.md) | The main plan: architecture, screens, video, weather, inputs, remote, build, rollback, tests, milestones M0–M7 | The primary document. Everything else supplements it |
 | [DECISIONS.md](DECISIONS.md) | Decision log: what was decided, when, and why | So that settled questions are not asked again |
 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions, and the checks still to run on the TV (T16–T19) | What is not settled or not verified |
@@ -20,6 +20,7 @@ is not stored in git.
 | [WALLPAPERS.md](WALLPAPERS.md) | Register of background images and videos: what is taken from CleanYourTV and Couchy, their licences, and the streamed Apple and Amazon aerials | Choosing the background and checking licences |
 | [remote-buttons.md](remote-buttons.md) | 23 remote buttons: codes, behaviour, requirements | The remote and button remapping |
 | [remote-captures/](remote-captures/) | Raw `getevent` recordings and the `Generic.kl` key layout from the TV | Primary data for the button codes |
+| [images/](images/) | The README pictures (title banner, home screen, settings panel), drawn to the layout's real sizes in warm colours | Showing the launcher |
 | [screen-mockup.html](screen-mockup.html) | Interactive mockup of the home screen, 960×540 dp | Element placement, focus, panels |
 
 ## Milestones

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TV Home</string>
+    <string name="app_name">Just My TV Launcher</string>
     <!-- two lines: "13 NOVEMBER" / "FRIDAY" (OPEN-QUESTIONS Q6) -->
     <string name="date_format" translatable="false">d MMMM\nEEEE</string>
     <string name="inputs">Inputs</string>
@@ -35,7 +35,7 @@
     <string name="greeting_evening">Good evening</string>
     <string name="greeting_night">Good night</string>
     <string name="about">About</string>
-    <string name="about_text">Android TV launcher · version %1$s\nWeather: Open-Meteo.com, data under CC BY 4.0\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
+    <string name="about_text">Just My TV Launcher · version %1$s\nA home screen for Android TV with no ads, accounts or tracking\nSource: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nWeather: Open-Meteo.com, data under CC BY 4.0\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
     <string name="tv_settings">TV settings</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="wallpaper_type">Type</string>
@@ -58,8 +58,8 @@
     <string name="remote_restart">Turn off and on</string>
     <string name="remote_default">As before</string>
     <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere; the others work as before.</string>
-    <string name="remote_service_name">TV Home remote buttons</string>
-    <string name="remote_service_desc">Opens the app you assigned in TV Home when you press a remote button. It reads no screen content.</string>
+    <string name="remote_service_name">Just My TV Launcher remote buttons</string>
+    <string name="remote_service_desc">Opens the app you assigned in Just My TV Launcher when you press a remote button. It reads no screen content.</string>
     <string-array name="remote_buttons">
         <item>Menu ≡</item>
         <item>Bookmark</item>
