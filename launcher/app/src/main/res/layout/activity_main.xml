@@ -94,6 +94,62 @@
             android:textColor="#A6FFFFFF"
             android:textSize="14sp" />
     </LinearLayout>
+
+    <!-- weather under the clock (PLAN 4.7): icon, temperature, place; a dot and the time when the cache is old -->
+    <LinearLayout
+        android:id="@+id/weather"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/wx_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/wx_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/outfit_medium"
+            android:textColor="#F2FFFFFF"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/wx_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/outfit_light"
+            android:maxWidth="320dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="#99FFFFFF"
+            android:textSize="13sp" />
+
+        <View
+            android:id="@+id/wx_dot"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/status_dot"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/wx_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:fontFamily="@font/outfit_light"
+            android:textColor="#99FFFFFF"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
     </LinearLayout>
 
     <!-- header: round icons on the right, no labels (PLAN 7.1) -->

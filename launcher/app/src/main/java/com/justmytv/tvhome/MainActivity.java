@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextClock;
 import android.widget.TextView;
@@ -26,11 +28,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +44,8 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int CEILING_DP = 120;     // rows scrolled up stop below the header
     private static final int FADE_DP = 36;
+    private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
+    private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
 
     private final Handler ui = new Handler(Looper.getMainLooper());
     // a full pool takes all the CPU on a weak TV and drops frames (PLAN 5.2)
@@ -69,6 +76,14 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private SidePanel panel;
     private Screens screens;
     private View opener;        // what had focus when the panel opened; it gets it back
+    final WeatherClient weather = new WeatherClient();
+    private boolean weatherFailed;   // the last refresh failed: show when the cache is from
+    private final Runnable weatherTick = new Runnable() {
+        @Override public void run() {
+            refreshWeather();
+            ui.postDelayed(this, WEATHER_EVERY);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +180,47 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             g.setText(h >= 5 && h < 12 ? R.string.greeting_morning : h >= 12 && h < 17 ? R.string.greeting_afternoon
                     : h >= 17 && h < 23 ? R.string.greeting_evening : R.string.greeting_night);
         }
+        showWeather();
+    }
+
+    // ---- weather (PLAN 4) ----
+
+    void refreshWeather() {
+        if (!state.weatherEnabled || !state.hasCity()) return;
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (cm == null || cm.getActiveNetwork() == null) {   // no network: keep the cache, say how old it is
+            weatherFailed = true;
+            showWeather();
+            return;
+        }
+        double lat = state.lat, lon = state.lon;
+        weather.forecast(lat, lon, state.fahrenheit, (body, now) -> {
+            if (lat != state.lat || lon != state.lon) return;   // the city changed meanwhile
+            weatherFailed = body == null;
+            if (body != null) {
+                state.weatherLast = body;
+                state.fetchedAt = System.currentTimeMillis();
+                save();
+            }
+            showWeather();
+        });
+    }
+
+    /** The cached forecast under the clock; hidden when off, without a city or before the first answer. */
+    void showWeather() {
+        View row = findViewById(R.id.weather);
+        WeatherParser.Now now = state.weatherEnabled && state.hasCity() ? WeatherParser.parseForecast(state.weatherLast) : null;
+        row.setVisibility(now == null ? View.GONE : View.VISIBLE);
+        if (now == null) return;
+        ((ImageView) findViewById(R.id.wx_icon)).setImageResource(WeatherCode.res(WeatherCode.icon(now.code, now.isDay)));
+        ((TextView) findViewById(R.id.wx_temp)).setText(now.temp + "°");
+        ((TextView) findViewById(R.id.wx_city)).setText(state.city);
+        boolean old = System.currentTimeMillis() - state.fetchedAt > WEATHER_OLD;
+        findViewById(R.id.wx_dot).setVisibility(old ? View.VISIBLE : View.GONE);
+        TextView updated = findViewById(R.id.wx_updated);
+        updated.setVisibility(old || weatherFailed ? View.VISIBLE : View.GONE);
+        String time = new SimpleDateFormat(state.h24 ? "HH:mm" : "h:mm", Locale.getDefault()).format(new Date(state.fetchedAt));
+        updated.setText(getString(R.string.weather_updated, time));
     }
 
     /** The Inputs icon shows only when it is wanted and there is an input to switch to (PLAN 7.7). */
@@ -179,6 +235,10 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         super.onStart();
         applyClock();   // the greeting follows the time of day
         updateInputsButton();
+        showWeather();
+        // refresh at once if the cache is older than the interval, then every 30 minutes while Home is shown
+        long age = System.currentTimeMillis() - state.fetchedAt;
+        ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));
         if (artDropped) {
             artDropped = false;
             loadArt(installed, generation);
@@ -190,6 +250,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (movingPkg != null) endMove();
         if (menu != null) menu.dismiss();
         panel.close();
+        ui.removeCallbacks(weatherTick);
         super.onStop();
     }
 
@@ -198,6 +259,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         unregisterReceiver(packages);
         ui.removeCallbacksAndMessages(null);
         pool.shutdownNow();
+        weather.shutdown();
         io.shutdown();   // let a pending state write finish
         super.onDestroy();
     }

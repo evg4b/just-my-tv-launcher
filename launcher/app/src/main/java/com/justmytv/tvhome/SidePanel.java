@@ -7,6 +7,9 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.InputType;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -174,6 +177,32 @@ final class SidePanel {
         if (onClick != null) row.setOnClickListener(x -> onClick.run());
         content.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.round(56 * d)));
         return v;
+    }
+
+    /** A text field; OK on the remote opens the keyboard, its action key submits. */
+    EditText edit(String hint, String text, java.util.function.Consumer<String> submit) {
+        EditText e = new EditText(ctx);
+        e.setSingleLine(true);
+        e.setHint(hint);
+        e.setText(text);
+        e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        e.setTextColor(0xF2FFFFFF);
+        e.setHintTextColor(0x8CFFFFFF);
+        e.setTypeface(ctx.getResources().getFont(R.font.outfit_regular));
+        e.setBackgroundResource(R.drawable.row_bg);
+        int p = Math.round(12 * d);
+        e.setPadding(p, 0, p, 0);
+        e.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        e.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        e.setOnEditorActionListener((v, action, ev) -> {
+            boolean enter = ev != null && ev.getKeyCode() == KeyEvent.KEYCODE_ENTER && ev.getAction() == KeyEvent.ACTION_DOWN;
+            if (action != EditorInfo.IME_ACTION_SEARCH && action != EditorInfo.IME_ACTION_DONE && !enter) return false;
+            String q = v.getText().toString().trim();
+            if (!q.isEmpty()) submit.accept(q);
+            return true;
+        });
+        content.addView(e, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.round(56 * d)));
+        return e;
     }
 
     /** A subsection row ("›"). */

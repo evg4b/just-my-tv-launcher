@@ -9,6 +9,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /** The settings screens (PLAN 10.1) and the Inputs panel (PLAN 7.7). All settings apply at once. */
@@ -30,6 +31,7 @@ final class Screens {
 
     private void root(SidePanel p) {
         p.title(s(R.string.settings));
+        p.section(s(R.string.weather), this::weather);
         p.section(s(R.string.apps), apps);
         p.section(s(R.string.appearance), this::appearance);
         p.section(s(R.string.inputs), this::inputSettings);
@@ -139,6 +141,73 @@ final class Screens {
         } catch (PackageManager.NameNotFoundException ignored) { }
         p.title(s(R.string.about));
         p.note(a.getString(R.string.about_text, version));
+    }
+
+    // ---- weather (PLAN 4.7, 10.1) ----
+
+    private void weather(SidePanel p) {
+        StateJson st = a.state;
+        p.title(s(R.string.weather));
+        p.toggle(s(R.string.weather), st.weatherEnabled, on -> {
+            st.weatherEnabled = on;
+            a.save();
+            a.showWeather();
+            if (on) a.refreshWeather();
+        });
+        p.item(s(R.string.city), (st.hasCity() ? st.city : s(R.string.city_not_set)) + "  ›", () -> panel.push(this::city));
+        p.choice(s(R.string.units), new String[]{"°C", "°F"}, st.fahrenheit ? 1 : 0, i -> {
+            st.fahrenheit = i == 1;
+            st.weatherLast = "";   // the cache is in the old units
+            a.save();
+            a.showWeather();
+            a.refreshWeather();
+        });
+        p.item(s(R.string.refresh_now), null, a::refreshWeather);
+        p.note(s(R.string.weather_attribution));
+    }
+
+    // what the City screen shows below the field: results, "searching", "nothing found"
+    private String cityQuery = "", cityStatus = "";
+    private List<WeatherParser.Place> cityResults = new ArrayList<>();
+
+    private void city(SidePanel p) {
+        p.title(s(R.string.city));
+        p.edit(s(R.string.city_hint), cityQuery, q -> {
+            cityQuery = q;
+            cityResults = new ArrayList<>();
+            cityStatus = s(R.string.searching);
+            panel.refresh();
+            a.weather.geocode(q, Locale.getDefault().getLanguage(), places -> {
+                if (!q.equals(cityQuery)) return;   // a newer search is running
+                cityResults = places == null ? new ArrayList<>() : places;
+                cityStatus = places == null ? s(R.string.no_network) : places.isEmpty() ? s(R.string.nothing_found) : "";
+                panel.refresh();
+            });
+        });
+        if (!cityStatus.isEmpty()) p.note(cityStatus);
+        for (WeatherParser.Place place : cityResults) {
+            StringBuilder where = new StringBuilder();
+            for (String part : new String[]{place.admin1, place.country}) {
+                if (part.isEmpty()) continue;
+                if (where.length() > 0) where.append(", ");
+                where.append(part);
+            }
+            p.item(place.name, where.toString(), () -> {
+                StateJson st = a.state;
+                st.city = place.name;
+                st.admin1 = place.admin1;
+                st.lat = place.lat;
+                st.lon = place.lon;
+                st.weatherLast = "";
+                st.fetchedAt = 0;
+                a.save();
+                a.showWeather();
+                a.refreshWeather();
+                cityResults = new ArrayList<>();
+                cityStatus = "";
+                panel.back();
+            });
+        }
     }
 
     // ---- Inputs panel (PLAN 7.7) ----
