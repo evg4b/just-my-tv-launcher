@@ -761,6 +761,12 @@ extra dependencies). There is no retry loop: the next attempt is the next `onSta
 
 ### 6.2. Smooth start: no black screen and no intermediate gradient
 
+**As built (2026-11-14, D92–D94).** The plan below expected the gradient as the window background and a fade at the first
+frame. On the TV both looked wrong, so: only the Gradient type ever shows the gradient; the window background is black; a
+video or aerial comes up from black (a file video from its poster frame) and fades in over 1.2 s, but only once it is
+playing plus 1 s, because the TV blanks its video window and switches its picture engine on for 0.6–0.9 s after the
+first frame. Measured on Home: first frame at +0.8 s, TV settled at +1.7 s, fade from +2.5 s to +3.7 s.
+
 The problem in Couchy: the window is first black (or the theme), then a grey gradient "cover", then the video. The cause is
 `LoadingScreen` (`LauncherScreen.kt:1524–1545`) and `coverBrush` (`:1517`).
 
@@ -817,6 +823,10 @@ check use `ffprobe` and `signalstats` (YAVG). The criterion and the tool are rec
 streaming from arbitrary URLs. The only network video is the fixed aerial list (6.3).
 
 ### 6.3. Aerials: streamed Apple and Amazon clips (D49)
+
+**As built (2026-11-14, D85, D93, D94).** Apple links play after trusting Apple Root CA for `sylvan.apple.com` only. The
+rolling playlist no longer cuts between clips: 1 s before a clip ends the picture fades to black, and the next clip fades
+in by the rule of 6.2.
 
 **Data.** `res/raw/aerials.json`, copied as data from Couchy `assets/aerials.json` (a list of links, not code; WALLPAPERS,
 group D). Each entry is `{"t": title, "u": https link, "s": set}`. We keep sets `A` (Apple, 139) and `Z` (Amazon, 112); the

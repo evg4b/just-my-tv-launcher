@@ -53,9 +53,11 @@ Type chooses between Gradient, Picture, Video and Aerials. "Choose video…" and
 picker and switch to that type when you pick a file. Dimming darkens a picture or video by 0, 20, 40 or 60 %; it does
 not apply to the gradient.
 
-A video plays silently and loops. Until its first frame is ready, and whenever Home comes back, you see a still frame
-taken from the start of the clip, so the screen never goes black. If the clip has not started after three seconds,
-the still frame stays and TV Home tries again the next time Home opens.
+A video plays silently and loops without a break. Whenever Home appears, you first see a still frame taken from the
+start of the clip (black the very first time), and the video fades in over about a second once it is playing. The
+short wait is deliberate: the TV blanks and re-tunes its picture as a video starts, and that now happens out of sight.
+If the clip has not started after three seconds, the still frame stays and TV Home tries again the next time Home
+opens.
 
 Videos play best in this format: H.264, 1920×1080, 25 or 30 fps, no sound, 20 to 60 seconds long. A clip with a higher
 resolution or another codec gets a warning, but you can still use it. With `ffmpeg` on a computer:
@@ -68,9 +70,10 @@ ffmpeg -i in.mov -an -vf "scale=1920:1080:force_original_aspect_ratio=increase,c
 Copy the result to the TV's `Movies` folder and choose it with "Choose video…".
 
 Aerials streams clips from Apple's and Amazon's servers in random order, one after another, while the home screen is
-visible. Each time Home appears, the clip fades in from black; the gradient never shows under it. Between clips the
-picture fades to black and the next clip fades in. It needs a network; without one you see the gradient and nothing is requested. If Apple's servers fail on
-your TV, TV Home skips them and plays Amazon's clips until it restarts.
+visible. Each time Home appears, the screen is black for a few seconds while the clip loads, then the clip fades in;
+the gradient never shows under it. Between clips the picture fades to black and the next clip fades in. Aerials need a
+network; without one you see the gradient and nothing is requested. If Apple's servers fail on your TV, TV Home skips
+them and plays Amazon's clips until it restarts.
 
 ### Weather
 

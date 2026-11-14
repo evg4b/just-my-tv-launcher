@@ -23,7 +23,8 @@ have not, and a few video checks need someone watching the screen. The on-device
 - Header with the clock, the date and the weather on the left, and icons for inputs, Wi-Fi and settings on the right.
 - A settings panel that slides in from the right, operated entirely with the remote.
 - Wallpapers: the built-in gradient, a picture, a video file you choose, or Apple and Amazon aerials streamed from
-  their servers. Video plays silently under a still frame, so there is no black flash when Home appears.
+  their servers. A video comes up from black (or its own first frame) and fades in once it plays, never over the
+  gradient; aerials fade through black from one clip to the next.
 - Weather from [Open-Meteo](https://open-meteo.com), with no key and no location permission. You type a city once.
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
