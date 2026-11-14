@@ -912,7 +912,7 @@ would only change the gaps, so the two settings would fight.
 This is the same as CleanYourTV, `AppAdapter.java:111`. Couchy stretches the gap to fill the row
 (`LauncherScreen.kt:998`); we get the same result through the cell.
 
-**The bar.** The first row = positions `0..columns−1`. The `BarBand` decorator draws the band. The bar is **not pinned** as a separate
+**The bar.** The first row = positions `0..columns−1`. The `BarBand` decorator draws the band (removed at the owner's request, D97: the bar has no background). The bar is **not pinned** as a separate
 View: it sits at the bottom edge (`paddingTop` = `barTop`) and moves up with the rows when scrolling. This is how the
 dock works in CleanYourTV: "push the dock row towards the bottom of the screen… the rest of the grid stays below until you
 press Down" (`MainActivity.java:706–709`). One `RecyclerView` and one focus mechanism; a pinned bar was rejected, because
@@ -1076,7 +1076,7 @@ While scrolling, the ring must be recalculated: `RecyclerView.addOnScrollListene
 | Hidden tile | mask `#99000000` (60 %) | Couchy `AppCard.kt` (`isHidden`) |
 | Label | 14 sp, Outfit medium, one line, `ellipsize=end`, shown only for the focused tile | `item_app.xml`, `always_show_names=false` |
 | Weather | top left, under the clock and date; temperature 18 sp medium, city 13 sp light | our own decision |
-| Bar band | `#141416` at 85 %, radius 26 dp, 22 dp beyond the tiles at the sides and 14 dp above and below (verify the colour on the TV) | `BarBand`, 2.2 |
+| Bar band | ~~`#141416` at 85 %, radius 26 dp, 22 dp beyond the tiles at the sides and 14 dp above and below~~ Removed (D97) | — |
 | Fade of rows under the bar | gradient 36–48 dp from the top | `TopFade`, CleanYourTV `MainActivity.java:693` |
 | Scrim | top `#99000000` (60 %) → 0 at 20 % of the height | Couchy `LauncherScreen.kt:118–121` |
 

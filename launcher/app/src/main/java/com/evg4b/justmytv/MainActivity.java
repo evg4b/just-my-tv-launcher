@@ -158,7 +158,6 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         while (grid.getItemDecorationCount() > 0) grid.removeItemDecorationAt(0);
         grid.setPadding(grid.getPaddingLeft(), m.barTop, grid.getPaddingRight(), 0);
         grid.setLayoutManager(new BarGridLayoutManager(this, state.columns, ceiling));
-        grid.addItemDecoration(new BarBand(d, state.columns));
         TopFade.attach(grid, ceiling, FADE_DP * d);
         grid.setAdapter(adapter);
         glass.setCorner(m.cornerPx);

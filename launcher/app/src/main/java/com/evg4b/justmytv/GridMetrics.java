@@ -13,8 +13,8 @@ final class GridMetrics {
         tileW = Math.round(w);
         tileH = Math.round(w * 101 / 180f);
         itemH = tileH + Math.round(45 * density);               // padding 8 + 8, gap 7, label 22
-        // 8 dp padding + 18 dp peek; the band (8 dp above the tiles) stays under the header, or big tiles with rows
-        // below would cover the clock and the weather
+        // 8 dp padding + 18 dp peek; the bar rests 8 dp below the header ceiling, or big tiles with rows below would
+        // cover the clock and the weather
         barTop = Math.max(Math.round((CEILING_DP + 8) * density), Math.round(heightPx - (1 + rowsBelow) * itemH - 26 * density));
         cornerPx = Math.round(cornerDp * density * Math.min(1f, w / (180 * density)));
         labelMargin = tileH + Math.round(7 * density);          // from the item's top padding edge

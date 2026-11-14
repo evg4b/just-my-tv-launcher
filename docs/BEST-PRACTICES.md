@@ -215,7 +215,7 @@ Decision: add the Baseline Profile in M6 (section 15 of the plan), once there is
 ### 5.3. General code
 
 - Do not allocate memory on hot paths: `onDraw`, `onBind`, and key handlers. Example from section 2.2 of the plan:
-  `BarBand` reuses its `Paint` and `RectF`.
+  `RoundArt` reuses its `Paint`, `Matrix` and `RectF`, and each tile holder keeps one.
 - Primitives instead of wrappers: `int` instead of `Integer` in loops, and `SparseIntArray` instead of `HashMap<Integer, …>` for
   numeric keys (a common Android practice, **to verify** with a measurement if it becomes a bottleneck).
 - Keep the main thread free: network, disk, and decoding run in the background. `StrictMode` in debug builds catches this kind of
