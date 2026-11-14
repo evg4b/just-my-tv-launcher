@@ -1997,7 +1997,7 @@ TV_HOST=<TV_IP> tools/tv.py --screenshot shots/after_right.png DPAD_RIGHT
 |---|---|
 | Cold start (`TotalTime`, 3 runs) | 555–615 ms: within the target |
 | PSS on Home without video | 45 MB with a picture, 49 MB with the gradient |
-| PSS with video after 10 minutes | see below (aerials) |
+| PSS with video after 10 minutes | aerials playing: 76 MB at start, 97 MB after 5 minutes, within the target. At 10 minutes the TV screensaver had taken over (96 MB), so a full 10 minutes of video in front is still to measure with the screensaver off |
 | Frames while scrolling | 18 apps, keys over ADB: 3 of 250 frames missed the deadline (1.2 %), GPU median 12 ms. "Janky frames" is not usable with ADB keys (T16); 60 apps not checked |
 | Decoder released in the background | yes, behind an opaque app (`dumpsys media.resource_manager`); kept behind the TV Settings side panel, which leaves Home visible |
 | Black frame at video start | not measurable here: `screencap` and `screenrecord` do not see the video plane on this TV; by eye (T18) |
