@@ -2048,10 +2048,12 @@ Each stage is built and checked on the TV. The check commands are in section 12.
 
 **M2. Menu and hiding.** Long OK → menu (8), `LauncherState` (9.2), `AppListMerger` (9.3), reinstall and removal.
 *Done when:* the `AppListMerger` unit tests are green; hiding survives a restart.
+**Status 2026-11-13:** built (merger and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T17).
 
 **M3. Settings panel and inputs.** `SidePanel` 440 dp (10.2), a root of 8 items (10.1), the "Apps" subsection,
 the "Inputs" panel (7.7), the "Inputs" icon at the top right. *Done when:* the panel opens and closes with the button and BACK;
 focus works with the D-pad; switching HDMI 1 → HDMI 2 is verified with a screenshot.
+**Status 2026-11-13:** built and pushed; not yet checked on the TV (T17). The root has 7 items until M4 adds Wallpaper; Clock and About open as subsections (D65).
 
 **M4. Video wallpapers.** SAF (6.1), `VideoWallpaper` (6.1), poster (6.2), 3 s watchdog, scrim, picture fallback,
 the "Aerials" type (6.3: `res/raw/aerials.json`, shuffle on end, 8 s watchdog, platform TLS only).
@@ -2062,6 +2064,7 @@ each play on the TV, or the failing set is skipped and the reason (for example t
 **M5. Weather.** Geocoding, `HttpURLConnection`, `WeatherParser` (4.5), WMO icons (our own VectorDrawable), cache,
 attribution. *Done when:* the parser unit tests on the fixture pass; with the network off, the cache is shown with its update time;
 the attribution is visible.
+**Status 2026-11-13:** built (WeatherCode and WeatherParser JVM tests green on the fixture; the request URLs checked against the live API), pushed; not yet checked on the TV (T17).
 
 **M6. Polish and measurements.** Interface icons (5.4), sizes, radii, `values-ru` strings, "About", performance measurements (12.3) including the grid scroll check OPEN-QUESTIONS T16,
 baseline recorded in this file. *Done when:* all items in 12.3 are checked and there are screenshots from the TV.

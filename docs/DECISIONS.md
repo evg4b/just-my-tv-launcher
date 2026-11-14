@@ -121,3 +121,15 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D62 | The scrim view is the top 20 % of the screen, not full screen; the bar band reaches 36 dp below the tiles to cover the focused label | Full-screen transparent fill cost GPU time; the label sat across the band's edge | PLAN 7.5, 11.4 |
 | D63 | Until M3 the header icons open the system screens (inputs picker, Wi-Fi, Settings) | The panels are M3; the icons should not do nothing | PLAN 7.7, 10 |
 | D64 | Grid scroll performance is tested after all features are in (OPEN-QUESTIONS T16) | The user's request at M1 | PLAN 15 (M6) |
+
+## Decisions taken at M2, M3 and M5
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D65 | Clock and About open as subsections; the root has 7 items until M4 adds Wallpaper | Clock has three settings, which do not fit one row; a Wallpaper item with nothing behind it would be a dead end | PLAN 10.1 |
+| D66 | Settings rows are built in code: on/off rows flip on OK; value rows step with OK, Left and Right | One row type per kind of setting, no XML per screen; Left and Right are the natural keys for a value on a remote | PLAN 10.2 |
+| D67 | "Order" in the Apps screen is left out: Move on the tile does it | Two ways to do the same thing | PLAN 9.5 |
+| D68 | Move mode puts the tile down on OK or BACK release, with an amber ring while moving | On key down the release would click the tile; the ring shows the mode without a new view | PLAN 8 |
+| D69 | Weather is hidden until the first good answer; changing °C/°F drops the cache | Nothing to show without data; a cached °C value labelled °F would be wrong | PLAN 4.7 |
+| D70 | "Connected only" hides waiting HDMI ports; AV inputs are under "More" unless "Hide AV" is on | TCL reports empty HDMI ports as connected-standby; AV has no hotplug state | PLAN 7.7 |
+| D71 | The header's network icon keeps opening the system Wi-Fi settings | No network screen of our own is planned | PLAN 7.1 |
