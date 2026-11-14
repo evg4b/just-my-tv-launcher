@@ -89,7 +89,8 @@
     <!-- listed in Accessibility but not running, as after an app update -->
     <string name="remote_restart">Turn off and on</string>
     <string name="remote_default">As before</string>
-    <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere; the others work as before.</string>
+    <string name="remote_disabled">Disabled</string>
+    <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere, a disabled one does nothing anywhere; the others work as before.</string>
     <string name="remote_service_name">Just My TV Launcher remote buttons</string>
     <string name="remote_service_desc">Opens the app you assigned in Just My TV Launcher when you press a remote button. It reads no screen content.</string>
     <string-array name="remote_buttons">

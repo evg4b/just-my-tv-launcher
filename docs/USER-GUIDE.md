@@ -49,9 +49,10 @@ Rows work in one of three ways:
 
 ### Wallpaper
 
-Type chooses between Gradient, Picture, Photos, Video and Aerials. "Choose video…" and "Choose picture…" open the TV's
-file picker and switch to that type when you pick a file. Dimming darkens a picture or video by 0, 20, 40 or 60 %; it
-does not apply to the gradient.
+Type chooses between Gradient, Picture, Photos, Video and Aerials. The rows under it belong to the chosen type only:
+"Choose picture…" for Picture, "Choose video…" for Video, the key and interval for Photos, Collection and Themes for
+Aerials. "Choose picture…" and "Choose video…" open the TV's file picker. Dimming darkens the wallpaper by 0, 20, 40 or
+60 %; it is not offered for the gradient.
 
 A video plays silently and loops without a break. Whenever Home appears, you first see a still frame taken from the
 start of the clip (black the very first time), and the video fades in over about a second once it is playing. The
@@ -144,7 +145,9 @@ button service, which Android lets only you turn on:
 After the launcher is updated, this TV keeps the service switched on but stops running it. If the "Remote button
 service" row says "Turn off and on", do exactly that in the accessibility settings.
 
-Then pick a button from the list and choose an app for it, or "As before" to give the button back its normal job. The
+Then pick a button from the list and choose an app for it, "Disabled" to switch the button off everywhere, or "As
+before" to give the button back its normal job. A disabled button does nothing in any app, as long as the service is
+running. The
 YouTube button opens SmartTube by default, if SmartTube is installed. A button whose app has been uninstalled works as
 it did before.
 

@@ -14,7 +14,9 @@ import java.util.Map;
  * since the TCL_* keys have no standard keycode. Enabled by hand in the TV's accessibility settings.
  */
 public class RemoteKeyService extends AccessibilityService {
-    /** scancode -> package; the launcher updates it when the user changes an assignment (same process). */
+    /** An assignment that switches the button off: it does nothing anywhere (D103). */
+    static final String DISABLED = "-";
+    /** scancode -> package or DISABLED; the launcher updates it when the user changes an assignment (same process). */
     static volatile Map<String, String> keys;
     /** Bound by the system right now. After an app update this TV keeps the service listed but does not bind it. */
     static volatile boolean running;
@@ -36,6 +38,7 @@ public class RemoteKeyService extends AccessibilityService {
         Map<String, String> k = keys;
         String pkg = k == null ? null : k.get(String.valueOf(e.getScanCode()));
         if (pkg == null) return false;
+        if (pkg.equals(DISABLED)) return true;   // DOWN and UP: neither the system nor the app in front sees it
         Intent i = launchIntent(getPackageManager(), pkg);
         if (i == null) return false;   // the app is gone: the button does what it did before
         if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {

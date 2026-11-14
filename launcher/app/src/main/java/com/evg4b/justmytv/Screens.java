@@ -164,7 +164,8 @@ final class Screens {
         for (int i = 0; i < SCANCODES.length; i++) {
             String code = String.valueOf(SCANCODES[i]), name = names[i];
             String pkg = st.remote.get(code);
-            p.item(name, pkg == null ? s(R.string.remote_default) : label(pkg), () -> panel.push(q -> pickApp(q, name, code)));
+            p.item(name, pkg == null ? s(R.string.remote_default) : pkg.equals(RemoteKeyService.DISABLED) ? s(R.string.remote_disabled)
+                    : label(pkg), () -> panel.push(q -> pickApp(q, name, code)));
         }
         p.note(s(R.string.remote_note));
     }
@@ -172,6 +173,7 @@ final class Screens {
     private void pickApp(SidePanel p, String button, String code) {
         p.title(button);
         p.item(s(R.string.remote_default), null, () -> assign(code, null));
+        p.item(s(R.string.remote_disabled), null, () -> assign(code, RemoteKeyService.DISABLED));
         for (App app : a.installed) p.item(art(app), app.label, null, () -> assign(code, app.pkg));
     }
 
@@ -210,51 +212,63 @@ final class Screens {
             a.applyWallpaper();
             panel.refresh();   // the photo and aerial options come and go with the type
         });
-        if (st.wallpaper.equals("photos")) {
-            String key = st.unsplashKey;
-            p.item(s(R.string.unsplash_key), (key.isEmpty() ? s(R.string.city_not_set) : "…" + key.substring(Math.max(0, key.length() - 4)))
-                    + "  ›", () -> panel.push(this::unsplashKey));
-            String[] every = {s(R.string.min_5), s(R.string.min_15), s(R.string.min_30), s(R.string.hour_1)};
-            int cur = 0;
-            while (PHOTO_MINUTES[cur] != st.photoMinutes && cur < PHOTO_MINUTES.length - 1) cur++;
-            p.choice(s(R.string.photo_every), every, cur, i -> {
-                st.photoMinutes = PHOTO_MINUTES[i];
-                a.save();
-                a.applyWallpaper();   // the timer starts over with the new interval
-            });
-            p.item(s(R.string.next_photo), null, a.photos::next);
-            StringBuilder note = new StringBuilder();
-            switch (a.photos.status()) {
-                case NO_KEY: note.append(s(R.string.photos_no_key)).append('\n'); break;
-                case BAD_KEY: note.append(s(R.string.photos_bad_key)).append('\n'); break;
-                case LIMIT: note.append(s(R.string.photos_limit)).append('\n'); break;
-                case FAILED: note.append(s(R.string.photos_failed)).append('\n'); break;
-                default: break;
+        String note = null;   // under the rows, after Dimming
+        switch (st.wallpaper) {
+            case "picture":
+                p.item(s(R.string.choose_picture), s(st.imageUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickPicture);
+                break;
+            case "video":
+                p.item(s(R.string.choose_video), s(st.videoUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickVideo);
+                break;
+            case "photos": {
+                String key = st.unsplashKey;
+                p.item(s(R.string.unsplash_key), (key.isEmpty() ? s(R.string.city_not_set) : "…" + key.substring(Math.max(0, key.length() - 4)))
+                        + "  ›", () -> panel.push(this::unsplashKey));
+                String[] every = {s(R.string.min_5), s(R.string.min_15), s(R.string.min_30), s(R.string.hour_1)};
+                int cur = 0;
+                while (PHOTO_MINUTES[cur] != st.photoMinutes && cur < PHOTO_MINUTES.length - 1) cur++;
+                p.choice(s(R.string.photo_every), every, cur, i -> {
+                    st.photoMinutes = PHOTO_MINUTES[i];
+                    a.save();
+                    a.applyWallpaper();   // the timer starts over with the new interval
+                });
+                p.item(s(R.string.next_photo), null, a.photos::next);
+                StringBuilder n = new StringBuilder();
+                switch (a.photos.status()) {
+                    case NO_KEY: n.append(s(R.string.photos_no_key)).append('\n'); break;
+                    case BAD_KEY: n.append(s(R.string.photos_bad_key)).append('\n'); break;
+                    case LIMIT: n.append(s(R.string.photos_limit)).append('\n'); break;
+                    case FAILED: n.append(s(R.string.photos_failed)).append('\n'); break;
+                    default: break;
+                }
+                String by = a.photos.author();
+                if (!by.isEmpty()) n.append(a.getString(R.string.photo_by, by)).append('\n');
+                note = n.append(s(R.string.photos_note)).toString();
+                break;
             }
-            String by = a.photos.author();
-            if (!by.isEmpty()) note.append(a.getString(R.string.photo_by, by)).append('\n');
-            note.append(s(R.string.photos_note));
-            p.note(note.toString());
+            case "aerials": {
+                String[] sources = {s(R.string.aerials_all), "Apple", "Amazon"};
+                p.choice(s(R.string.aerials_collection), sources, java.util.Arrays.asList(Aerials.SOURCES).indexOf(st.aerialSource), i -> {
+                    st.aerialSource = Aerials.SOURCES[i];
+                    a.aerialsChanged();
+                    panel.refresh();   // the count below
+                });
+                p.item(s(R.string.aerials_themes), a.getString(R.string.n_of_m, st.aerialThemes.size(), Aerials.THEMES.length) + "  ›",
+                        () -> panel.push(this::aerialThemes));
+                note = aerialsCount(st) + "\n" + s(R.string.aerials_note);
+                break;
+            }
+            default:
+                break;
         }
-        if (st.wallpaper.equals("aerials")) {
-            String[] sources = {s(R.string.aerials_all), "Apple", "Amazon"};
-            p.choice(s(R.string.aerials_collection), sources, java.util.Arrays.asList(Aerials.SOURCES).indexOf(st.aerialSource), i -> {
-                st.aerialSource = Aerials.SOURCES[i];
-                a.aerialsChanged();
-                panel.refresh();   // the count below
+        if (!st.wallpaper.equals("gradient")) {   // the gradient is never dimmed (applyDim)
+            p.choice(s(R.string.dimming), new String[]{"0 %", "20 %", "40 %", "60 %"}, st.dim / 20, i -> {
+                st.dim = i * 20;
+                a.save();
+                a.applyDim();
             });
-            p.item(s(R.string.aerials_themes), a.getString(R.string.n_of_m, st.aerialThemes.size(), Aerials.THEMES.length) + "  ›",
-                    () -> panel.push(this::aerialThemes));
-            p.note(aerialsCount(st));
         }
-        p.item(s(R.string.choose_video), s(st.videoUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickVideo);
-        p.item(s(R.string.choose_picture), s(st.imageUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickPicture);
-        p.choice(s(R.string.dimming), new String[]{"0 %", "20 %", "40 %", "60 %"}, st.dim / 20, i -> {
-            st.dim = i * 20;
-            a.save();
-            a.applyDim();
-        });
-        p.note(s(R.string.aerials_note));
+        if (note != null) p.note(note);
     }
 
     /** The owner's Unsplash access key (D102): typed once, kept in the state file on the TV. */

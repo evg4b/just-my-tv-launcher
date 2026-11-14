@@ -89,7 +89,8 @@
     <!-- listed in Accessibility but not running, as after an app update -->
     <string name="remote_restart">Выключите и включите</string>
     <string name="remote_default">Как раньше</string>
-    <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, остальные работают как раньше.</string>
+    <string name="remote_disabled">Отключена</string>
+    <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, отключённая нигде ничего не делает, остальные работают как раньше.</string>
     <string name="remote_service_name">Кнопки пульта Just My TV Launcher</string>
     <string name="remote_service_desc">Открывает приложение, назначенное в Just My TV Launcher, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
     <string-array name="remote_buttons">
