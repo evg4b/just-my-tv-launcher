@@ -196,19 +196,33 @@ final class Screens {
 
     // ---- wallpaper (PLAN 6, 10.1) ----
 
-    private static final String[] TYPES = {"gradient", "picture", "video", "aerials"};
+    private static final String[] TYPES = {"gradient", "picture", "photos", "video", "aerials"};
+    private static final int[] PHOTO_MINUTES = {1, 5, 15, 30, 60};
 
     private void wallpaper(SidePanel p) {
         StateJson st = a.state;
         p.title(s(R.string.wallpaper));
-        String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_video), s(R.string.wp_aerials)};
+        String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_photos), s(R.string.wp_video),
+                s(R.string.wp_aerials)};
         p.choice(s(R.string.wallpaper_type), names, java.util.Arrays.asList(TYPES).indexOf(st.wallpaper), i -> {
-            boolean aerialsRows = st.wallpaper.equals("aerials") != TYPES[i].equals("aerials");
             st.wallpaper = TYPES[i];
             a.save();
             a.applyWallpaper();
-            if (aerialsRows) panel.refresh();   // the aerial options come and go with the type
+            panel.refresh();   // the photo and aerial options come and go with the type
         });
+        if (st.wallpaper.equals("photos")) {
+            String[] every = {s(R.string.min_1), s(R.string.min_5), s(R.string.min_15), s(R.string.min_30), s(R.string.hour_1)};
+            int cur = 0;
+            while (PHOTO_MINUTES[cur] != st.photoMinutes && cur < PHOTO_MINUTES.length - 1) cur++;
+            p.choice(s(R.string.photo_every), every, cur, i -> {
+                st.photoMinutes = PHOTO_MINUTES[i];
+                a.save();
+                a.applyWallpaper();   // the timer starts over with the new interval
+            });
+            p.item(s(R.string.next_photo), null, a.photos::next);
+            String by = a.photos.author();
+            p.note(by.isEmpty() ? s(R.string.photos_note) : a.getString(R.string.photo_by, by) + "\n" + s(R.string.photos_note));
+        }
         if (st.wallpaper.equals("aerials")) {
             String[] sources = {s(R.string.aerials_all), "Apple", "Amazon"};
             p.choice(s(R.string.aerials_collection), sources, java.util.Arrays.asList(Aerials.SOURCES).indexOf(st.aerialSource), i -> {

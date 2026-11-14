@@ -33,7 +33,7 @@
     <string name="greeting_evening">Добрый вечер</string>
     <string name="greeting_night">Доброй ночи</string>
     <string name="about">О программе</string>
-    <string name="about_text">Just My TV Launcher · версия %1$s\nДомашний экран для Android TV без рекламы, аккаунтов и слежки\nИсходный код: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
+    <string name="about_text">Just My TV Launcher · версия %1$s\nДомашний экран для Android TV без рекламы, аккаунтов и слежки\nИсходный код: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nФото: Unsplash, через picsum.photos\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
     <string name="tv_settings">Настройки телевизора</string>
     <string name="wallpaper">Обои</string>
     <string name="wallpaper_type">Тип</string>
@@ -47,6 +47,16 @@
     <string name="not_chosen">Не выбрано</string>
     <string name="chosen">Выбрано</string>
     <string name="aerials_note">Видео аэросъёмки транслируются с серверов Apple и Amazon, пока открыт главный экран, и принадлежат им.</string>
+    <string name="wp_photos">Фото</string>
+    <string name="photo_every">Менять каждые</string>
+    <string name="min_1">1 мин</string>
+    <string name="min_5">5 мин</string>
+    <string name="min_15">15 мин</string>
+    <string name="min_30">30 мин</string>
+    <string name="hour_1">1 час</string>
+    <string name="next_photo">Следующее фото</string>
+    <string name="photo_by">Фото: %1$s, Unsplash</string>
+    <string name="photos_note">Случайные фото с Unsplash через picsum.photos, загружаются, пока открыт главный экран.</string>
     <string name="aerials_collection">Коллекция</string>
     <string name="aerials_all">Все</string>
     <string name="aerials_themes">Темы</string>

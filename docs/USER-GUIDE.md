@@ -49,7 +49,7 @@ Rows work in one of three ways:
 
 ### Wallpaper
 
-Type chooses between Gradient, Picture, Video and Aerials. "Choose video…" and "Choose picture…" open the TV's file
+Type chooses between Gradient, Picture, Photos, Video and Aerials. "Choose video…" and "Choose picture…" open the TV's file
 picker and switch to that type when you pick a file. Dimming darkens a picture or video by 0, 20, 40 or 60 %; it does
 not apply to the gradient.
 
@@ -83,6 +83,13 @@ With Aerials chosen, two more rows appear under Type:
 
 A line under the rows says how many clips will play. Some mixes have none, for example Apple with Wildlife or
 Abstract and fireplaces, because Apple has no such clips; then Home shows the gradient. Each change starts a new clip.
+
+Photos shows a random photo from Unsplash, downloaded from picsum.photos, and changes it while the home screen is
+visible. "Change every" sets the interval: 1, 5, 15 or 30 minutes, or an hour (5 minutes at first). "Next photo"
+changes it at once. A change uses the same transition as the aerials: the photo fades to black and the new one fades
+in. The last photo is kept on the TV, so Home shows it straight away next time, also without a network; the
+countdown continues from when it was downloaded. Under the rows you see who took the photo. If no photo has been
+downloaded yet and picsum.photos cannot be reached, you see the gradient, and the launcher tries again every minute.
 
 ### Weather
 

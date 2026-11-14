@@ -826,6 +826,18 @@ check use `ffprobe` and `signalstats` (YAVG). The criterion and the tool are rec
 **Not done:** Live Wallpaper (a separate process with its own lifecycle), `TextureView` (draws on the UI thread and stutters under load), and
 streaming from arbitrary URLs. The only network video is the fixed aerial list (6.3).
 
+### 6.2a. Photos: a random Unsplash photo on a timer (D101)
+
+**As built (2026-11-14).** `PhotoWallpaper` asks `https://picsum.photos/1920/1080.jpg`, which redirects to a random
+photo already cropped to 1920x1080; the redirect address carries the picsum id, and `/id/{id}/info` gives the author.
+The photo goes to `files/photo.jpg` (through a temporary file, at most 5 MB) and the author to `files/photo.txt`; the
+picture is decoded with `WallpaperFiles.picture`. The change is the aerials' transition on the poster: 1 s to black
+and 1.2 s back in, ease-in-out, drawn as a black `SRC_ATOP` colour filter on the opaque bitmap, so no extra layer.
+The timer runs only between `onStart` and `onStop`; on start the kept photo comes up from black and the next one is due
+`photoMinutes` after the kept one was written. A failed download is retried after a minute; with no kept photo the
+gradient shows. Picsum needs no key or account; Unsplash's own API would need a developer key and allows 50 requests an
+hour until approved. Picsum was down (Cloudflare 522) when this was written, so the download has not been seen to work.
+
 ### 6.3. Aerials: streamed Apple and Amazon clips (D49)
 
 **As built (2026-11-14, D85, D93, D94).** Apple links play after trusting Apple Root CA for `sylvan.apple.com` only. The

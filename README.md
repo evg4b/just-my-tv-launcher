@@ -14,7 +14,7 @@ one Activity. The only libraries are AndroidX RecyclerView, DynamicAnimation and
 The second alpha, 0.1.0-alpha.2, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
 ready-built APK.
 
-All planned features are written and build cleanly, and the 26 unit tests pass. The grid, the tile menu, settings,
+All planned features are written and build cleanly, and the 29 unit tests pass. The grid, the tile menu, settings,
 inputs, weather, the wallpapers and the remote buttons service have been checked on the TV, the service with a
 virtual keyboard rather than the real remote. The Russian screens have not, and a few video checks need someone
 watching the screen. The on-device checks are listed as T16 to T19 in
@@ -28,9 +28,9 @@ watching the screen. The on-device checks are listed as T16 to T19 in
   go to the end.
 - Header with the clock, the date and the weather on the left, and icons for inputs, Wi-Fi and settings on the right.
 - A settings panel that slides in from the right, operated entirely with the remote.
-- Wallpapers: the built-in gradient, a picture, a video file you choose, or Apple and Amazon aerials streamed from
-  their servers. A video comes up from black (or its own first frame) and fades in once it plays, never over the
-  gradient; aerials fade through black from one clip to the next.
+- Wallpapers: the built-in gradient, a picture, a new Unsplash photo every few minutes, a video file you choose, or
+  Apple and Amazon aerials streamed from their servers. A video comes up from black (or its own first frame) and fades
+  in once it plays, never over the gradient; aerials and photos fade through black from one to the next.
 - Weather from [Open-Meteo](https://open-meteo.com), with no key and no location permission. You type a city once.
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
@@ -114,9 +114,11 @@ the remote buttons.
 
 ## Network and privacy
 
-Just My TV Launcher goes online in two cases only. When a city is set, it asks Open-Meteo for the current weather every
-30 minutes while the home screen is visible, sending the city's coordinates. When the Aerials wallpaper is chosen, it
-streams clips from Apple and Amazon. Nothing else leaves the TV: no analytics, no crash reporting, no accounts.
+Just My TV Launcher goes online in three cases only. When a city is set, it asks Open-Meteo for the current weather
+every 30 minutes while the home screen is visible, sending the city's coordinates. When the Aerials wallpaper is
+chosen, it streams clips from Apple and Amazon. When the Photos wallpaper is chosen, it downloads a random photo from
+picsum.photos at the interval you set, again only while the home screen is visible. Nothing else leaves the TV: no
+analytics, no crash reporting, no accounts.
 
 The remote buttons service is an accessibility service, because that is the only way to catch a key press inside
 other apps. It declares no event types and cannot read the screen; it looks only at key presses and acts on the

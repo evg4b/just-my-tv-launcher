@@ -80,6 +80,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private View opener;        // what had focus when the panel opened; it gets it back
     final WeatherClient weather = new WeatherClient();
     private VideoWallpaper video;
+    PhotoWallpaper photos;
     private ImageView poster;
     private int wallpaperGen;        // a newer applyWallpaper makes older background results stale
     private int inputsGen;           // the same for updateInputsButton
@@ -118,6 +119,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
             aerialUrls = null;
         });
+        photos = new PhotoWallpaper(this, poster);
         applyWallpaper();
         // the poster view now covers the window; drop the theme background after the first frame (overdraw, PLAN 11.3)
         getWindow().getDecorView().post(() -> getWindow().setBackgroundDrawable(null));
@@ -207,6 +209,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     void applyWallpaper() {
         int gen = ++wallpaperGen;
         video.stop();
+        photos.stop();
         String type = state.wallpaper;
         boolean moving = type.equals("video") || type.equals("aerials");
         findViewById(R.id.video).setVisibility(moving ? View.VISIBLE : View.GONE);
@@ -241,7 +244,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     }
 
     private void startVideo() {
-        if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
+        if (state.wallpaper.equals("photos")) {
+            photos.start(state.photoMinutes * 60_000L);
+        } else if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
             video.startFile(Uri.parse(state.videoUri));
         } else if (state.wallpaper.equals("aerials")) {
             if (!online()) {   // offline: a still gradient, no requests (PLAN 6.3)
@@ -432,7 +437,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         panel.close();
         ui.removeCallbacks(weatherTick);
         started = false;
-        video.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
+        video.stop();
+        photos.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
         super.onStop();
     }
 

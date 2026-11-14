@@ -35,7 +35,7 @@
     <string name="greeting_evening">Good evening</string>
     <string name="greeting_night">Good night</string>
     <string name="about">About</string>
-    <string name="about_text">Just My TV Launcher · version %1$s\nA home screen for Android TV with no ads, accounts or tracking\nSource: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nWeather: Open-Meteo.com, data under CC BY 4.0\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
+    <string name="about_text">Just My TV Launcher · version %1$s\nA home screen for Android TV with no ads, accounts or tracking\nSource: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nWeather: Open-Meteo.com, data under CC BY 4.0\nPhotos: Unsplash, through picsum.photos\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
     <string name="tv_settings">TV settings</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="wallpaper_type">Type</string>
@@ -49,6 +49,16 @@
     <string name="not_chosen">Not chosen</string>
     <string name="chosen">Chosen</string>
     <string name="aerials_note">Aerials are streamed from Apple and Amazon servers while Home is on screen; the clips belong to them.</string>
+    <string name="wp_photos">Photos</string>
+    <string name="photo_every">Change every</string>
+    <string name="min_1">1 min</string>
+    <string name="min_5">5 min</string>
+    <string name="min_15">15 min</string>
+    <string name="min_30">30 min</string>
+    <string name="hour_1">1 hour</string>
+    <string name="next_photo">Next photo</string>
+    <string name="photo_by">Photo: %1$s, Unsplash</string>
+    <string name="photos_note">Random Unsplash photos from picsum.photos, loaded while Home is on screen.</string>
     <string name="aerials_collection">Collection</string>
     <string name="aerials_all">All</string>
     <string name="aerials_themes">Themes</string>
