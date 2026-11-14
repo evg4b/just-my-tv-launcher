@@ -77,7 +77,7 @@ Date: 13 November 2026, unless stated otherwise.
 | D41 | The remote service is a deliberate exception to "no background services" | The user: it is the user's own launcher | PLAN 14 |
 | D42 | Personal values are kept in `private/` and listed in `.gitignore` | The user: documents stay clean, values stay local | README, `private/redactions.md` |
 | D43 | Background memory release through `onTrimMemory` | The user: understood, keep it | PLAN 5.6 |
-| D44 | No commit or push yet | The user has not yet said which branch to use | OPEN-QUESTIONS |
+| D44 | ~~No commit or push yet~~ **Revised by D59** | The user has not yet said which branch to use | OPEN-QUESTIONS |
 
 ## References
 
@@ -103,3 +103,11 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D55 | The app scan does not wait for the first video frame; the window background is removed after the first frame | Speed: with no video there is no first frame, and the window background was a fourth full-screen layer | PLAN 6.2, 11.3 |
 | D56 | Persistence is split: `LauncherState` (file I/O, `AtomicFile`) and `StateJson` (pure, JVM-tested) | `android.util.AtomicFile` is a stub in plain JVM tests | PLAN 9.2, 12.1 |
 
+
+## Decisions taken at M0
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D57 | Package and application ID `com.justmytv.tvhome` | The owner's handle is on the redaction list, so it does not go into the package name; not `com.gathin.tvhome` (CleanYourTV) | PLAN 11.1, 11.5 |
+| D58 | Own banner and icon: the Aurora gradient with the Material "home" glyph; `poster_default.webp` is generated (diagonal Aurora, 1-bit dither, about 8 KB) | CleanYourTV's `banner_tv.xml` is its Live TV banner (magenta, Live TV glyph), not an app banner | PLAN 11.2, 11.3; OPEN-QUESTIONS T12 |
+| D59 | Commit by logical steps and push to `main` | The user's answer to Q2 | OPEN-QUESTIONS Q2 |

@@ -8,8 +8,8 @@ Blocks **M0**: the skeleton cannot start. Blocks **M1**: the grid cannot start. 
 
 | No. | Question | Blocks | Default if not answered |
 |---|---|---|---|
-| Q1 | May I start M0 (the `launcher/` skeleton)? | M0 | Do not start |
-| Q2 | Commit and push? To which branch: `main` or a new one? | Commit | Do not commit |
+| Q1 | ~~May I start M0?~~ **Answer: yes** (2026-11-13) | — | — |
+| Q2 | ~~Commit and push? To which branch?~~ **Answer: commit by logical steps, push to `main`** (D59) | — | — |
 | Q3 | Record the TV state (`tools/record.sh`)? This is read-only | Rollback, M0 | Do not record |
 | Q4 | Inputs icon: keep `ic_input.xml` (looks like a remote) or replace it? | Does not block | Keep it, check on the TV |
 | Q5 | Wallpaper icon: `ic_picture.xml` is a TV icon. Replace it? | Does not block | Replace with the Material "image" icon |
