@@ -52,6 +52,28 @@
     <string name="video_warning">1080p H.264 is better for TV</string>
     <string name="no_picker">No file picker on this TV</string>
     <string name="access_not_kept">The file may not open after a restart</string>
+    <string name="remote">Remote buttons</string>
+    <string name="remote_service">Remote button service</string>
+    <string name="remote_default">As before</string>
+    <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere; the others work as before.</string>
+    <string name="remote_service_name">TV Home remote buttons</string>
+    <string name="remote_service_desc">Opens the app you assigned in TV Home when you press a remote button. It reads no screen content.</string>
+    <string-array name="remote_buttons">
+        <item>Menu ≡</item>
+        <item>Bookmark</item>
+        <item>Gear</item>
+        <item>TV</item>
+        <item>Numbers</item>
+        <item>Layers</item>
+        <item>Grid</item>
+        <item>NETFLIX</item>
+        <item>YouTube</item>
+        <item>TCL CHANNEL</item>
+        <item>prime video</item>
+        <item>Volume +</item>
+        <item>Volume −</item>
+        <item>Mute</item>
+    </string-array>
     <string name="weather">Weather</string>
     <string name="city">City</string>
     <string name="city_not_set">Not set</string>

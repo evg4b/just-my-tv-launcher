@@ -2,6 +2,8 @@ package com.justmytv.tvhome;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.provider.Settings;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,14 +33,15 @@ final class Screens {
 
     private void root(SidePanel p) {
         p.title(s(R.string.settings));
-        p.section(s(R.string.wallpaper), this::wallpaper);
-        p.section(s(R.string.weather), this::weather);
-        p.section(s(R.string.apps), apps);
-        p.section(s(R.string.appearance), this::appearance);
-        p.section(s(R.string.inputs), this::inputSettings);
-        p.section(s(R.string.clock), this::clock);
-        p.section(s(R.string.about), this::about);
-        p.item(s(R.string.tv_settings), null, () -> a.start(new Intent(Settings.ACTION_SETTINGS)));
+        p.section(R.drawable.ic_image, s(R.string.wallpaper), this::wallpaper);
+        p.section(R.drawable.wx_sun_cloud, s(R.string.weather), this::weather);
+        p.section(R.drawable.ic_apps, s(R.string.apps), apps);
+        p.section(R.drawable.ic_palette, s(R.string.appearance), this::appearance);
+        p.section(R.drawable.ic_input, s(R.string.inputs), this::inputSettings);
+        p.section(R.drawable.ic_remote, s(R.string.remote), this::remote);
+        p.section(R.drawable.ic_schedule, s(R.string.clock), this::clock);
+        p.section(R.drawable.ic_info, s(R.string.about), this::about);
+        p.item(a.getDrawable(R.drawable.ic_tv), s(R.string.tv_settings), null, () -> a.start(new Intent(Settings.ACTION_SETTINGS)));
     }
 
     /** All launchable apps in grid order, hidden ones too (PLAN 9.5). */
@@ -58,13 +61,15 @@ final class Screens {
             App app = byPkg.get(pkg);
             if (app == null) continue;
             TextView[] v = new TextView[1];
-            v[0] = p.item(app.art, app.label, shown(!st.hidden.contains(pkg)), () -> {
+            v[0] = p.item(art(app), app.label, shown(!st.hidden.contains(pkg)), () -> {
                 boolean hide = !st.hidden.contains(pkg);
                 a.setHidden(pkg, hide);
                 v[0].setText(shown(!hide));
             });
         }
     }
+
+    private Drawable art(App app) { return app.art == null ? null : new BitmapDrawable(a.getResources(), app.art); }
 
     private String shown(boolean shown) { return s(shown ? R.string.shown : R.string.hidden); }
 
@@ -142,6 +147,51 @@ final class Screens {
         } catch (PackageManager.NameNotFoundException ignored) { }
         p.title(s(R.string.about));
         p.note(a.getString(R.string.about_text, version));
+    }
+
+    // ---- remote buttons (PLAN 7.8) ----
+
+    /** Linux scancodes of the TCL RC902N_M1 buttons, in the order of R.array.remote_buttons (docs/remote-buttons.md).
+     *  Not listed: power, the Assistant (no event), and D-pad, OK, Back and Home, whose loss would lock the user out. */
+    private static final int[] SCANCODES = {139, 395, 233, 365, 235, 749, 204, 242, 245, 227, 752, 115, 114, 113};
+
+    private void remote(SidePanel p) {
+        StateJson st = a.state;
+        p.title(s(R.string.remote));
+        p.item(s(R.string.remote_service), s(serviceOn() ? R.string.on : R.string.off),
+                () -> a.start(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+        String[] names = a.getResources().getStringArray(R.array.remote_buttons);
+        for (int i = 0; i < SCANCODES.length; i++) {
+            String code = String.valueOf(SCANCODES[i]), name = names[i];
+            String pkg = st.remote.get(code);
+            p.item(name, pkg == null ? s(R.string.remote_default) : label(pkg), () -> panel.push(q -> pickApp(q, name, code)));
+        }
+        p.note(s(R.string.remote_note));
+    }
+
+    private void pickApp(SidePanel p, String button, String code) {
+        p.title(button);
+        p.item(s(R.string.remote_default), null, () -> assign(code, null));
+        for (App app : a.installed) p.item(art(app), app.label, null, () -> assign(code, app.pkg));
+    }
+
+    private void assign(String code, String pkg) {
+        StateJson st = a.state;
+        if (pkg == null) st.remote.remove(code);
+        else st.remote.put(code, pkg);
+        a.save();
+        RemoteKeyService.keys = new HashMap<>(st.remote);
+        panel.back();
+    }
+
+    private String label(String pkg) {
+        for (App app : a.installed) if (app.pkg.equals(pkg)) return app.label;
+        return pkg;
+    }
+
+    private boolean serviceOn() {
+        String on = Settings.Secure.getString(a.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        return on != null && on.contains(a.getPackageName() + "/");
     }
 
     // ---- wallpaper (PLAN 6, 10.1) ----

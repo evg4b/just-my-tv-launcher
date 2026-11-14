@@ -1,7 +1,8 @@
 package com.justmytv.tvhome;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -150,7 +151,8 @@ final class SidePanel {
         return item(null, label, value, onClick);
     }
 
-    TextView item(Bitmap icon, String label, String value, Runnable onClick) {
+    /** icon: an app's banner or icon (a bitmap, 64x36 dp box) or a 22 dp interface vector. */
+    TextView item(Drawable icon, String label, String value, Runnable onClick) {
         LinearLayout row = new LinearLayout(ctx);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
@@ -161,9 +163,10 @@ final class SidePanel {
         row.setPadding(p, 0, p, 0);
         if (icon != null) {
             ImageView iv = new ImageView(ctx);
-            iv.setImageBitmap(icon);
+            iv.setImageDrawable(icon);
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Math.round(64 * d), Math.round(36 * d));
+            boolean art = icon instanceof BitmapDrawable;
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Math.round((art ? 64 : 22) * d), Math.round((art ? 36 : 22) * d));
             lp.setMarginEnd(p);
             row.addView(iv, lp);
         }
@@ -208,6 +211,10 @@ final class SidePanel {
     /** A subsection row ("›"). */
     void section(String label, Screen s) {
         item(label, "›", () -> push(s));
+    }
+
+    void section(int icon, String label, Screen s) {
+        item(ctx.getDrawable(icon), label, "›", () -> push(s));
     }
 
     void toggle(String label, boolean on, Toggle set) {

@@ -5,6 +5,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +50,16 @@ final class StateJson {
     String weatherLast = "";      // the last good forecast response
     long fetchedAt = 0;           // ms
 
+    // remote buttons (PLAN 7.8): scancode -> package; default YouTube -> SmartTube
+    Map<String, String> remote = defaultRemote();
+
     private JSONObject raw = new JSONObject();
+
+    static Map<String, String> defaultRemote() {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("245", "org.smarttube.stable");
+        return m;
+    }
 
     boolean hasCity() { return !city.isEmpty(); }
 
@@ -87,6 +99,14 @@ final class StateJson {
                 s.showDate = clock.optBoolean("showDate", true);
                 s.greeting = clock.optBoolean("greeting", false);
             }
+            JSONObject rm = o.optJSONObject("remote");
+            if (rm != null) {
+                s.remote = new LinkedHashMap<>();
+                for (Iterator<String> it = rm.keys(); it.hasNext(); ) {
+                    String k = it.next(), v = rm.optString(k, "");
+                    if (!v.isEmpty()) s.remote.put(k, v);
+                }
+            }
             JSONObject w = o.optJSONObject("weather");
             if (w != null) {
                 s.weatherEnabled = w.optBoolean("enabled", true);
@@ -118,6 +138,7 @@ final class StateJson {
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
                     .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv));
+            o.put("remote", new JSONObject(remote));
             o.put("clock", obj(o, "clock").put("h24", h24).put("showDate", showDate).put("greeting", greeting));
             JSONObject w = obj(o, "weather").put("enabled", weatherEnabled).put("name", city).put("admin1", admin1)
                     .put("fahrenheit", fahrenheit).put("last", weatherLast).put("fetchedAt", fetchedAt);

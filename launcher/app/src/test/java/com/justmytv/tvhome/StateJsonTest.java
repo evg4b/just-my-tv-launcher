@@ -55,6 +55,14 @@ public class StateJsonTest {
         assertTrue(out, out.contains("\"future\":1"));
     }
 
+    @Test public void remote() {
+        assertEquals("org.smarttube.stable", new StateJson().remote.get("245"));
+        StateJson j = StateJson.parse("{\"remote\":{\"242\":\"com.netflix.ninja\"}}");
+        assertEquals(1, j.remote.size());                          // saved map replaces the default, so it can be cleared
+        assertEquals("com.netflix.ninja", StateJson.parse(j.toJson()).remote.get("242"));
+        assertTrue(StateJson.parse("{\"remote\":{}}").remote.isEmpty());
+    }
+
     @Test public void wallpaper() {
         StateJson j = StateJson.parse("{\"wallpaper\":{\"type\":\"video\",\"uri\":\"content://x/1\",\"dim\":30}}");
         assertEquals("video", j.wallpaper);

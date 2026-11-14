@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TV Home</string>
+    <string name="inputs">Входы</string>
+    <string name="network">Сеть</string>
+    <string name="settings">Настройки</string>
+    <string name="cannot_open">Не удалось открыть</string>
+    <string name="open">Открыть</string>
+    <string name="move">Переместить</string>
+    <string name="hide">Скрыть</string>
+    <string name="app_details">О приложении</string>
+    <string name="move_hint">Двигайте стрелками, OK — поставить</string>
+    <string name="on">Вкл.</string>
+    <string name="off">Выкл.</string>
+    <string name="apps">Приложения</string>
+    <string name="show_all">Показать все</string>
+    <string name="shown">Показано</string>
+    <string name="hidden">Скрыто</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="columns">Столбцы</string>
+    <string name="rows_below">Рядов под панелью</string>
+    <string name="labels">Название под плиткой в фокусе</string>
+    <string name="corners">Скругление углов</string>
+    <string name="inputs_button">Значок входов вверху</string>
+    <string name="connected_only">Только подключённые</string>
+    <string name="hide_av">Скрыть AV</string>
+    <string name="clock">Часы</string>
+    <string name="h24">24-часовой формат</string>
+    <string name="show_date">Показывать дату</string>
+    <string name="greeting">Приветствие над часами</string>
+    <string name="greeting_morning">Доброе утро</string>
+    <string name="greeting_afternoon">Добрый день</string>
+    <string name="greeting_evening">Добрый вечер</string>
+    <string name="greeting_night">Доброй ночи</string>
+    <string name="about">О программе</string>
+    <string name="about_text">Лаунчер для Android TV · версия %1$s\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
+    <string name="tv_settings">Настройки телевизора</string>
+    <string name="wallpaper">Обои</string>
+    <string name="wallpaper_type">Тип</string>
+    <string name="wp_gradient">Градиент</string>
+    <string name="wp_picture">Картинка</string>
+    <string name="wp_video">Видео</string>
+    <string name="wp_aerials">Аэросъёмка</string>
+    <string name="choose_video">Выбрать видео…</string>
+    <string name="choose_picture">Выбрать картинку…</string>
+    <string name="dimming">Затемнение</string>
+    <string name="not_chosen">Не выбрано</string>
+    <string name="chosen">Выбрано</string>
+    <string name="aerials_note">Видео аэросъёмки транслируются с серверов Apple и Amazon, пока открыт главный экран, и принадлежат им.</string>
+    <string name="video_warning">Для ТВ лучше 1080p H.264</string>
+    <string name="no_picker">На этом ТВ нет выбора файлов</string>
+    <string name="access_not_kept">После перезапуска файл может не открыться</string>
+    <string name="remote">Кнопки пульта</string>
+    <string name="remote_service">Служба кнопок пульта</string>
+    <string name="remote_default">Как раньше</string>
+    <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, остальные работают как раньше.</string>
+    <string name="remote_service_name">Кнопки пульта TV Home</string>
+    <string name="remote_service_desc">Открывает приложение, назначенное в TV Home, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
+    <string-array name="remote_buttons">
+        <item>Меню ≡</item>
+        <item>Закладка</item>
+        <item>Шестерёнка</item>
+        <item>TV</item>
+        <item>Цифры</item>
+        <item>Слои</item>
+        <item>Сетка</item>
+        <item>NETFLIX</item>
+        <item>YouTube</item>
+        <item>TCL CHANNEL</item>
+        <item>prime video</item>
+        <item>Громкость +</item>
+        <item>Громкость −</item>
+        <item>Без звука</item>
+    </string-array>
+    <string name="weather">Погода</string>
+    <string name="city">Город</string>
+    <string name="city_not_set">Не задан</string>
+    <string name="city_hint">Название города, затем OK</string>
+    <string name="searching">Поиск…</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="no_network">Нет сети</string>
+    <string name="units">Единицы</string>
+    <string name="refresh_now">Обновить сейчас</string>
+    <string name="weather_attribution">Данные о погоде: Open-Meteo.com (CC BY 4.0)</string>
+    <string name="weather_updated">обновлено в %1$s</string>
+    <string name="more">Ещё</string>
+    <string name="no_inputs">Входы не найдены</string>
+    <string name="system_inputs">Системный выбор входа</string>
+    <string name="input_not_opened">Вход не открылся</string>
+</resources>
