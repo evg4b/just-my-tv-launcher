@@ -250,19 +250,43 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             }
             if (!video.playing()) poster.setImageDrawable(new ColorDrawable(Color.BLACK));   // a fallback may have left the gradient up
             if (aerialUrls != null) {
-                video.startAerials(aerialUrls);
+                playAerials(aerialUrls);
                 return;
             }
             int gen = wallpaperGen;
             boolean skip = skipApple;
+            String source = state.aerialSource;
+            java.util.Set<String> themes = new java.util.HashSet<>(state.aerialThemes);
             pool.execute(() -> {
-                List<String> urls = Aerials.parse(readRaw(R.raw.aerials), skip);
+                List<String> urls = Aerials.parse(aerialsJson(), skip, source, themes);
                 ui.post(() -> {
+                    if (gen != wallpaperGen) return;   // the choice changed meanwhile
                     aerialUrls = urls;
-                    if (started && gen == wallpaperGen && state.wallpaper.equals("aerials")) video.startAerials(urls);
+                    if (started && state.wallpaper.equals("aerials")) playAerials(urls);
                 });
             });
         }
+    }
+
+    /** No clip matches the chosen collection and themes: a still gradient, as offline. */
+    private void playAerials(List<String> urls) {
+        if (urls.isEmpty()) poster.setImageResource(R.drawable.aurora);
+        else video.startAerials(urls);
+    }
+
+    private String aerialsRaw;
+
+    /** The bundled list, read once (about 60 KB). */
+    synchronized String aerialsJson() {
+        if (aerialsRaw == null) aerialsRaw = readRaw(R.raw.aerials);
+        return aerialsRaw;
+    }
+
+    /** The collection or a theme changed in settings: rebuild the playlist. */
+    void aerialsChanged() {
+        aerialUrls = null;
+        save();
+        if (state.wallpaper.equals("aerials")) applyWallpaper();
     }
 
     private String readRaw(int id) {

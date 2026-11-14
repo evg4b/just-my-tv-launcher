@@ -41,6 +41,19 @@ public class StateJsonTest {
         assertEquals(1763000000000L, b.fetchedAt);
     }
 
+    @Test public void aerialChoiceSurvivesAndNeverEmpties() {
+        StateJson a = new StateJson();
+        assertEquals(6, a.aerialThemes.size());
+        a.aerialSource = "Z";
+        a.aerialThemes = new java.util.LinkedHashSet<>(Arrays.asList("city", "water"));
+        StateJson b = StateJson.parse(a.toJson());
+        assertEquals("Z", b.aerialSource);
+        assertEquals(a.aerialThemes, b.aerialThemes);
+        StateJson c = StateJson.parse("{\"wallpaper\":{\"aerialSource\":\"X\",\"aerialThemes\":[\"bogus\"]}}");
+        assertEquals("", c.aerialSource);
+        assertEquals(StateJson.allThemes(), c.aerialThemes);
+    }
+
     @Test public void outOfRangeIsClamped() {
         StateJson j = StateJson.parse("{\"ui\":{\"columns\":99,\"rowsBelow\":-4,\"corner\":5}}");
         assertEquals(7, j.columns);

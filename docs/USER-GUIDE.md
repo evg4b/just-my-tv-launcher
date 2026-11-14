@@ -75,6 +75,15 @@ gradient never shows under it. Between clips the picture fades to black and the 
 network; without one you see the gradient and nothing is requested. If Apple's servers fail on your TV, the launcher
 skips them and plays Amazon's clips until it restarts.
 
+With Aerials chosen, two more rows appear under Type:
+
+- Collection plays clips from All sources, only Apple's (139) or only Amazon's (112).
+- Themes picks what the clips show: Landscapes, Space and night sky, Cities, Underwater, Wildlife, and Abstract and
+  fireplaces. All six are on at first. At least one stays on: the last one cannot be turned off.
+
+A line under the rows says how many clips will play. Some mixes have none, for example Apple with Wildlife or
+Abstract and fireplaces, because Apple has no such clips; then Home shows the gradient. Each change starts a new clip.
+
 ### Weather
 
 Turn the weather on or off, set the city, and choose °C or °F. To set the city, open City, press OK on the text field,

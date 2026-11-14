@@ -832,8 +832,15 @@ streaming from arbitrary URLs. The only network video is the fixed aerial list (
 rolling playlist no longer cuts between clips: 1 s before a clip ends the picture fades to black, and the next clip fades
 in by the rule of 6.2.
 
+**Collection and themes (2026-11-14, D100).** With the Aerials type, the wallpaper settings add Collection (All, Apple,
+Amazon; Couchy's "Collection" without its community sets) and Themes (six toggles, at least one on). Each entry carries a
+theme in `"k"`: `nature` 117, `space` 27, `city` 36, `water` 34, `animals` 9, `calm` 28. The themes were set by title and,
+for Apple's underwater clips, by the file name prefix; nobody has watched all 251 clips, so a few may sit in the wrong
+theme, and an entry without `"k"` counts as `nature`. The choice is saved as `wallpaper.aerialSource` and
+`wallpaper.aerialThemes`; when nothing matches, Home shows the gradient as it does offline.
+
 **Data.** `res/raw/aerials.json`, copied as data from Couchy `assets/aerials.json` (a list of links, not code; WALLPAPERS,
-group D). Each entry is `{"t": title, "u": https link, "s": set}`. We keep sets `A` (Apple, 139) and `Z` (Amazon, 112); the
+group D). Each entry is `{"t": title, "u": https link, "s": set, "k": theme}`. We keep sets `A` (Apple, 139) and `Z` (Amazon, 112); the
 community sets `C1`/`C2` are not copied until Q19 is decided. Drop the one Apple `4K` entry while copying: the TV renders 1080p.
 
 **Format (checked by reading the file).** All links are progressive files over HTTPS (`.mov`, `.mp4`, `.m4v`), no HLS. Apple

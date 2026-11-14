@@ -49,6 +49,21 @@
     <string name="not_chosen">Not chosen</string>
     <string name="chosen">Chosen</string>
     <string name="aerials_note">Aerials are streamed from Apple and Amazon servers while Home is on screen; the clips belong to them.</string>
+    <string name="aerials_collection">Collection</string>
+    <string name="aerials_all">All</string>
+    <string name="aerials_themes">Themes</string>
+    <string name="n_of_m">%1$d of %2$d</string>
+    <string name="theme_nature">Landscapes</string>
+    <string name="theme_space">Space and night sky</string>
+    <string name="theme_city">Cities</string>
+    <string name="theme_water">Underwater</string>
+    <string name="theme_animals">Wildlife</string>
+    <string name="theme_calm">Abstract and fireplaces</string>
+    <plurals name="aerials_count">
+        <item quantity="one">%d clip plays</item>
+        <item quantity="other">%d clips play</item>
+    </plurals>
+    <string name="aerials_none">No clip matches: Home shows the gradient</string>
     <string name="video_warning">1080p H.264 is better for TV</string>
     <string name="no_picker">No file picker on this TV</string>
     <string name="access_not_kept">The file may not open after a restart</string>

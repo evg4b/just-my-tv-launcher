@@ -24,6 +24,18 @@ public class AerialsTest {
         assertTrue(Aerials.parse("not json", false).isEmpty());
     }
 
+    @Test public void filtersByCollectionAndTheme() {
+        String json = "[{\"u\":\"https://sylvan.apple.com/a.mov\",\"s\":\"A\",\"k\":\"city\"},"
+                + "{\"u\":\"https://cdn.example/z.mp4\",\"s\":\"Z\",\"k\":\"water\"},"
+                + "{\"u\":\"https://cdn.example/n.mp4\",\"s\":\"Z\"}]";   // no theme: landscapes
+        java.util.Set<String> all = StateJson.allThemes();
+        assertEquals(3, Aerials.parse(json, false, "", all).size());
+        assertEquals(Collections.singletonList("https://sylvan.apple.com/a.mov"), Aerials.parse(json, false, "A", all));
+        assertEquals(Collections.singletonList("https://cdn.example/n.mp4"),
+                Aerials.parse(json, false, "Z", Collections.singleton("nature")));
+        assertTrue(Aerials.parse(json, false, "A", Collections.singleton("water")).isEmpty());
+    }
+
     @Test public void neverTheSameTwiceInARow() {
         List<String> urls = Arrays.asList("a", "b", "c");
         Random r = new Random(1);
@@ -42,6 +54,13 @@ public class AerialsTest {
             String json = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
             assertEquals(251, Aerials.parse(json, false).size());   // 139 Apple + 112 Amazon
             assertEquals(112, Aerials.parse(json, true).size());
+            int sum = 0;   // every clip has exactly one theme
+            for (String t : Aerials.THEMES) {
+                int n = Aerials.parse(json, false, "", Collections.singleton(t)).size();
+                assertTrue(t, n > 0);
+                sum += n;
+            }
+            assertEquals(251, sum);
         }
     }
 }

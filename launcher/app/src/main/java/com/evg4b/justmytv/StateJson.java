@@ -27,6 +27,8 @@ final class StateJson {
     String wallpaper = "gradient";    // gradient | picture | video | aerials
     String videoUri = "", imageUri = "";
     int dim = 20;                      // 0, 20, 40 or 60 %
+    String aerialSource = "";          // "" (both), "A" or "Z" (D100)
+    Set<String> aerialThemes = allThemes();   // never empty
 
     // ui
     int columns = 5;              // 4..7
@@ -63,6 +65,8 @@ final class StateJson {
 
     boolean hasCity() { return !city.isEmpty(); }
 
+    static Set<String> allThemes() { return new LinkedHashSet<>(java.util.Arrays.asList(Aerials.THEMES)); }
+
     static StateJson parse(String json) {
         StateJson s = new StateJson();
         if (json == null || json.trim().isEmpty()) return s;
@@ -81,6 +85,14 @@ final class StateJson {
                 s.imageUri = wp.optString("image", "");
                 int dm = wp.optInt("dim", 20);
                 s.dim = dm == 0 || dm == 40 || dm == 60 ? dm : 20;
+                String src = wp.optString("aerialSource", "");
+                s.aerialSource = src.equals("A") || src.equals("Z") ? src : "";
+                JSONArray th = wp.optJSONArray("aerialThemes");
+                if (th != null) {
+                    Set<String> known = new LinkedHashSet<>(strings(th));
+                    known.retainAll(allThemes());
+                    if (!known.isEmpty()) s.aerialThemes = known;
+                }
             }
             JSONObject ui = o.optJSONObject("ui");
             if (ui != null) {
@@ -134,7 +146,7 @@ final class StateJson {
             o.put("known", new JSONArray(known));
             o.put("lastFocused", lastFocused);
             o.put("wallpaper", obj(o, "wallpaper").put("type", wallpaper).put("uri", videoUri).put("image", imageUri)
-                    .put("dim", dim));
+                    .put("dim", dim).put("aerialSource", aerialSource).put("aerialThemes", new JSONArray(aerialThemes)));
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
                     .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv));

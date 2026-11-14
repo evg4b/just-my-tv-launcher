@@ -47,6 +47,23 @@
     <string name="not_chosen">Не выбрано</string>
     <string name="chosen">Выбрано</string>
     <string name="aerials_note">Видео аэросъёмки транслируются с серверов Apple и Amazon, пока открыт главный экран, и принадлежат им.</string>
+    <string name="aerials_collection">Коллекция</string>
+    <string name="aerials_all">Все</string>
+    <string name="aerials_themes">Темы</string>
+    <string name="n_of_m">%1$d из %2$d</string>
+    <string name="theme_nature">Пейзажи</string>
+    <string name="theme_space">Космос и ночное небо</string>
+    <string name="theme_city">Города</string>
+    <string name="theme_water">Под водой</string>
+    <string name="theme_animals">Дикая природа</string>
+    <string name="theme_calm">Абстракция и камины</string>
+    <plurals name="aerials_count">
+        <item quantity="one">Будет показан %d ролик</item>
+        <item quantity="few">Будут показаны %d ролика</item>
+        <item quantity="many">Будут показаны %d роликов</item>
+        <item quantity="other">Будут показаны %d ролика</item>
+    </plurals>
+    <string name="aerials_none">Нет подходящих роликов: на главном экране будет градиент</string>
     <string name="video_warning">Для ТВ лучше 1080p H.264</string>
     <string name="no_picker">На этом ТВ нет выбора файлов</string>
     <string name="access_not_kept">После перезапуска файл может не открыться</string>

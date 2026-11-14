@@ -203,10 +203,23 @@ final class Screens {
         p.title(s(R.string.wallpaper));
         String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_video), s(R.string.wp_aerials)};
         p.choice(s(R.string.wallpaper_type), names, java.util.Arrays.asList(TYPES).indexOf(st.wallpaper), i -> {
+            boolean aerialsRows = st.wallpaper.equals("aerials") != TYPES[i].equals("aerials");
             st.wallpaper = TYPES[i];
             a.save();
             a.applyWallpaper();
+            if (aerialsRows) panel.refresh();   // the aerial options come and go with the type
         });
+        if (st.wallpaper.equals("aerials")) {
+            String[] sources = {s(R.string.aerials_all), "Apple", "Amazon"};
+            p.choice(s(R.string.aerials_collection), sources, java.util.Arrays.asList(Aerials.SOURCES).indexOf(st.aerialSource), i -> {
+                st.aerialSource = Aerials.SOURCES[i];
+                a.aerialsChanged();
+                panel.refresh();   // the count below
+            });
+            p.item(s(R.string.aerials_themes), a.getString(R.string.n_of_m, st.aerialThemes.size(), Aerials.THEMES.length) + "  ›",
+                    () -> panel.push(this::aerialThemes));
+            p.note(aerialsCount(st));
+        }
         p.item(s(R.string.choose_video), s(st.videoUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickVideo);
         p.item(s(R.string.choose_picture), s(st.imageUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickPicture);
         p.choice(s(R.string.dimming), new String[]{"0 %", "20 %", "40 %", "60 %"}, st.dim / 20, i -> {
@@ -215,6 +228,30 @@ final class Screens {
             a.applyDim();
         });
         p.note(s(R.string.aerials_note));
+    }
+
+    private static final int[] THEME_NAMES = {R.string.theme_nature, R.string.theme_space, R.string.theme_city,
+            R.string.theme_water, R.string.theme_animals, R.string.theme_calm};
+
+    /** Which aerials play (D100); the last theme cannot be turned off. */
+    private void aerialThemes(SidePanel p) {
+        StateJson st = a.state;
+        p.title(s(R.string.aerials_themes));
+        for (int i = 0; i < Aerials.THEMES.length; i++) {
+            String t = Aerials.THEMES[i];
+            p.toggle(s(THEME_NAMES[i]), st.aerialThemes.contains(t), on -> {
+                if (on) st.aerialThemes.add(t);
+                else if (st.aerialThemes.size() > 1) st.aerialThemes.remove(t);
+                a.aerialsChanged();
+                panel.refresh();   // the count, and the last theme back on
+            });
+        }
+        p.note(aerialsCount(st));
+    }
+
+    private String aerialsCount(StateJson st) {
+        int n = Aerials.parse(a.aerialsJson(), false, st.aerialSource, st.aerialThemes).size();
+        return n == 0 ? s(R.string.aerials_none) : a.getResources().getQuantityString(R.plurals.aerials_count, n, n);
     }
 
     // ---- weather (PLAN 4.7, 10.1) ----
