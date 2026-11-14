@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,7 +36,7 @@ final class BarBand extends RecyclerView.ItemDecoration {
             View v = parent.getChildAt(i);
             int pos = parent.getChildAdapterPosition(v);
             if (pos < 0 || pos >= cols) continue;
-            View card = v.findViewById(R.id.card);
+            View card = ((ViewGroup) v).getChildAt(0);   // the card (item_app.xml)
             float l = v.getLeft() + card.getLeft(), t = v.getTop() + card.getTop();
             float rr = l + card.getWidth(), b = t + card.getHeight();
             if (!any) { r.set(l, t, rr, b); any = true; }

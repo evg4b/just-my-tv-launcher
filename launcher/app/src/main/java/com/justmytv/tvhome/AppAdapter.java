@@ -1,6 +1,5 @@
 package com.justmytv.tvhome;
 
-import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -8,7 +7,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -79,12 +77,8 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         lp.height = m.tileH;
         ((ViewGroup.MarginLayoutParams) h.name.getLayoutParams()).topMargin = m.labelMargin;
         if (!labels) h.name.setVisibility(View.GONE);
-        float r = m.cornerPx;
-        h.card.setOutlineProvider(new ViewOutlineProvider() {
-            @Override public void getOutline(View v, Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), r); }
-        });
-        h.card.setClipToOutline(true);
-        h.card.setBackground(h.bg);
+        h.color.setCornerRadius(m.cornerPx);
+        h.dust.setCornerRadius(m.cornerPx);
         h.card.setOnClickListener(v -> {
             int p = h.getBindingAdapterPosition();
             if (p != RecyclerView.NO_POSITION) listener.onLaunch(items.get(p));
@@ -119,8 +113,8 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     public void onBindViewHolder(@NonNull Holder h, int pos) {
         App a = items.get(pos);
         boolean banner = a.hasBanner();
-        h.banner.setImageBitmap(banner ? a.art : null);
-        h.banner.setVisibility(banner ? View.VISIBLE : View.GONE);
+        // banners may be transparent: the dark tile colour stays under them
+        h.card.setBackground(banner ? new LayerDrawable(new Drawable[]{h.color, new RoundArt(a.art, m.cornerPx)}) : h.bg);
         h.icon.setImageBitmap(banner ? null : a.art);
         h.icon.setVisibility(banner || a.art == null ? View.GONE : View.VISIBLE);
         h.title.setText(a.label);
@@ -134,22 +128,19 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
     static final class Holder extends RecyclerView.ViewHolder {
         final View card;
-        final ImageView banner, icon;
+        final ImageView icon;
         final TextView title, name;
         final GradientDrawable color = new GradientDrawable();
-        final Drawable bg;
+        // the "dust" over a coloured tile: 10 % white at the top, 14 % black at the bottom (PLAN 5.3)
+        final GradientDrawable dust = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0x1AFFFFFF, 0x24000000});
+        final Drawable bg = new LayerDrawable(new Drawable[]{color, dust});
 
         Holder(View v) {
             super(v);
             card = v.findViewById(R.id.card);
-            banner = v.findViewById(R.id.banner);
             icon = v.findViewById(R.id.icon);
             title = v.findViewById(R.id.title);
             name = v.findViewById(R.id.name);
-            // the "dust" over a coloured tile: 10 % white at the top, 14 % black at the bottom (PLAN 5.3)
-            GradientDrawable dust = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{0x1AFFFFFF, 0x24000000});
-            bg = new LayerDrawable(new Drawable[]{color, dust});
         }
     }
 }

@@ -40,6 +40,7 @@ final class SidePanel {
     private final Deque<Screen> stack = new ArrayDeque<>();
     private final Deque<Integer> focusStack = new ArrayDeque<>();   // the row that opened each subsection
     private final Runnable onOpen, onClose;
+    private boolean open;   // not the visibility: the panel stays visible while it slides out
 
     SidePanel(FrameLayout panel, View veil, Runnable onOpen, Runnable onClose) {
         this.panel = panel;
@@ -62,14 +63,15 @@ final class SidePanel {
         panel.setTranslationX(width);
     }
 
-    boolean isOpen() { return panel.getVisibility() == View.VISIBLE; }
+    boolean isOpen() { return open; }
 
     void open(Screen root) {
         stack.clear();
         focusStack.clear();
         stack.push(root);
         render(0, 0);
-        if (isOpen()) return;
+        if (open) return;
+        open = true;
         onOpen.run();
         panel.setVisibility(View.VISIBLE);
         veil.setVisibility(View.VISIBLE);
@@ -77,7 +79,8 @@ final class SidePanel {
     }
 
     void close() {
-        if (!isOpen()) return;
+        if (!open) return;
+        open = false;
         panel.animate().translationX(width).setDuration(260).withEndAction(() -> panel.setVisibility(View.GONE)).start();
         veil.setVisibility(View.GONE);
         onClose.run();

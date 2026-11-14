@@ -104,7 +104,10 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) { glass.scrolled(dy); }
+            @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                glass.scrolled(dy);
+                TopFade.scrolled(rv);
+            }
         });
         applyLayout();
 
@@ -130,7 +133,6 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         header(R.id.btn_inputs, () -> panel.open(screens.inputs));
         header(R.id.btn_network, () -> start(new Intent(Settings.ACTION_WIFI_SETTINGS)));
         header(R.id.btn_settings, () -> panel.open(screens.root));
-        applyClock();
 
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -207,7 +209,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         String type = state.wallpaper;
         boolean moving = type.equals("video") || type.equals("aerials");
         findViewById(R.id.video).setVisibility(moving ? View.VISIBLE : View.GONE);
-        poster.setImageResource(R.drawable.poster_default);   // until the picture or the poster frame is decoded
+        poster.setImageResource(R.drawable.aurora);   // until the picture or the poster frame is decoded
         if (type.equals("picture") && !state.imageUri.isEmpty()) {
             Uri uri = Uri.parse(state.imageUri);
             pool.execute(() -> {
@@ -359,17 +361,21 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     /** The Inputs icon shows only when it is wanted and there is an input to switch to (PLAN 7.7). */
     void updateInputsButton() {
-        boolean show = state.showInputsButton && !Inputs.list(this, state.inputsConnectedOnly).isEmpty();
-        findViewById(R.id.btn_inputs).setVisibility(show ? View.VISIBLE : View.GONE);
-        if (panel.showing(screens.inputs)) panel.refresh();
+        boolean want = state.showInputsButton, connectedOnly = state.inputsConnectedOnly;
+        pool.execute(() -> {   // TvInputManager calls are IPC: not on the main thread at every return to Home
+            boolean show = want && !Inputs.list(this, connectedOnly).isEmpty();
+            ui.post(() -> {
+                findViewById(R.id.btn_inputs).setVisibility(show ? View.VISIBLE : View.GONE);
+                if (panel.showing(screens.inputs)) panel.refresh();
+            });
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        applyClock();   // the greeting follows the time of day
+        applyClock();   // the greeting follows the time of day; also shows the cached weather
         updateInputsButton();
-        showWeather();
         // refresh at once if the cache is older than the interval, then every 30 minutes while Home is shown
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));

@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:importantForAccessibility="no"
         android:scaleType="centerCrop"
-        android:src="@drawable/poster_default" />
+        android:src="@drawable/aurora" />
 
     <!-- dimming of a picture or video (0/20/40/60 %); its colour carries the alpha, so no extra layer -->
     <View

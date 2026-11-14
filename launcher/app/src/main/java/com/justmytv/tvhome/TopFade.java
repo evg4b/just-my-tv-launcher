@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * Rows scrolled up under the header fade out above the ceiling instead of drawing over the clock.
  * Based on CleanYourTV TopFade (MIT): erases the top of the grid's own picture, so the wallpaper shows through;
- * the grid needs a hardware layer for that, or the erase would punch through the window.
+ * the grid needs a hardware layer for that while rows are up ({@link #scrolled}), or the erase would punch through the window.
  */
 final class TopFade extends RecyclerView.ItemDecoration {
     private final Paint paint = new Paint();
@@ -28,8 +28,14 @@ final class TopFade extends RecyclerView.ItemDecoration {
     }
 
     static void attach(RecyclerView grid, float ceiling, float length) {
-        grid.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         grid.addItemDecoration(new TopFade(ceiling, length));
+        scrolled(grid);
+    }
+
+    /** Call on every scroll: the layer costs a full-screen offscreen pass per frame, so it exists only while rows are up. */
+    static void scrolled(RecyclerView grid) {
+        int type = grid.computeVerticalScrollOffset() > 0 ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_NONE;
+        if (grid.getLayerType() != type) grid.setLayerType(type, null);
     }
 
     @Override
