@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home screen (PLAN 11.4). M1: grid, focus ring, header. Video, poster, panels come later. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false">
+    <!-- no background: the window background (poster) shows through (overdraw, PLAN 11.3) -->
+
+    <!-- only the top 20 % (108 of 540 dp): the gradient is clear below, so a full-screen view would only cost fill -->
+    <View
+        android:id="@+id/scrim"
+        android:layout_width="match_parent"
+        android:layout_height="108dp"
+        android:background="@drawable/scrim_top" />
+
+    <!-- paddingTop is set in code to barTop (PLAN 7.2) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="44dp"
+        android:paddingEnd="44dp"
+        android:paddingBottom="0dp" />
+
+    <!-- focus ring (PLAN 7.4): above the grid so the bar band does not cover it; not focusable.
+         It is shifted while the grid scrolls, so neither it nor the root clips. -->
+    <FrameLayout
+        android:id="@+id/glass_host"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false" />
+
+    <!-- header: clock and date on the left -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="26dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextClock
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/outfit_light"
+            android:fontFeatureSettings="tnum"
+            android:format12Hour="HH:mm"
+            android:format24Hour="HH:mm"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.02"
+            android:textColor="#FFFFFFFF"
+            android:textSize="52sp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="#38FFFFFF" />
+
+        <TextClock
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/outfit_regular"
+            android:format12Hour="@string/date_format"
+            android:format24Hour="@string/date_format"
+            android:letterSpacing="0.14"
+            android:lineSpacingExtra="2dp"
+            android:textAllCaps="true"
+            android:textColor="#A6FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- header: round icons on the right, no labels (PLAN 7.1). Until M3 they open the system screens. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="34dp"
+        android:layout_marginEnd="56dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_inputs"
+            style="@style/RoundButton"
+            android:contentDescription="@string/inputs"
+            android:src="@drawable/ic_input" />
+
+        <ImageButton
+            android:id="@+id/btn_network"
+            style="@style/RoundButton"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/network"
+            android:src="@drawable/ic_wifi" />
+
+        <ImageButton
+            android:id="@+id/btn_settings"
+            style="@style/RoundButton"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/settings"
+            android:src="@drawable/ic_settings" />
+    </LinearLayout>
+</FrameLayout>

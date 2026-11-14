@@ -7,4 +7,11 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:colorBackground">#FF000000</item>
     </style>
+
+    <style name="RoundButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/round_btn</item>
+        <item name="android:scaleType">center</item>
+    </style>
 </resources>
