@@ -201,7 +201,19 @@ final class Screens {
     private static final String[] TYPES = {"gradient", "picture", "photos", "video", "aerials"};
     private static final int[] PHOTO_MINUTES = {5, 15, 30, 60};   // 2 requests a photo; a new key has 50 an hour
 
+    private boolean themesChanged;
+
+    /** Leaving Themes (back to Wallpaper, or the panel closing): one new playlist for all the toggles. */
+    void panelClosed() { applyThemes(); }
+
+    private void applyThemes() {
+        if (!themesChanged) return;
+        themesChanged = false;
+        a.aerialsChanged();
+    }
+
     private void wallpaperRows(SidePanel p) {
+        applyThemes();   // back from Themes
         StateJson st = a.state;
         p.title(s(R.string.wallpaper));
         String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_photos), s(R.string.wp_video),
@@ -209,7 +221,7 @@ final class Screens {
         p.choice(s(R.string.wallpaper_type), names, java.util.Arrays.asList(TYPES).indexOf(st.wallpaper), i -> {
             st.wallpaper = TYPES[i];
             a.save();
-            a.applyWallpaper();
+            a.applyWallpaperSoon();   // not at every step on the way from one type to another
             panel.refresh();   // the photo and aerial options come and go with the type
         });
         String note = null;   // under the rows, after Dimming
@@ -230,9 +242,9 @@ final class Screens {
                 p.choice(s(R.string.photo_every), every, cur, i -> {
                     st.photoMinutes = PHOTO_MINUTES[i];
                     a.save();
-                    a.applyWallpaper();   // the timer starts over with the new interval
+                    a.photos.setInterval(st.photoMinutes * 60_000L);
                 });
-                p.item(s(R.string.next_photo), null, a.photos::next);
+                p.item(s(R.string.next_photo), a.photos.fetching() ? s(R.string.loading) : null, a.photos::next);
                 StringBuilder n = new StringBuilder();
                 switch (a.photos.status()) {
                     case NO_KEY: n.append(s(R.string.photos_no_key)).append('\n'); break;
@@ -306,7 +318,8 @@ final class Screens {
             p.toggle(s(THEME_NAMES[i]), st.aerialThemes.contains(t), on -> {
                 if (on) st.aerialThemes.add(t);
                 else if (st.aerialThemes.size() > 1) st.aerialThemes.remove(t);
-                a.aerialsChanged();
+                a.save();
+                themesChanged = true;   // the clip changes once, when this screen is left
                 panel.refresh();   // the count, and the last theme back on
             });
         }

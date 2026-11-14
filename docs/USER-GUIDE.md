@@ -21,8 +21,9 @@ Back on the home screen does nothing. There is nowhere to go back to.
 Hold OK on a tile to open its menu:
 
 - Open starts the app.
-- Move puts an amber ring around the tile. Move it with the arrows and press OK or Back to put it down.
-- Hide removes the tile from the grid. Settings → Apps brings it back.
+- Move puts an amber ring around the tile. Move it with the arrows and press OK to put it down, or Back to put it
+  back where it was.
+- Hide removes the tile from the grid, and a message says where to find it: Settings → Apps brings it back.
 - App details opens the system page for the app, where you can force stop, clear data or uninstall it.
 
 New apps appear at the end of the grid. An app you uninstall and install again also goes to the end.
@@ -52,7 +53,10 @@ Rows work in one of three ways:
 Type chooses between Gradient, Picture, Photos, Video and Aerials. The rows under it belong to the chosen type only:
 "Choose picture…" for Picture, "Choose video…" for Video, the key and interval for Photos, Collection and Themes for
 Aerials. "Choose picture…" and "Choose video…" open the TV's file picker. Dimming darkens the wallpaper by 0, 20, 40 or
-60 %; it is not offered for the gradient.
+60 %; it is not offered for the gradient. Until a picture or video is chosen, those types show the gradient.
+
+Stepping through the types with Left and Right does not switch the wallpaper at every step: it changes once the choice
+has rested for about a second, so passing Photos or Aerials on the way does not download or stream anything.
 
 A video plays silently and loops without a break. Whenever Home appears, you first see a still frame taken from the
 start of the clip (black the very first time), and the video fades in over about a second once it is playing. The
@@ -82,8 +86,9 @@ With Aerials chosen, two more rows appear under Type:
 - Themes picks what the clips show: Landscapes, Space and night sky, Cities, Underwater, Wildlife, and Abstract and
   fireplaces. All six are on at first. At least one stays on: the last one cannot be turned off.
 
-A line under the rows says how many clips will play. Some mixes have none, for example Apple with Wildlife or
-Abstract and fireplaces, because Apple has no such clips; then Home shows the gradient. Each change starts a new clip.
+A line under the rows says how many clips will play. Some mixes have none, for example Apple with Wildlife or Abstract
+and fireplaces, because Apple has no such clips; then Home shows the gradient. A new Collection starts a new clip once
+the choice has rested; theme changes start one new clip when you leave the Themes screen.
 
 Photos shows a random landscape photo from Unsplash and changes it while the home screen is visible. It needs your own
 free Unsplash access key:
@@ -95,12 +100,14 @@ free Unsplash access key:
    phone remote app's keyboard is easier than the on-screen one. The row then shows the key's last four characters.
 
 A new key allows 50 requests an hour and each photo takes two, so the shortest interval is 5 minutes. "Change every"
-sets it: 5, 15 or 30 minutes, or an hour (5 minutes at first). "Next photo" changes it at once. A line under the rows
-says when the key was rejected, the hourly limit is used up (the next try is in 15 minutes) or Unsplash cannot be
-reached (the next try is in 2 minutes). "Remove the key" on the key screen deletes it from the TV. A change uses the
+sets it: 5, 15 or 30 minutes, or an hour (5 minutes at first). "Next photo" changes it at once and says Loading… until
+the new photo has arrived. A new interval keeps the photo on screen and counts from when it was downloaded. A line under
+the rows says when the key was rejected, the hourly limit is used up (the next try is in 15 minutes) or Unsplash cannot
+be reached (the next try is in 2 minutes). "Remove the key" on the key screen deletes it from the TV. A change uses the
 same transition as the aerials: the photo fades to black and the new one fades in. The last photo is kept on the TV, so
-Home shows it straight away next time, also without a network; the countdown continues from when it was downloaded.
-Under the rows you see who took the photo. Until a photo has been downloaded, you see the gradient.
+Home shows it straight away next time, also without a network; the countdown continues from when it was downloaded. The
+photographer's name and Unsplash show in small text under the round buttons at the top right of Home, and under the rows
+in the settings. Until a photo has been downloaded, you see the gradient.
 
 ### Weather
 

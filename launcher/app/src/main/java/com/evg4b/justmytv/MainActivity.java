@@ -120,6 +120,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             aerialUrls = null;
         });
         photos = new PhotoWallpaper(this, poster, () -> {
+            showPhotoCredit();
             if (panel != null && panel.showing(screens.wallpaper)) panel.refresh();
         });
         applyWallpaper();
@@ -131,6 +132,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             glass.hide();
             blockBehindPanel(true);
         }, () -> {
+            screens.panelClosed();
             blockBehindPanel(false);
             if (opener != null && opener.isAttachedToWindow() && opener.isShown()) opener.requestFocus();
             else focusPosition(Math.min(lastPos, adapter.getItemCount() - 1));
@@ -220,7 +222,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             Uri uri = Uri.parse(state.imageUri);
             pool.execute(() -> {
                 Bitmap b = WallpaperFiles.picture(this, uri);
-                ui.post(() -> { if (gen == wallpaperGen && b != null) poster.setImageBitmap(b); });
+                ui.post(() -> {
+                    if (gen != wallpaperGen) return;
+                    if (b != null) poster.setImageBitmap(b);
+                    else poster.setImageResource(R.drawable.aurora);   // the file is gone or unreadable: not black
+                });
             });
         } else if (type.equals("video") && !state.videoUri.isEmpty()) {
             pool.execute(() -> {
@@ -229,20 +235,46 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             });
         }
         applyDim();
+        showPhotoCredit();
         if (started) startVideo();
     }
 
-    /** Before the first frame: the gradient only for its own type; a video or picture comes up from black, never over it. */
+    /** Unsplash's guidelines: the photographer and Unsplash where the photo is shown (D105). */
+    void showPhotoCredit() {
+        TextView credit = findViewById(R.id.photo_credit);
+        String by = state.wallpaper.equals("photos") ? photos.author() : "";
+        credit.setVisibility(by.isEmpty() ? View.GONE : View.VISIBLE);
+        if (!by.isEmpty()) credit.setText(getString(R.string.photo_by, by));
+    }
+
+    /**
+     * Before the first frame: the gradient for its own type and for a picture or video not chosen yet (nothing will
+     * come); otherwise black, so a video or picture comes up from black, never over the gradient.
+     */
     private void resetPoster() {
-        if (state.wallpaper.equals("gradient")) poster.setImageResource(R.drawable.aurora);
+        if (showsGradient()) poster.setImageResource(R.drawable.aurora);
         else poster.setImageDrawable(new ColorDrawable(Color.BLACK));
+    }
+
+    private boolean showsGradient() {
+        String t = state.wallpaper;
+        return t.equals("gradient") || (t.equals("picture") && state.imageUri.isEmpty())
+                || (t.equals("video") && state.videoUri.isEmpty());
     }
 
     void applyDim() {
         View dim = findViewById(R.id.dim);
-        boolean on = state.dim > 0 && !state.wallpaper.equals("gradient");
+        boolean on = state.dim > 0 && !showsGradient();
         dim.setVisibility(on ? View.VISIBLE : View.GONE);
         dim.setBackgroundColor((state.dim * 255 / 100) << 24);
+    }
+
+    private final Runnable applyWallpaperNow = this::applyWallpaper;
+
+    /** After a change from the settings: once the choice has rested, not at every step of Left and Right. */
+    void applyWallpaperSoon() {
+        ui.removeCallbacks(applyWallpaperNow);
+        ui.postDelayed(applyWallpaperNow, 800);
     }
 
     private void startVideo() {
@@ -293,7 +325,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     void aerialsChanged() {
         aerialUrls = null;
         save();
-        if (state.wallpaper.equals("aerials")) applyWallpaper();
+        if (state.wallpaper.equals("aerials")) applyWallpaperSoon();
     }
 
     private String readRaw(int id) {
@@ -513,8 +545,10 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             case KeyEvent.KEYCODE_DPAD_DOWN: if (down(e)) moveBy(cols); return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
-            case KeyEvent.KEYCODE_BACK:
                 if (e.getAction() == KeyEvent.ACTION_UP) endMove();   // on UP, so the release does not click the tile
+                return true;
+            case KeyEvent.KEYCODE_BACK:
+                if (e.getAction() == KeyEvent.ACTION_UP) cancelMove();
                 return true;
             default: return super.dispatchKeyEvent(e);
         }
@@ -626,7 +660,10 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         menu = TileMenu.show(card,
                 getString(R.string.open), (TileMenu.Action) () -> onLaunch(a),
                 getString(R.string.move), (TileMenu.Action) () -> startMove(a),
-                getString(R.string.hide), (TileMenu.Action) () -> setHidden(a.pkg, true),
+                getString(R.string.hide), (TileMenu.Action) () -> {
+                    setHidden(a.pkg, true);
+                    Toast.makeText(this, R.string.hidden_hint, Toast.LENGTH_LONG).show();
+                },
                 getString(R.string.app_details), (TileMenu.Action) () -> start(new Intent(
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.pkg, null))));
     }
@@ -662,6 +699,22 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             vh.itemView.requestRectangleOnScreen(new Rect(0, 0, vh.itemView.getWidth(), vh.itemView.getHeight()));
             glass.follow(card);
         });
+    }
+
+    /** Back in Move mode: the tile goes back where it was; the saved order never changed. */
+    private void cancelMove() {
+        String pkg = movingPkg;
+        movingPkg = null;
+        glass.setMoving(false);
+        applyApps();
+        List<App> items = adapter.items();
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).pkg.equals(pkg)) {
+                int pos = i;
+                grid.post(() -> focusPosition(pos));
+                break;
+            }
+        }
     }
 
     private void endMove() {

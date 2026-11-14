@@ -212,6 +212,22 @@
             android:src="@drawable/ic_settings" />
     </LinearLayout>
 
+    <!-- who took the Photos wallpaper (D105): under the round buttons, quiet, aligned to their right edge -->
+    <TextView
+        android:id="@+id/photo_credit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="56dp"
+        android:maxWidth="360dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/outfit_regular"
+        android:singleLine="true"
+        android:textColor="#8CFFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
     <!-- under an open panel -->
     <View
         android:id="@+id/veil"

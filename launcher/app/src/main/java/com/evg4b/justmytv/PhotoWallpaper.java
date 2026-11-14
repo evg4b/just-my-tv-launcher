@@ -105,6 +105,18 @@ final class PhotoWallpaper {
 
     Status status() { return status; }
 
+    /** A download is running ("Next photo" shows Loading…). */
+    boolean fetching() { return fetching; }
+
+    /** A new interval keeps the photo on screen; the next change is due everyMs after the kept photo was written. */
+    void setInterval(long everyMs) {
+        this.everyMs = everyMs;
+        if (!running || fetching || key.isEmpty()) return;
+        main.removeCallbacks(tick);
+        long age = System.currentTimeMillis() - photo.lastModified();
+        main.postDelayed(tick, photo.exists() ? Math.max(0, everyMs - age) : 0);
+    }
+
     void stop() {
         running = false;
         fetching = false;
@@ -120,6 +132,7 @@ final class PhotoWallpaper {
         if (!running || fetching || key.isEmpty()) return;
         main.removeCallbacks(tick);
         fetch();
+        changed.run();   // shows Loading…
     }
 
     /** The photographer of the photo on screen, or "". */
@@ -269,6 +282,7 @@ final class PhotoWallpaper {
     private void fadeIn(Bitmap b) {
         darken(255);
         poster.setImageBitmap(b);
+        changed.run();   // the credit on Home follows the photo on screen
         fade = ValueAnimator.ofInt(255, 0).setDuration(FADE_IN_MS);
         fade.setInterpolator(new AccelerateDecelerateInterpolator());   // ease-in-out, as the video reveal
         fade.addUpdateListener(a -> darken((int) a.getAnimatedValue()));
