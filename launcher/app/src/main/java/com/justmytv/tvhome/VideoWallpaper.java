@@ -203,6 +203,7 @@ final class VideoWallpaper {
             player.release();
             player = null;
         }
+        if (aerials != null) poster.setImageResource(R.drawable.aurora);   // no aerial plays: a still gradient, not black
         showPoster();
     }
 }

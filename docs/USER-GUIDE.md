@@ -68,7 +68,7 @@ ffmpeg -i in.mov -an -vf "scale=1920:1080:force_original_aspect_ratio=increase,c
 Copy the result to the TV's `Movies` folder and choose it with "Choose video…".
 
 Aerials streams clips from Apple's and Amazon's servers in random order, one after another, while the home screen is
-visible. It needs a network; without one you see the gradient and nothing is requested. If Apple's servers fail on
+visible. Each time Home appears, the clip fades in from black; the gradient never shows under it. It needs a network; without one you see the gradient and nothing is requested. If Apple's servers fail on
 your TV, TV Home skips them and plays Amazon's clips until it restarts.
 
 ### Weather

@@ -13,14 +13,15 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <!-- the poster: the gradient, the picture, or the video's first frame; opaque; fades out at the video's first frame -->
+    <!-- the poster: the gradient, the picture, the video's first frame, or black before a video; opaque; fades out at
+         the video's first frame. Its image is set in code (resetPoster), never the gradient under a video -->
     <ImageView
         android:id="@+id/poster"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:importantForAccessibility="no"
         android:scaleType="centerCrop"
-        android:src="@drawable/aurora" />
+        android:src="@android:color/black" />
 
     <!-- dimming of a picture or video (0/20/40/60 %); its colour carries the alpha, so no extra layer -->
     <View

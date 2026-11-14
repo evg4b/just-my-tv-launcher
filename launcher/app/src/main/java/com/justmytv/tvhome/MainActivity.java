@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -209,7 +211,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         String type = state.wallpaper;
         boolean moving = type.equals("video") || type.equals("aerials");
         findViewById(R.id.video).setVisibility(moving ? View.VISIBLE : View.GONE);
-        poster.setImageResource(R.drawable.aurora);   // until the picture or the poster frame is decoded
+        resetPoster();   // until the picture or the poster frame is decoded
         if (type.equals("picture") && !state.imageUri.isEmpty()) {
             Uri uri = Uri.parse(state.imageUri);
             pool.execute(() -> {
@@ -226,6 +228,12 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (started) startVideo();
     }
 
+    /** Before the first frame: the gradient only for its own type; a video or picture comes up from black, never over it. */
+    private void resetPoster() {
+        if (state.wallpaper.equals("gradient")) poster.setImageResource(R.drawable.aurora);
+        else poster.setImageDrawable(new ColorDrawable(Color.BLACK));
+    }
+
     void applyDim() {
         View dim = findViewById(R.id.dim);
         boolean on = state.dim > 0 && !state.wallpaper.equals("gradient");
@@ -236,7 +244,12 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private void startVideo() {
         if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
             video.startFile(Uri.parse(state.videoUri));
-        } else if (state.wallpaper.equals("aerials") && online()) {   // offline: the poster, no requests (PLAN 6.3)
+        } else if (state.wallpaper.equals("aerials")) {
+            if (!online()) {   // offline: a still gradient, no requests (PLAN 6.3)
+                poster.setImageResource(R.drawable.aurora);
+                return;
+            }
+            if (!video.playing()) poster.setImageDrawable(new ColorDrawable(Color.BLACK));   // a fallback may have left the gradient up
             if (aerialUrls != null) {
                 video.startAerials(aerialUrls);
                 return;
@@ -433,7 +446,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         for (App a : installed) a.art = null;
         adapter.notifyDataSetChanged();
         wallpaperGen++;   // a decode still running is dropped too
-        poster.setImageResource(R.drawable.aurora);   // the picture or poster frame: up to 8 MB
+        resetPoster();   // drops the picture or poster frame: up to 8 MB
         artDropped = true;
     }
 
