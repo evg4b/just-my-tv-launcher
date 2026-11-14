@@ -133,3 +133,14 @@ Decisions taken while fixing the review findings in PLAN v2. None of them change
 | D69 | Weather is hidden until the first good answer; changing °C/°F drops the cache | Nothing to show without data; a cached °C value labelled °F would be wrong | PLAN 4.7 |
 | D70 | "Connected only" hides waiting HDMI ports; AV inputs are under "More" unless "Hide AV" is on | TCL reports empty HDMI ports as connected-standby; AV has no hotplug state | PLAN 7.7 |
 | D71 | The header's network icon keeps opening the system Wi-Fi settings | No network screen of our own is planned | PLAN 7.1 |
+
+## Decisions taken at M4
+
+| No. | Decision | Option and reason | Where in the plan |
+|---|---|---|---|
+| D72 | All 251 Apple and Amazon aerials are kept; nothing is dropped as 4K | The list has no 4K entry: every Apple link is `SDR_2K_AVC` | PLAN 6.3 |
+| D73 | Aerials play as a rolling two-item playlist; a failing clip is replaced by another, and three failures in a row fall back to the poster | One bad link should not end the aerials; a playlist joins clips without a black frame | PLAN 6.1, 6.3 |
+| D74 | When an Apple stream fails, Apple is skipped for the rest of the session (not stored) | A TLS chain the TV rejects fails every Apple link; a reboot or an update may fix it | PLAN 6.3, RISKS 45 |
+| D75 | The chosen video's first frame is saved as `poster.webp` (RGB_565 in memory) and is the poster for that video | A return to Home shows the clip's own picture, then the clip, instead of the gradient | PLAN 6.2 |
+| D76 | The default wallpaper is the gradient (the Aurora poster); dimming is 0 / 20 / 40 / 60 %, default 20, and does not apply to the gradient | No file is needed for the default; the gradient is the theme background too, so the cold start does not change colour; 30 is not on the scale | PLAN 9.1, 10.1 |
+| D77 | The "icons appear after the poster" animation (PLAN 6.2 timings) is not done | The grid shows at the first frame; an entrance animation would only delay it | PLAN 6.2 |

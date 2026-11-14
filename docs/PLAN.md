@@ -2060,6 +2060,7 @@ the "Aerials" type (6.3: `res/raw/aerials.json`, shuffle on end, 8 s watchdog, p
 *Done when:* 30 minutes of a looped clip with no sound and no crashes; the decoder is released in the background; the
 `screenrecord` measurement is recorded in this file (section 6.2); memory metrics are recorded; an Apple and an Amazon aerial
 each play on the TV, or the failing set is skipped and the reason (for example the TLS error) is recorded in RISKS 45.
+**Status 2026-11-13:** built (aerials and state JVM tests green), pushed; not yet checked on the TV (OPEN-QUESTIONS T18). The aerial list has no 4K entry to drop: every Apple link is `SDR_2K_AVC` ("UHD" in some names is the source), so all 251 are kept (D72).
 
 **M5. Weather.** Geocoding, `HttpURLConnection`, `WeatherParser` (4.5), WMO icons (our own VectorDrawable), cache,
 attribution. *Done when:* the parser unit tests on the fixture pass; with the network off, the cache is shown with its update time;
