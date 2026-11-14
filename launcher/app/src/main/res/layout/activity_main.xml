@@ -4,7 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false">
-    <!-- no background: the window background (poster) shows through (overdraw, PLAN 11.3) -->
+    <!-- no background: the poster or the video covers the screen (overdraw, PLAN 11.3) -->
+
+    <!-- video wallpaper, under the poster (PLAN 6.2); gone unless the wallpaper is a video or the aerials -->
+    <SurfaceView
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- the poster: the gradient, the picture, or the video's first frame; opaque; fades out at the video's first frame -->
+    <ImageView
+        android:id="@+id/poster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:src="@drawable/poster_default" />
+
+    <!-- dimming of a picture or video (0/20/40/60 %); its colour carries the alpha, so no extra layer -->
+    <View
+        android:id="@+id/dim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <!-- only the top 20 % (108 of 540 dp): the gradient is clear below, so a full-screen view would only cost fill -->
     <View

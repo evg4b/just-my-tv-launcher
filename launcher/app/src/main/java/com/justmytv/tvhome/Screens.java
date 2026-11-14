@@ -31,6 +31,7 @@ final class Screens {
 
     private void root(SidePanel p) {
         p.title(s(R.string.settings));
+        p.section(s(R.string.wallpaper), this::wallpaper);
         p.section(s(R.string.weather), this::weather);
         p.section(s(R.string.apps), apps);
         p.section(s(R.string.appearance), this::appearance);
@@ -141,6 +142,29 @@ final class Screens {
         } catch (PackageManager.NameNotFoundException ignored) { }
         p.title(s(R.string.about));
         p.note(a.getString(R.string.about_text, version));
+    }
+
+    // ---- wallpaper (PLAN 6, 10.1) ----
+
+    private static final String[] TYPES = {"gradient", "picture", "video", "aerials"};
+
+    private void wallpaper(SidePanel p) {
+        StateJson st = a.state;
+        p.title(s(R.string.wallpaper));
+        String[] names = {s(R.string.wp_gradient), s(R.string.wp_picture), s(R.string.wp_video), s(R.string.wp_aerials)};
+        p.choice(s(R.string.wallpaper_type), names, java.util.Arrays.asList(TYPES).indexOf(st.wallpaper), i -> {
+            st.wallpaper = TYPES[i];
+            a.save();
+            a.applyWallpaper();
+        });
+        p.item(s(R.string.choose_video), s(st.videoUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickVideo);
+        p.item(s(R.string.choose_picture), s(st.imageUri.isEmpty() ? R.string.not_chosen : R.string.chosen), a::pickPicture);
+        p.choice(s(R.string.dimming), new String[]{"0 %", "20 %", "40 %", "60 %"}, st.dim / 20, i -> {
+            st.dim = i * 20;
+            a.save();
+            a.applyDim();
+        });
+        p.note(s(R.string.aerials_note));
     }
 
     // ---- weather (PLAN 4.7, 10.1) ----

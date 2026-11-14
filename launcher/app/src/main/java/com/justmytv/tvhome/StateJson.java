@@ -20,6 +20,11 @@ final class StateJson {
     Set<String> known = new LinkedHashSet<>();
     String lastFocused = "";
 
+    // wallpaper (PLAN 6)
+    String wallpaper = "gradient";    // gradient | picture | video | aerials
+    String videoUri = "", imageUri = "";
+    int dim = 20;                      // 0, 20, 40 or 60 %
+
     // ui
     int columns = 5;              // 4..7
     int rowsBelow = 0;            // 0..3
@@ -56,6 +61,15 @@ final class StateJson {
             s.hidden = new LinkedHashSet<>(strings(o.optJSONArray("hidden")));
             s.known = new LinkedHashSet<>(strings(o.optJSONArray("known")));
             s.lastFocused = o.optString("lastFocused", "");
+            JSONObject wp = o.optJSONObject("wallpaper");
+            if (wp != null) {
+                String t = wp.optString("type", "gradient");
+                s.wallpaper = t.equals("picture") || t.equals("video") || t.equals("aerials") ? t : "gradient";
+                s.videoUri = wp.optString("uri", "");
+                s.imageUri = wp.optString("image", "");
+                int dm = wp.optInt("dim", 20);
+                s.dim = dm == 0 || dm == 40 || dm == 60 ? dm : 20;
+            }
             JSONObject ui = o.optJSONObject("ui");
             if (ui != null) {
                 s.columns = clamp(ui.optInt("columns", 5), 4, 7);
@@ -99,6 +113,8 @@ final class StateJson {
             o.put("hidden", new JSONArray(hidden));
             o.put("known", new JSONArray(known));
             o.put("lastFocused", lastFocused);
+            o.put("wallpaper", obj(o, "wallpaper").put("type", wallpaper).put("uri", videoUri).put("image", imageUri)
+                    .put("dim", dim));
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
                     .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv));

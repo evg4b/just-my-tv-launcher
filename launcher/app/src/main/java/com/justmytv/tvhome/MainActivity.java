@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int CEILING_DP = 120;     // rows scrolled up stop below the header
     private static final int FADE_DP = 36;
+    private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
     private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
 
@@ -77,6 +78,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private Screens screens;
     private View opener;        // what had focus when the panel opened; it gets it back
     final WeatherClient weather = new WeatherClient();
+    private VideoWallpaper video;
+    private ImageView poster;
+    private int wallpaperGen;        // a newer applyWallpaper makes older background results stale
+    private boolean started, skipApple;
+    private List<String> aerialUrls;
     private boolean weatherFailed;   // the last refresh failed: show when the cache is from
     private final Runnable weatherTick = new Runnable() {
         @Override public void run() {
@@ -101,6 +107,15 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) { glass.scrolled(dy); }
         });
         applyLayout();
+
+        poster = findViewById(R.id.poster);
+        video = new VideoWallpaper(this, findViewById(R.id.video), poster, () -> {
+            skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
+            aerialUrls = null;
+        });
+        applyWallpaper();
+        // the poster view now covers the window; drop the theme background after the first frame (overdraw, PLAN 11.3)
+        getWindow().getDecorView().post(() -> getWindow().setBackgroundDrawable(null));
 
         panel = new SidePanel(findViewById(R.id.panel), findViewById(R.id.veil), () -> {
             opener = getCurrentFocus();
@@ -183,12 +198,131 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         showWeather();
     }
 
+    // ---- wallpaper (PLAN 6) ----
+
+    /** Poster, video surface and dimming for the current type; restarts the video if Home is on screen. */
+    void applyWallpaper() {
+        int gen = ++wallpaperGen;
+        video.stop();
+        String type = state.wallpaper;
+        boolean moving = type.equals("video") || type.equals("aerials");
+        findViewById(R.id.video).setVisibility(moving ? View.VISIBLE : View.GONE);
+        poster.setImageResource(R.drawable.poster_default);   // until the picture or the poster frame is decoded
+        if (type.equals("picture") && !state.imageUri.isEmpty()) {
+            Uri uri = Uri.parse(state.imageUri);
+            pool.execute(() -> {
+                Bitmap b = WallpaperFiles.picture(this, uri);
+                ui.post(() -> { if (gen == wallpaperGen && b != null) poster.setImageBitmap(b); });
+            });
+        } else if (type.equals("video") && !state.videoUri.isEmpty()) {
+            pool.execute(() -> {
+                Bitmap b = WallpaperFiles.readPoster(this);
+                ui.post(() -> { if (gen == wallpaperGen && b != null && !video.playing()) poster.setImageBitmap(b); });
+            });
+        }
+        applyDim();
+        if (started) startVideo();
+    }
+
+    void applyDim() {
+        View dim = findViewById(R.id.dim);
+        boolean on = state.dim > 0 && !state.wallpaper.equals("gradient");
+        dim.setVisibility(on ? View.VISIBLE : View.GONE);
+        dim.setBackgroundColor((state.dim * 255 / 100) << 24);
+    }
+
+    private void startVideo() {
+        if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
+            video.startFile(Uri.parse(state.videoUri));
+        } else if (state.wallpaper.equals("aerials") && online()) {   // offline: the poster, no requests (PLAN 6.3)
+            if (aerialUrls != null) {
+                video.startAerials(aerialUrls);
+                return;
+            }
+            int gen = wallpaperGen;
+            boolean skip = skipApple;
+            pool.execute(() -> {
+                List<String> urls = Aerials.parse(readRaw(R.raw.aerials), skip);
+                ui.post(() -> {
+                    aerialUrls = urls;
+                    if (started && gen == wallpaperGen && state.wallpaper.equals("aerials")) video.startAerials(urls);
+                });
+            });
+        }
+    }
+
+    private String readRaw(int id) {
+        try (java.io.InputStream in = getResources().openRawResource(id)) {
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
+            return out.toString("UTF-8");
+        } catch (java.io.IOException e) {
+            return "";
+        }
+    }
+
+    boolean online() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        return cm != null && cm.getActiveNetwork() != null;
+    }
+
+    void pickVideo() { pick("video/*", REQ_VIDEO); }
+
+    void pickPicture() { pick("image/*", REQ_PICTURE); }
+
+    /** OPEN_DOCUMENT only: GET_CONTENT shows the app chooser on this TV (PLAN 6.1). */
+    @SuppressWarnings("deprecation")
+    private void pick(String type, int req) {
+        try {
+            startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(type), req);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.no_picker, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if ((req != REQ_VIDEO && req != REQ_PICTURE) || res != RESULT_OK || data == null || data.getData() == null) return;
+        Uri uri = data.getData();
+        try {
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (SecurityException e) {
+            Toast.makeText(this, R.string.access_not_kept, Toast.LENGTH_LONG).show();
+        }
+        String old = req == REQ_VIDEO ? state.videoUri : state.imageUri;
+        if (!old.isEmpty() && !old.equals(uri.toString())) {
+            try {   // grants are limited per app: give back the one for the file no longer used
+                getContentResolver().releasePersistableUriPermission(Uri.parse(old), Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (SecurityException ignored) { }
+        }
+        if (req == REQ_PICTURE) {
+            state.imageUri = uri.toString();
+            state.wallpaper = "picture";
+            save();
+            applyWallpaper();
+            return;
+        }
+        state.videoUri = uri.toString();
+        state.wallpaper = "video";
+        save();
+        pool.execute(() -> {   // the poster frame first, so the start shows it; then a hint if the clip is heavy
+            WallpaperFiles.savePoster(this, uri);
+            boolean ok = WallpaperFiles.suitsTv(this, uri);
+            ui.post(() -> {
+                if (!ok) Toast.makeText(this, R.string.video_warning, Toast.LENGTH_LONG).show();
+                applyWallpaper();
+            });
+        });
+    }
+
     // ---- weather (PLAN 4) ----
 
     void refreshWeather() {
         if (!state.weatherEnabled || !state.hasCity()) return;
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        if (cm == null || cm.getActiveNetwork() == null) {   // no network: keep the cache, say how old it is
+        if (!online()) {   // no network: keep the cache, say how old it is
             weatherFailed = true;
             showWeather();
             return;
@@ -239,6 +373,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         // refresh at once if the cache is older than the interval, then every 30 minutes while Home is shown
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));
+        started = true;
+        startVideo();
         if (artDropped) {
             artDropped = false;
             loadArt(installed, generation);
@@ -251,7 +387,21 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (menu != null) menu.dismiss();
         panel.close();
         ui.removeCallbacks(weatherTick);
+        started = false;
+        video.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
         super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        video.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        video.onPause();
+        super.onPause();
     }
 
     @Override

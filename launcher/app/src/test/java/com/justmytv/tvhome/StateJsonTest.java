@@ -49,9 +49,18 @@ public class StateJsonTest {
     }
 
     @Test public void unknownKeysSurvive() {
-        StateJson j = StateJson.parse("{\"wallpaper\":{\"type\":\"video\",\"dim\":30},\"ui\":{\"future\":1}}");
+        StateJson j = StateJson.parse("{\"wallpaper\":{\"type\":\"video\",\"poster\":\"p.webp\"},\"ui\":{\"future\":1}}");
         String out = j.toJson();
-        assertTrue(out, out.contains("\"type\":\"video\""));
+        assertTrue(out, out.contains("\"poster\":\"p.webp\""));
         assertTrue(out, out.contains("\"future\":1"));
+    }
+
+    @Test public void wallpaper() {
+        StateJson j = StateJson.parse("{\"wallpaper\":{\"type\":\"video\",\"uri\":\"content://x/1\",\"dim\":30}}");
+        assertEquals("video", j.wallpaper);
+        assertEquals("content://x/1", j.videoUri);
+        assertEquals(20, j.dim);                                   // not on the 0/20/40/60 scale
+        assertEquals("gradient", StateJson.parse("{\"wallpaper\":{\"type\":\"live\"}}").wallpaper);
+        assertEquals("gradient", new StateJson().wallpaper);
     }
 }
