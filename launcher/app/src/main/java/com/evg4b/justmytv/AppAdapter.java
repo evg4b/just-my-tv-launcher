@@ -125,7 +125,8 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         if (!banner) h.color.setColor(PALETTE[Math.abs(a.pkg.hashCode() % PALETTE.length)]);
         h.name.setText(a.label);
         h.card.setContentDescription(a.label);
-        // Up from the bar goes to the header buttons (PLAN 7.6)
+        // Up from the bar goes to the header buttons (PLAN 7.6); with the gear hidden (D109) FocusFinder skips the gone
+        // target and takes the nearest visible icon
         h.card.setNextFocusUpId(pos < columns ? R.id.btn_settings : View.NO_ID);
     }
 

@@ -40,6 +40,7 @@ final class StateJson {
     boolean showInputsButton = true;
     boolean inputsConnectedOnly = false;
     boolean inputsHideAv = false;
+    boolean hideSettingsButton = false;   // honoured only while a remote button opens the settings (D109)
 
     // clock
     boolean h24 = true;
@@ -110,6 +111,7 @@ final class StateJson {
                 s.showInputsButton = ui.optBoolean("showInputsButton", true);
                 s.inputsConnectedOnly = ui.optBoolean("inputsConnectedOnly", false);
                 s.inputsHideAv = ui.optBoolean("inputsHideAv", false);
+                s.hideSettingsButton = ui.optBoolean("hideSettingsButton", false);
             }
             JSONObject clock = o.optJSONObject("clock");
             if (clock != null) {
@@ -155,7 +157,8 @@ final class StateJson {
                     .put("dim", dim).put("photoMinutes", photoMinutes).put("unsplashKey", unsplashKey).put("aerialSource", aerialSource).put("aerialThemes", new JSONArray(aerialThemes)));
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
-                    .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv));
+                    .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv)
+                    .put("hideSettingsButton", hideSettingsButton));
             o.put("remote", new JSONObject(remote));
             o.put("clock", obj(o, "clock").put("h24", h24).put("showDate", showDate).put("greeting", greeting));
             JSONObject w = obj(o, "weather").put("enabled", weatherEnabled).put("name", city).put("admin1", admin1)

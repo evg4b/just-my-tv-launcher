@@ -97,4 +97,16 @@ public class StateJsonTest {
         assertEquals("gradient", StateJson.parse("{\"wallpaper\":{\"type\":\"live\"}}").wallpaper);
         assertEquals("gradient", new StateJson().wallpaper);
     }
+
+    @Test public void hideSettingsButtonDefaultsOffAndSurvives() {
+        assertFalse(new StateJson().hideSettingsButton);
+        assertFalse(StateJson.parse("{\"ui\":{\"columns\":6}}").hideSettingsButton);   // a file from before D109
+        StateJson a = new StateJson();
+        a.hideSettingsButton = true;
+        a.showInputsButton = false;
+        StateJson b = StateJson.parse(a.toJson());
+        assertTrue(b.hideSettingsButton);
+        assertFalse(b.showInputsButton);                           // the other ui keys still round-trip
+        assertEquals(5, b.columns);
+    }
 }

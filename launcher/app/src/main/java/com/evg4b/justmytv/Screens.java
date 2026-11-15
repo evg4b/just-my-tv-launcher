@@ -93,6 +93,25 @@ final class Screens {
             st.corner = corners[i];
             layoutChanged();
         });
+        settingsIcon(p, st);
+    }
+
+    /** Hiding the gear is offered only while a remote button opens these settings, so they are never out of reach (D109). */
+    private void settingsIcon(SidePanel p, StateJson st) {
+        if (RemoteActions.opensSettings(st.remote)) {
+            TextView[] v = new TextView[1];
+            v[0] = p.item(s(R.string.settings_icon), shown(!st.hideSettingsButton), () -> {
+                st.hideSettingsButton = !st.hideSettingsButton;
+                v[0].setText(shown(!st.hideSettingsButton));
+                a.save();
+                a.updateSettingsButton();
+            });
+            p.note(s(R.string.settings_icon_note));
+        } else {
+            TextView v = p.item(s(R.string.settings_icon), s(R.string.unavailable), null);
+            ((android.view.View) v.getParent()).setAlpha(0.5f);
+            p.note(s(R.string.settings_icon_unavailable));
+        }
     }
 
     private void layoutChanged() {
@@ -187,8 +206,11 @@ final class Screens {
         StateJson st = a.state;
         if (pkg == null) st.remote.remove(code);
         else st.remote.put(code, pkg);
+        // the last button that opened the settings is gone: the gear comes back, and a later one does not hide it again
+        if (!RemoteActions.opensSettings(st.remote)) st.hideSettingsButton = false;
         a.save();
         RemoteKeyService.keys = new HashMap<>(st.remote);
+        a.updateSettingsButton();
         panel.back();
     }
 

@@ -26,7 +26,9 @@ watching the screen. The on-device checks are listed as T16 to T19 in
   Press Down to scroll the rest into view. Banners come from each app and are cached as WebP.
 - Long OK on a tile opens a menu: Open, Move, Hide, App details. Order and hidden apps survive restarts, and new apps
   go to the end.
-- Header with the clock, the date and the weather on the left, and icons for inputs, Wi-Fi and settings on the right.
+- Header with the clock, the date and the weather on the left, and round icons on the right: inputs, settings, and a
+  Wi-Fi icon that appears only when the network has a problem. The settings icon can be hidden once a remote button
+  opens the settings.
 - A settings panel that slides in from the right, operated entirely with the remote.
 - Wallpapers: the built-in gradient, a picture, a new Unsplash photo every few minutes, a video file you choose, or
   Apple and Amazon aerials streamed from their servers. A video comes up from black (or its own first frame) and fades
@@ -35,7 +37,8 @@ watching the screen. The on-device checks are listed as T16 to T19 in
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
   YouTube or NETFLIX button, from anywhere on the TV. A button can also be switched off or run a built-in action:
-  Home, Back, the launcher's settings, TV settings pages, the power menu, Mute, Play / pause.
+  Home, Back, the launcher's settings or Inputs panel (a second press closes it), TV settings pages, the power menu,
+  Mute, Play / pause.
 - English and Russian.
 
 ## Screens

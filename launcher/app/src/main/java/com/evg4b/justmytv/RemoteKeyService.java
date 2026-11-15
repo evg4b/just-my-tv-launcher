@@ -21,17 +21,26 @@ public class RemoteKeyService extends AccessibilityService {
     static volatile Map<String, String> keys;
     /** Bound by the system right now. After an app update this TV keeps the service listed but does not bind it. */
     static volatile boolean running;
+    /** Home's hook for a bind or unbind: the gear's visibility depends on it (D109). Main thread, like this service. */
+    static volatile Runnable onBindChange;
 
     @Override
     protected void onServiceConnected() {
         running = true;
         if (keys == null) keys = StateJson.parse(new LauncherState(this).read()).remote;
+        bindChanged();
     }
 
     @Override
     public void onDestroy() {
         running = false;
+        bindChanged();
         super.onDestroy();
+    }
+
+    private static void bindChanged() {
+        Runnable r = onBindChange;
+        if (r != null) r.run();
     }
 
     @Override

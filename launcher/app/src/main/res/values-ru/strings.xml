@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Just My TV Launcher</string>
     <string name="inputs">Входы</string>
-    <string name="network">Сеть</string>
+    <string name="network">Проблема с сетью</string>
     <string name="settings">Настройки</string>
     <string name="cannot_open">Не удалось открыть</string>
     <string name="open">Открыть</string>
@@ -138,4 +138,8 @@
     <string name="no_inputs">Входы не найдены</string>
     <string name="system_inputs">Системный выбор входа</string>
     <string name="input_not_opened">Вход не открылся</string>
+    <string name="settings_icon">Значок настроек</string>
+    <string name="unavailable">Недоступно</string>
+    <string name="settings_icon_note">Скрытая шестерёнка уходит с главного экрана; эти настройки открывает кнопка пульта, назначенная на «Настройки лаунчера». Пока служба кнопок пульта выключена, шестерёнка остаётся на экране.</string>
+    <string name="settings_icon_unavailable">Чтобы скрыть шестерёнку, сначала назначьте «Настройки лаунчера» на кнопку пульта в разделе «Кнопки пульта». Тогда настройки останутся в одном нажатии.</string>
 </resources>

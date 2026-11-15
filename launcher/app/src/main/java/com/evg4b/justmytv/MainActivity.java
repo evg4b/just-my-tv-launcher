@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,8 +48,6 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int FADE_DP = 36;
     private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
-    /** Intent actions of the remote's built-in actions (RemoteActions): Home with that panel open. */
-    static final String OPEN_SETTINGS = "com.evg4b.justmytv.OPEN_SETTINGS", OPEN_INPUTS = "com.evg4b.justmytv.OPEN_INPUTS";
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
     private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
     private static final long WEATHER_RETRY = 2 * 60_000L;    // after a failure, as the photos
@@ -170,12 +169,25 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         openFrom(intent);
     }
 
-    /** A remote button's action (RemoteActions): Home comes up with the settings or the Inputs panel open. */
+    /**
+     * A Home intent. With a remote action's panel (RemoteActions) it toggles that panel, as the Menu key does; a plain
+     * Home press while Home is already in front closes the panel and ends Move mode.
+     */
     private void openFrom(Intent i) {
-        String act = i == null ? null : i.getAction();
-        if (!OPEN_SETTINGS.equals(act) && !OPEN_INPUTS.equals(act)) return;
-        if (movingPkg != null) endMove();   // as the Menu key: a panel over Move mode would leave the arrows moving a tile
-        panel.open(OPEN_SETTINGS.equals(act) ? screens.root : screens.inputs);
+        String which = i == null ? null : i.getStringExtra(RemoteActions.EXTRA_PANEL);
+        if (RemoteActions.PANEL_SETTINGS.equals(which)) togglePanel(screens.root);
+        else if (RemoteActions.PANEL_INPUTS.equals(which)) togglePanel(screens.inputs);
+        else {
+            if (movingPkg != null) endMove();
+            panel.close();
+        }
+    }
+
+    /** Open, or close if a panel is open. Move mode ends first: a panel over it would leave the arrows moving a tile. */
+    private void togglePanel(SidePanel.Screen s) {
+        if (movingPkg != null) endMove();
+        if (panel.isOpen()) panel.close();
+        else panel.open(s);
     }
 
     /** (Re)build the grid from the settings: columns, rows below the bar, labels, corners (PLAN 7.2, 10.1). */
@@ -344,7 +356,19 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             // aerialUrls: the list is read (a start still reading it plays them itself)
             if (started && state.wallpaper.equals("aerials") && aerialUrls != null && !video.playing()) startVideo();
         }
+
+        @Override public void onCapabilitiesChanged(@NonNull Network n, @NonNull NetworkCapabilities c) { showNetwork(c); }
+
+        @Override public void onLost(@NonNull Network n) { showNetwork(null); }
     };
+
+    /**
+     * The Wi-Fi icon shows only when something is wrong (D108): no network, or one without working internet (Android's
+     * own check failed: no route, a captive portal). Ethernet that works counts as fine.
+     */
+    private void showNetwork(NetworkCapabilities c) {
+        setHeaderShown(R.id.btn_network, c == null || !c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED));
+    }
 
     private String aerialsRaw;
 
@@ -475,10 +499,23 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             boolean show = want && !Inputs.list(this, connectedOnly).isEmpty();
             ui.post(() -> {
                 if (gen != inputsGen) return;   // a newer check, after a quick toggle, wins
-                findViewById(R.id.btn_inputs).setVisibility(show ? View.VISIBLE : View.GONE);
+                setHeaderShown(R.id.btn_inputs, show);
                 if (panel.showing(screens.inputs)) panel.refresh();
             });
         });
+    }
+
+    /** The gear can be hidden only while a remote button opens the settings through the bound service (D109). */
+    void updateSettingsButton() {
+        setHeaderShown(R.id.btn_settings,
+                RemoteActions.settingsIconShown(state.hideSettingsButton, state.remote, RemoteKeyService.running));
+    }
+
+    /** A round header icon; one that hides while focused hands the focus to the grid, so it is not lost. */
+    private void setHeaderShown(int id, boolean show) {
+        View b = findViewById(id);
+        if (!show && b.hasFocus()) focusPosition(Math.min(lastPos, adapter.getItemCount() - 1));
+        b.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -486,6 +523,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         super.onStart();
         applyClock();   // the greeting follows the time of day; also shows the cached weather
         updateInputsButton();
+        RemoteKeyService.onBindChange = this::updateSettingsButton;   // the service may bind after Home is up (boot)
+        updateSettingsButton();
         // refresh at once if the cache is older than the interval, then every 30 minutes while Home is shown
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));
@@ -497,7 +536,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         } else {
             startVideo();
         }
-        connectivity().registerDefaultNetworkCallback(network, ui);   // on the main thread
+        ConnectivityManager cm = connectivity();
+        showNetwork(cm.getNetworkCapabilities(cm.getActiveNetwork()));   // the callback says nothing when there is no network
+        cm.registerDefaultNetworkCallback(network, ui);   // on the main thread
     }
 
     @Override
@@ -507,6 +548,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         panel.close();
         ui.removeCallbacks(weatherTick);
         connectivity().unregisterNetworkCallback(network);
+        RemoteKeyService.onBindChange = null;
         started = false;
         video.stop();
         photos.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
@@ -560,12 +602,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     @Override
     public boolean onKeyDown(int code, KeyEvent e) {
-        // a panel over Move mode would leave the arrows moving the tile behind it
-        if (movingPkg != null && code == KeyEvent.KEYCODE_MENU) endMove();
         // TV_INPUT is left to the system: TCL's own source bar opens for it anyway, over anything we show (D89)
         if (code == KeyEvent.KEYCODE_MENU) {   // the gear's key, where the remote has one (PLAN 7.6)
-            if (panel.isOpen()) panel.close();
-            else panel.open(screens.root);
+            togglePanel(screens.root);
             return true;
         }
         return super.onKeyDown(code, e);

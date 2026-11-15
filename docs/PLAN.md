@@ -571,7 +571,7 @@ Taken from CleanYourTV (`launcher/app/src/main/res/drawable/`, Material Icons, A
 
 | File | What it looks like | Where it appears in our UI |
 |---|---|---|
-| `ic_wifi.xml` | Wi-Fi | a round icon at the top right (state: `ACCESS_NETWORK_STATE`, no SSID) |
+| `ic_wifi_off.xml` | Wi-Fi, crossed out | the round network icon at the top right, shown only on a network problem (D108; state: `ACCESS_NETWORK_STATE`, no SSID) |
 | `ic_settings.xml` | gear | the round "Settings" icon at the top right, and the "Appearance" item |
 | `ic_apps.xml` | 3×3 grid | the "Apps" item |
 | `ic_swap_vert.xml` | two arrows | the "Move" mode |
@@ -1130,7 +1130,7 @@ all rows use `DstIn` and `graphicsLayer`. This is Compose, and on a weak GPU eve
   }
   ```
 - `↓` `↑` move focus along the column; the grid scrolls to follow the focus (`BarGridLayoutManager`, 2.2).
-  From the bar, `↑` leads to the icons at the top right (inputs, network, settings): `setNextFocusUpId` on the bar's tiles; from the icons,
+  From the bar, `↑` leads to the icons at the top right (inputs, network, settings; each may be hidden, D108, D109): `setNextFocusUpId` on the bar's tiles; from the icons,
   `↓` returns to the bar (`nextFocusDown`, as in CleanYourTV `activity_main.xml`).
 - `OK` (`DPAD_CENTER`, `ENTER`) launches the app. **Long OK** opens the menu (section 8). In Views this is
   `setOnLongClickListener` on `card`: a long press of OK arrives as a long click (`AppAdapter.java:513`).

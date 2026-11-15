@@ -202,7 +202,8 @@
             style="@style/RoundButton"
             android:layout_marginStart="8dp"
             android:contentDescription="@string/network"
-            android:src="@drawable/ic_wifi" />
+            android:src="@drawable/ic_wifi_off"
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/btn_settings"

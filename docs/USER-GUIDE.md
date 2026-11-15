@@ -30,12 +30,15 @@ New apps appear at the end of the grid. An app you uninstall and install again a
 
 ### The header
 
-The clock and date are at the top left, and the weather sits under them once a city is set. The three round icons at
-the top right are:
+The clock and date are at the top left, and the weather sits under them once a city is set. Up to three round icons
+sit at the top right:
 
 - Inputs, to switch to HDMI or another source. It shows only when the TV reports at least one input.
-- Wi-Fi, which opens the system network settings.
-- Settings, which opens the launcher settings panel. The Menu (≡) button on the remote does the same.
+- A crossed-out Wi-Fi icon, only when something is wrong with the network: the TV is not connected, or it is connected
+  but has no working internet. Select it to open the TV's network and Wi-Fi settings. While the network works, there is
+  no icon.
+- Settings, which opens the launcher settings panel. The Menu (≡) button on the remote does the same. You can hide it
+  (see Appearance) once a remote button opens the launcher settings.
 
 ## Settings
 
@@ -128,6 +131,9 @@ Every app on the TV, in grid order. OK on a row shows or hides that app. "Show a
 - Rows below the bar: 0 to 3 rows of the grid kept visible under the bar at rest.
 - Name under the focused tile: on or off.
 - Corner radius: 0, 8 or 16 dp.
+- Settings icon: shown or hidden. This option works only after you assign "Launcher settings" to a remote button
+  (Remote buttons, below); until then it says "Unavailable". The gear comes back on its own if you take that action
+  off the button, or while the remote button service is not running, so you can always reach these settings.
 
 ### Inputs
 
@@ -156,9 +162,10 @@ Then pick a button from the list and choose what it does:
 
 - "As before" gives the button back its normal job.
 - "Disabled" switches the button off: it does nothing in any app, as long as the service is running.
-- An action from the Actions list: Home, Back, Launcher settings (Home with this settings panel open), Inputs (Home
-  with the Inputs panel open), TV settings, Network and Wi-Fi, Picture settings, Sound settings, Power menu, Mute, or
-  Play / pause (for the app that is playing).
+- An action from the Actions list: Home, Back, Launcher settings (opens Home with this settings panel; press again to
+  close it), Inputs (the same for the Inputs panel), TV settings, Network and Wi-Fi, Picture settings, Sound settings
+  (the last three open the TV's main settings if this TV does not have that page), Power menu, Mute (like the remote's
+  own Mute key), or Play / pause (for the app that is playing).
 - An app from the Apps list, which then opens from anywhere.
 
 There is no action that switches Wi-Fi or Bluetooth on and off: Android 10 and later lets only system apps do that,
