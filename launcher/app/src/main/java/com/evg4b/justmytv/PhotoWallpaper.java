@@ -7,6 +7,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -63,6 +65,8 @@ final class PhotoWallpaper {
     private final Runnable tick = this::fetch;
     private final Runnable changed;
     private ValueAnimator fade;
+    private Bitmap shown;       // the last photo put on the poster, and photo.jpg's lastModified when it was decoded
+    private long shownAt;
     private long everyMs;
     private String key = "";
     private volatile Status status = Status.OK;
@@ -88,10 +92,11 @@ final class PhotoWallpaper {
         poster.setAlpha(1f);
         poster.setVisibility(View.VISIBLE);
         int g = gen;
-        if (photo.exists()) {
+        if (photo.exists() && !onScreen(photo.lastModified())) {   // back from an app: the photo is still up
             io.execute(() -> {
+                long at = photo.lastModified();
                 Bitmap b = WallpaperFiles.picture(ctx, Uri.fromFile(photo));
-                main.post(() -> { if (g == gen && b != null) show(b, false); });
+                main.post(() -> { if (g == gen && b != null) show(b, at, false); });
             });
         }
         if (key.isEmpty()) {   // nothing can be fetched; the kept photo stays, or the gradient
@@ -152,13 +157,14 @@ final class PhotoWallpaper {
         String k = key;
         io.execute(() -> {
             Status st = download(k);
+            long at = photo.lastModified();
             Bitmap b = st == Status.OK ? WallpaperFiles.picture(ctx, Uri.fromFile(photo)) : null;
             status = st == Status.OK && b == null ? Status.FAILED : st;
             main.post(() -> {
                 if (g != gen) return;
                 fetching = false;
                 changed.run();
-                if (b != null) show(b, true);
+                if (b != null) show(b, at, true);
                 else if (!photo.exists()) poster.setImageResource(R.drawable.aurora);   // nothing to show: not black
                 // a rejected key waits for a new one (a new start); the limit resets within the hour
                 if (status != Status.BAD_KEY) {
@@ -262,9 +268,17 @@ final class PhotoWallpaper {
         }
     }
 
+    /** The poster still shows the bitmap decoded from photo.jpg as it was at that time (nothing replaced it). */
+    private boolean onScreen(long at) {
+        Drawable d = poster.getDrawable();
+        return shown != null && shownAt == at && d instanceof BitmapDrawable && ((BitmapDrawable) d).getBitmap() == shown;
+    }
+
     /** To black and back in on the new photo; straight in from black when nothing is shown yet. */
-    private void show(Bitmap b, boolean fadeOut) {
+    private void show(Bitmap b, long at, boolean fadeOut) {
         if (fade != null) fade.cancel();
+        shown = b;
+        shownAt = at;
         if (!fadeOut) {
             fadeIn(b);
             return;
