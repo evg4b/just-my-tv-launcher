@@ -92,9 +92,21 @@
     <string name="remote_restart">Выключите и включите</string>
     <string name="remote_default">Как раньше</string>
     <string name="remote_disabled">Отключена</string>
-    <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение откуда угодно, отключённая нигде ничего не делает, остальные работают как раньше.</string>
+    <string name="remote_actions">Действия</string>
+    <string name="remote_apps">Приложения</string>
+    <string name="act_home">Домой</string>
+    <string name="act_back">Назад</string>
+    <string name="act_launcher_settings">Настройки лаунчера</string>
+    <string name="act_tv_settings">Настройки ТВ</string>
+    <string name="act_network">Сеть и Wi-Fi</string>
+    <string name="act_picture">Настройки изображения</string>
+    <string name="act_sound">Настройки звука</string>
+    <string name="act_power">Меню питания</string>
+    <string name="act_mute">Без звука</string>
+    <string name="act_play_pause">Пуск / пауза</string>
+    <string name="remote_note">Служба включается в настройках ТВ → Спец. возможности. Назначенная кнопка открывает своё приложение или выполняет своё действие откуда угодно, отключённая нигде ничего не делает, остальные работают как раньше. Включать и выключать Wi-Fi отсюда нельзя: Android разрешает это только системным приложениям.</string>
     <string name="remote_service_name">Кнопки пульта Just My TV Launcher</string>
-    <string name="remote_service_desc">Открывает приложение, назначенное в Just My TV Launcher, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
+    <string name="remote_service_desc">Открывает приложение или выполняет действие, назначенное в Just My TV Launcher, при нажатии кнопки пульта. Не читает содержимое экрана.</string>
     <string-array name="remote_buttons">
         <item>Меню ≡</item>
         <item>Закладка</item>

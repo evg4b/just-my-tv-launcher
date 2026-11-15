@@ -152,11 +152,20 @@ button service, which Android lets only you turn on:
 After the launcher is updated, this TV keeps the service switched on but stops running it. If the "Remote button
 service" row says "Turn off and on", do exactly that in the accessibility settings.
 
-Then pick a button from the list and choose an app for it, "Disabled" to switch the button off everywhere, or "As
-before" to give the button back its normal job. A disabled button does nothing in any app, as long as the service is
-running. The
-YouTube button opens SmartTube by default, if SmartTube is installed. A button whose app has been uninstalled works as
-it did before.
+Then pick a button from the list and choose what it does:
+
+- "As before" gives the button back its normal job.
+- "Disabled" switches the button off: it does nothing in any app, as long as the service is running.
+- An action from the Actions list: Home, Back, Launcher settings (Home with this settings panel open), Inputs (Home
+  with the Inputs panel open), TV settings, Network and Wi-Fi, Picture settings, Sound settings, Power menu, Mute, or
+  Play / pause (for the app that is playing).
+- An app from the Apps list, which then opens from anywhere.
+
+There is no action that switches Wi-Fi or Bluetooth on and off: Android 10 and later lets only system apps do that,
+and this TV's remote itself works over Bluetooth. "Network and Wi-Fi" opens the page where you can do it.
+
+The YouTube button opens SmartTube by default, if SmartTube is installed. A button whose app has been uninstalled works
+as it did before.
 
 You can assign Menu, Bookmark, Gear, TV, Numbers, Layers, Grid, NETFLIX, YouTube, TCL CHANNEL, prime video, Volume +,
 Volume − and Mute. The D-pad, OK, Back, Home and Power cannot be assigned, so you cannot lock yourself out of the

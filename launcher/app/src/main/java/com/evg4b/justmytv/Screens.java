@@ -174,6 +174,12 @@ final class Screens {
         p.title(button);
         p.item(s(R.string.remote_default), null, () -> assign(code, null));
         p.item(s(R.string.remote_disabled), null, () -> assign(code, RemoteKeyService.DISABLED));
+        p.note(s(R.string.remote_actions));
+        for (int i = 0; i < RemoteActions.IDS.length; i++) {
+            String id = RemoteActions.IDS[i];
+            p.item(s(RemoteActions.LABELS[i]), null, () -> assign(code, id));
+        }
+        p.note(s(R.string.remote_apps));
         for (App app : a.installed) p.item(art(app), app.label, null, () -> assign(code, app.pkg));
     }
 
@@ -186,7 +192,10 @@ final class Screens {
         panel.back();
     }
 
+    /** What a button row shows for its assignment: the app's name or the action's. */
     private String label(String pkg) {
+        int act = RemoteActions.index(pkg);
+        if (act >= 0) return s(RemoteActions.LABELS[act]);
         for (App app : a.installed) if (app.pkg.equals(pkg)) return app.label;
         return pkg;
     }

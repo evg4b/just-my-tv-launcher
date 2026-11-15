@@ -1225,6 +1225,8 @@ Decisions (from the user's answers):
 
 - **Our own service in the launcher**, not the Home Button app. A "Remote buttons" screen in the launcher settings: button → app.
 - Any button (except power) can be assigned to an app, with no parameters.
+- A button can also be "Disabled" (D103) or run a built-in action: Home, Back, the launcher's settings or Inputs
+  panel, TV settings pages, the power menu, Mute, Play / pause (D106, `RemoteActions.java`).
 - Default: YouTube → SmartTube (`org.smarttube.stable`).
 - An accessibility service is needed to catch buttons outside the launcher. It is enabled manually on the TV. This is our own
   background service and it runs all the time. That is deliberate.

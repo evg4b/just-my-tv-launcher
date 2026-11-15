@@ -47,6 +47,8 @@ import java.util.concurrent.Executors;
 public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int FADE_DP = 36;
     private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
+    /** Intent actions of the remote's built-in actions (RemoteActions): Home with that panel open. */
+    static final String OPEN_SETTINGS = "com.evg4b.justmytv.OPEN_SETTINGS", OPEN_INPUTS = "com.evg4b.justmytv.OPEN_INPUTS";
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
     private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
     private static final long WEATHER_RETRY = 2 * 60_000L;    // after a failure, as the photos
@@ -159,6 +161,21 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         // for the activity's whole life, not onStart/onStop: an app installed while another app is open shows up too
         registerReceiver(packages, f);
         load();
+        openFrom(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openFrom(intent);
+    }
+
+    /** A remote button's action (RemoteActions): Home comes up with the settings or the Inputs panel open. */
+    private void openFrom(Intent i) {
+        String act = i == null ? null : i.getAction();
+        if (!OPEN_SETTINGS.equals(act) && !OPEN_INPUTS.equals(act)) return;
+        if (movingPkg != null) endMove();   // as the Menu key: a panel over Move mode would leave the arrows moving a tile
+        panel.open(OPEN_SETTINGS.equals(act) ? screens.root : screens.inputs);
     }
 
     /** (Re)build the grid from the settings: columns, rows below the bar, labels, corners (PLAN 7.2, 10.1). */

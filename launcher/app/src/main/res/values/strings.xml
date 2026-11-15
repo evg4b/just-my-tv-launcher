@@ -92,9 +92,21 @@
     <string name="remote_restart">Turn off and on</string>
     <string name="remote_default">As before</string>
     <string name="remote_disabled">Disabled</string>
-    <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app from anywhere, a disabled one does nothing anywhere; the others work as before.</string>
+    <string name="remote_actions">Actions</string>
+    <string name="remote_apps">Apps</string>
+    <string name="act_home">Home</string>
+    <string name="act_back">Back</string>
+    <string name="act_launcher_settings">Launcher settings</string>
+    <string name="act_tv_settings">TV settings</string>
+    <string name="act_network">Network and Wi-Fi</string>
+    <string name="act_picture">Picture settings</string>
+    <string name="act_sound">Sound settings</string>
+    <string name="act_power">Power menu</string>
+    <string name="act_mute">Mute</string>
+    <string name="act_play_pause">Play / pause</string>
+    <string name="remote_note">The service is turned on in TV Settings → Accessibility. An assigned button opens its app or runs its action from anywhere, a disabled one does nothing anywhere; the others work as before. Wi-Fi cannot be switched on and off from here: Android lets only system apps do that.</string>
     <string name="remote_service_name">Just My TV Launcher remote buttons</string>
-    <string name="remote_service_desc">Opens the app you assigned in Just My TV Launcher when you press a remote button. It reads no screen content.</string>
+    <string name="remote_service_desc">Opens the app or runs the action you assigned in Just My TV Launcher when you press a remote button. It reads no screen content.</string>
     <string-array name="remote_buttons">
         <item>Menu ≡</item>
         <item>Bookmark</item>

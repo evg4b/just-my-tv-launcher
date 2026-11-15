@@ -34,7 +34,8 @@ watching the screen. The on-device checks are listed as T16 to T19 in
 - Weather from [Open-Meteo](https://open-meteo.com), with no key and no location permission. You type a city once.
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
-  YouTube or NETFLIX button, from anywhere on the TV.
+  YouTube or NETFLIX button, from anywhere on the TV. A button can also be switched off or run a built-in action:
+  Home, Back, the launcher's settings, TV settings pages, the power menu, Mute, Play / pause.
 - English and Russian.
 
 ## Screens
