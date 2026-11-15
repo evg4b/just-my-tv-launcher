@@ -468,8 +468,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         started = true;
         if (artDropped) {
             artDropped = false;
+            applyWallpaper();   // decodes the picture or poster again, and starts the video; first, before every tile
             loadArt(installed, generation);
-            applyWallpaper();   // decodes the picture or poster again, and starts the video
         } else {
             startVideo();
         }
