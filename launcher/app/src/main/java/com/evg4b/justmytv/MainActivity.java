@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -291,10 +292,6 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         } else if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
             video.startFile(Uri.parse(state.videoUri));
         } else if (state.wallpaper.equals("aerials")) {
-            if (!online()) {   // offline: a still gradient, no requests (PLAN 6.3)
-                poster.setImageResource(R.drawable.aurora);
-                return;
-            }
             if (!video.playing()) poster.setImageDrawable(new ColorDrawable(Color.BLACK));   // a fallback may have left the gradient up
             if (aerialUrls != null) {
                 playAerials(aerialUrls);
@@ -315,11 +312,22 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         }
     }
 
-    /** No clip matches the chosen collection and themes: a still gradient, as offline. */
+    /** Offline, or no clip matches the chosen collection and themes: a still gradient, no requests (PLAN 6.3). */
     private void playAerials(List<String> urls) {
-        if (urls.isEmpty()) poster.setImageResource(R.drawable.aurora);
+        if (urls.isEmpty() || !online()) poster.setImageResource(R.drawable.aurora);
         else video.startAerials(urls);
     }
+
+    /**
+     * A network came up. A TV turned on reaches Home before its Wi-Fi: the aerials found none, or failed on it, and
+     * showed the gradient; they start now instead of at the next return to Home.
+     */
+    private final ConnectivityManager.NetworkCallback network = new ConnectivityManager.NetworkCallback() {
+        @Override public void onAvailable(@NonNull Network n) {
+            // aerialUrls: the list is read (a start still reading it plays them itself)
+            if (started && state.wallpaper.equals("aerials") && aerialUrls != null && !video.playing()) startVideo();
+        }
+    };
 
     private String aerialsRaw;
 
@@ -345,10 +353,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         }
     }
 
-    boolean online() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        return cm != null && cm.getActiveNetwork() != null;
-    }
+    boolean online() { return connectivity().getActiveNetwork() != null; }
+
+    private ConnectivityManager connectivity() { return getSystemService(ConnectivityManager.class); }
 
     void pickVideo() { pick("video/*", REQ_VIDEO); }
 
@@ -473,6 +480,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         } else {
             startVideo();
         }
+        connectivity().registerDefaultNetworkCallback(network, ui);   // on the main thread
     }
 
     @Override
@@ -481,6 +489,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (menu != null) menu.dismiss();
         panel.close();
         ui.removeCallbacks(weatherTick);
+        connectivity().unregisterNetworkCallback(network);
         started = false;
         video.stop();
         photos.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
