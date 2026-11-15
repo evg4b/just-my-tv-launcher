@@ -1,5 +1,6 @@
 package com.evg4b.justmytv;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -13,6 +14,14 @@ public class PhotoWallpaperTest {
         assertEquals("https://images.unsplash.com/photo-1?ixid=x&w=1920&h=1080&fit=crop&fm=jpg&q=80", p.image);
         assertEquals("André Spieker", p.author);
         assertEquals("https://api.unsplash.com/photos/abc/download?ixid=x", p.downloadLocation);
+    }
+
+    @Test public void readsTheKeptAuthorAndDownloadLocation() {
+        assertArrayEquals(new String[]{"André Spieker", "https://api.unsplash.com/photos/abc/download"},
+                PhotoWallpaper.info("André Spieker\nhttps://api.unsplash.com/photos/abc/download"));
+        assertArrayEquals(new String[]{"André Spieker", ""}, PhotoWallpaper.info("André Spieker"));   // written before prefetch
+        assertArrayEquals(new String[]{"", ""}, PhotoWallpaper.info(""));
+        assertArrayEquals(new String[]{"", ""}, PhotoWallpaper.info("\n"));   // no author, no link
     }
 
     @Test public void rejectsWhatCannotBeShown() {

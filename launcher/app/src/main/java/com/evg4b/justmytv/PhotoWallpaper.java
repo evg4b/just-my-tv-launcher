@@ -34,7 +34,8 @@ import java.util.concurrent.Executors;
 /**
  * The Photos wallpaper (D101, D102): a random Unsplash photo through Unsplash's API with the owner's access key, a new
  * one every few minutes while Home is on screen, changed with the aerials' transition: 1 s to black, then 1.2 s in.
- * The current photo is kept in files/ so Home shows it at once next time, also offline.
+ * The current photo is kept in files/ so Home shows it at once next time, also offline; the next one is downloaded
+ * right after a change, so the change after it (and "Next photo") needs no network.
  */
 final class PhotoWallpaper {
     private static final String RANDOM = "https://api.unsplash.com/photos/random?orientation=landscape&content_filter=high";
@@ -59,7 +60,7 @@ final class PhotoWallpaper {
 
     private final Context ctx;
     private final ImageView poster;
-    private final File photo, authorFile;
+    private final File photo, authorFile, nextPhoto, nextInfo;   // next: prefetched for the next change
     private volatile String by = "";   // photo.txt, kept in memory: the credit is read on the main thread
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newSingleThreadExecutor();
@@ -82,6 +83,8 @@ final class PhotoWallpaper {
         this.changed = changed;
         photo = new File(ctx.getFilesDir(), "photo.jpg");
         authorFile = new File(ctx.getFilesDir(), "photo.txt");
+        nextPhoto = new File(ctx.getFilesDir(), "next.jpg");
+        nextInfo = new File(ctx.getFilesDir(), "next.txt");
         io.execute(() -> by = readAuthor());   // before any decode on io, so the photo never shows without its credit
     }
 
@@ -107,6 +110,8 @@ final class PhotoWallpaper {
             if (!photo.exists()) poster.setImageResource(R.drawable.aurora);
             return;
         }
+        String k = key;
+        io.execute(() -> { if (!nextReady()) download(k); });   // first run, or the last prefetch failed
         long age = System.currentTimeMillis() - photo.lastModified();
         main.postDelayed(tick, photo.exists() ? Math.max(0, everyMs - age) : 0);
     }
@@ -153,13 +158,38 @@ final class PhotoWallpaper {
     /** The photographer of the photo on screen, or "". */
     String author() { return by; }
 
-    private String readAuthor() {
-        try (InputStream in = new java.io.FileInputStream(authorFile)) {
-            String s = WeatherClient.read(in, 1024);
-            return s == null ? "" : s.trim();
+    private String readAuthor() { return info(readText(authorFile))[0]; }
+
+    /** photo.txt and next.txt: the author, then the download_location on a second line (older files have only the author). */
+    static String[] info(String text) {
+        int nl = text.indexOf('\n');
+        return nl < 0 ? new String[]{text.trim(), ""} : new String[]{text.substring(0, nl).trim(), text.substring(nl + 1).trim()};
+    }
+
+    private static String readText(File f) {
+        try (InputStream in = new java.io.FileInputStream(f)) {
+            String s = WeatherClient.read(in, 4096);
+            return s == null ? "" : s;
         } catch (IOException e) {
             return "";
         }
+    }
+
+    private boolean nextReady() { return nextPhoto.exists() && nextInfo.exists(); }
+
+    /** The prefetched photo becomes the kept one, with its author; Unsplash is told it is used once it is shown. */
+    private Status promote() {
+        String[] i = info(readText(nextInfo));
+        if (!nextPhoto.renameTo(photo)) return Status.FAILED;
+        if (!nextInfo.renameTo(authorFile)) {
+            //noinspection ResultOfMethodCallIgnored
+            photo.delete();   // no photo beats an uncredited one
+            by = "";
+            return Status.FAILED;
+        }
+        by = i[0];
+        pingUrl = i[1];
+        return Status.OK;
     }
 
     private void fetch() {
@@ -168,7 +198,9 @@ final class PhotoWallpaper {
         int g = gen;
         String k = key;
         io.execute(() -> {
-            Status st = download(k);
+            // the one prefetched after the last change makes this one instant; without it, download it now
+            Status st = nextReady() ? Status.OK : download(k);
+            if (st == Status.OK) st = promote();
             long at = photo.lastModified();
             Bitmap b = st == Status.OK ? WallpaperFiles.picture(ctx, Uri.fromFile(photo)) : null;
             status = st == Status.OK && b == null ? Status.FAILED : st;
@@ -183,11 +215,14 @@ final class PhotoWallpaper {
                     main.postDelayed(tick, b != null ? everyMs : status == Status.LIMIT ? LIMIT_MS : RETRY_MS);
                 }
             });
-            if (st == Status.OK) ping(pingUrl, k);   // after the photo is on its way to the screen: its answer is not needed
+            if (st == Status.OK) {
+                ping(pingUrl, k);   // after the photo is on its way to the screen: its answer is not needed
+                download(k);        // the next one, ready for the next change; a failure here is found again then
+            }
         });
     }
 
-    /** Ask the API for a random photo, download it into files/photo.jpg and its author into photo.txt. */
+    /** Ask the API for a random photo and keep it as files/next.jpg, its author and download_location as next.txt. */
     private Status download(String key) {
         Photo p;
         HttpURLConnection c = null;
@@ -214,7 +249,7 @@ final class PhotoWallpaper {
             WeatherClient.closeOrKeep(c, reuse);
         }
         if (p == null) return Status.FAILED;
-        File tmp = new File(ctx.getFilesDir(), "photo.tmp"), authorTmp = new File(ctx.getFilesDir(), "photo.txt.tmp");
+        File tmp = new File(ctx.getFilesDir(), "next.jpg.tmp"), authorTmp = new File(ctx.getFilesDir(), "next.txt.tmp");
         c = null;
         reuse = false;
         try {
@@ -232,18 +267,11 @@ final class PhotoWallpaper {
                 }
             }
             reuse = true;
-            // both written before either replaces the kept one, so the photo never sits next to another's credit
             try (OutputStream out = new FileOutputStream(authorTmp)) {
-                out.write(p.author.getBytes(StandardCharsets.UTF_8));
+                out.write((p.author + "\n" + p.downloadLocation).getBytes(StandardCharsets.UTF_8));
             }
-            if (!tmp.renameTo(photo)) return Status.FAILED;
-            if (!authorTmp.renameTo(authorFile)) {
-                //noinspection ResultOfMethodCallIgnored
-                photo.delete();   // no photo beats an uncredited one
-                by = "";
-                return Status.FAILED;
-            }
-            by = p.author;
+            // the text first: next.jpg is there only with its own next.txt beside it
+            if (!authorTmp.renameTo(nextInfo) || !tmp.renameTo(nextPhoto)) return Status.FAILED;
         } catch (IOException | RuntimeException e) {
             Log.w("Photos", "download failed", e);
             return Status.FAILED;
@@ -254,7 +282,6 @@ final class PhotoWallpaper {
             //noinspection ResultOfMethodCallIgnored
             authorTmp.delete();
         }
-        pingUrl = p.downloadLocation;
         return Status.OK;
     }
 
