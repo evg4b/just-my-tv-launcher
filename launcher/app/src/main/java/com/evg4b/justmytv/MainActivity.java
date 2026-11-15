@@ -48,6 +48,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
     private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
+    private static final long WEATHER_RETRY = 2 * 60_000L;    // after a failure, as the photos
 
     private final Handler ui = new Handler(Looper.getMainLooper());
     // a full pool takes all the CPU on a weak TV and drops frames (PLAN 5.2)
@@ -89,10 +90,17 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private boolean weatherFailed;   // the last refresh failed: show when the cache is from
     private final Runnable weatherTick = new Runnable() {
         @Override public void run() {
+            ui.postDelayed(this, WEATHER_EVERY);   // first: a failed refresh moves it closer
             refreshWeather();
-            ui.postDelayed(this, WEATHER_EVERY);
         }
     };
+
+    /** After a failed refresh: again in a few minutes, not at the next half hour (a TV wakes before its Wi-Fi). */
+    private void retryWeatherSoon() {
+        if (!started) return;
+        ui.removeCallbacks(weatherTick);
+        ui.postDelayed(weatherTick, WEATHER_RETRY);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -400,6 +408,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (!online()) {   // no network: keep the cache, say how old it is
             weatherFailed = true;
             showWeather();
+            retryWeatherSoon();
             return;
         }
         double lat = state.lat, lon = state.lon;
@@ -407,6 +416,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         weather.forecast(lat, lon, f, (body, now) -> {
             if (lat != state.lat || lon != state.lon || f != state.fahrenheit) return;   // the city or units changed meanwhile
             weatherFailed = body == null;
+            if (weatherFailed) retryWeatherSoon();
             if (body != null) {
                 state.weatherLast = body;
                 state.fetchedAt = System.currentTimeMillis();
