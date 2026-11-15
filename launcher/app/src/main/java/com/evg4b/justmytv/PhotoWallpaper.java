@@ -67,6 +67,7 @@ final class PhotoWallpaper {
     private ValueAnimator fade;
     private Bitmap shown;       // the last photo put on the poster, and photo.jpg's lastModified when it was decoded
     private long shownAt;
+    private String pingUrl = "";   // the last download's download_location; io thread only
     private long everyMs;
     private String key = "";
     private volatile Status status = Status.OK;
@@ -178,6 +179,7 @@ final class PhotoWallpaper {
                     main.postDelayed(tick, b != null ? everyMs : status == Status.LIMIT ? LIMIT_MS : RETRY_MS);
                 }
             });
+            if (st == Status.OK) ping(pingUrl, k);   // after the photo is on its way to the screen: its answer is not needed
         });
     }
 
@@ -231,7 +233,7 @@ final class PhotoWallpaper {
             //noinspection ResultOfMethodCallIgnored
             tmp.delete();
         }
-        ping(p.downloadLocation, key);
+        pingUrl = p.downloadLocation;
         return Status.OK;
     }
 
