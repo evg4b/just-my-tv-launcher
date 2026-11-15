@@ -59,7 +59,8 @@ final class PhotoWallpaper {
 
     private final Context ctx;
     private final ImageView poster;
-    private final File photo, author;
+    private final File photo, authorFile;
+    private volatile String by = "";   // photo.txt, kept in memory: the credit is read on the main thread
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Runnable tick = this::fetch;
@@ -80,7 +81,8 @@ final class PhotoWallpaper {
         this.poster = poster;
         this.changed = changed;
         photo = new File(ctx.getFilesDir(), "photo.jpg");
-        author = new File(ctx.getFilesDir(), "photo.txt");
+        authorFile = new File(ctx.getFilesDir(), "photo.txt");
+        io.execute(() -> by = readAuthor());   // before any decode on io, so the photo never shows without its credit
     }
 
     /** Show the kept photo (from black), then change it when it is everyMs old. */
@@ -149,8 +151,10 @@ final class PhotoWallpaper {
     }
 
     /** The photographer of the photo on screen, or "". */
-    String author() {
-        try (InputStream in = new java.io.FileInputStream(author)) {
+    String author() { return by; }
+
+    private String readAuthor() {
+        try (InputStream in = new java.io.FileInputStream(authorFile)) {
             String s = WeatherClient.read(in, 1024);
             return s == null ? "" : s.trim();
         } catch (IOException e) {
@@ -229,9 +233,10 @@ final class PhotoWallpaper {
             }
             reuse = true;
             if (!tmp.renameTo(photo)) return Status.FAILED;
-            try (OutputStream out = new FileOutputStream(author)) {
+            try (OutputStream out = new FileOutputStream(authorFile)) {
                 out.write(p.author.getBytes(StandardCharsets.UTF_8));
             }
+            by = p.author;
         } catch (IOException | RuntimeException e) {
             Log.w("Photos", "download failed", e);
             return Status.FAILED;
