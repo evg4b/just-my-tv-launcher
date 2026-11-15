@@ -403,8 +403,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             return;
         }
         double lat = state.lat, lon = state.lon;
-        weather.forecast(lat, lon, state.fahrenheit, (body, now) -> {
-            if (lat != state.lat || lon != state.lon) return;   // the city changed meanwhile
+        boolean f = state.fahrenheit;
+        weather.forecast(lat, lon, f, (body, now) -> {
+            if (lat != state.lat || lon != state.lon || f != state.fahrenheit) return;   // the city or units changed meanwhile
             weatherFailed = body == null;
             if (body != null) {
                 state.weatherLast = body;
