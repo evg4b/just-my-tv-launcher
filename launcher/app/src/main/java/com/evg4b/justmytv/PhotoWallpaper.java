@@ -132,6 +132,13 @@ final class PhotoWallpaper {
         poster.clearColorFilter();
     }
 
+    /** With the activity: the worker thread holds it otherwise. */
+    void shutdown() {
+        stop();
+        io.shutdownNow();
+        main.removeCallbacksAndMessages(null);
+    }
+
     /** A new photo now (Settings → "Next photo"). */
     void next() {
         if (!running || fetching || key.isEmpty()) return;

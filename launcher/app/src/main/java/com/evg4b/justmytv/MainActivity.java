@@ -495,6 +495,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         ui.removeCallbacksAndMessages(null);
         pool.shutdownNow();
         weather.shutdown();
+        photos.shutdown();
         io.shutdown();   // let a pending state write finish
         super.onDestroy();
     }
