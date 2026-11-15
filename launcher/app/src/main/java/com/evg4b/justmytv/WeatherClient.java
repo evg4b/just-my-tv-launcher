@@ -64,6 +64,7 @@ final class WeatherClient {
     /** The body of a 200 response, or null; errors go to the log only (PLAN 4.7). */
     private static String get(String url) {
         HttpURLConnection c = null;
+        boolean reuse = false;
         try {
             c = (HttpURLConnection) new URL(url).openConnection();
             c.setConnectTimeout(5_000);
@@ -72,15 +73,26 @@ final class WeatherClient {
                 Log.w("Weather", "HTTP " + c.getResponseCode());
                 return null;
             }
+            String body;
             try (InputStream in = c.getInputStream()) {
-                return read(in, MAX_BYTES);
+                body = read(in, MAX_BYTES);
             }
+            reuse = body != null;
+            return body;
         } catch (IOException | RuntimeException e) {
             Log.w("Weather", "request failed", e);
             return null;
         } finally {
-            if (c != null) c.disconnect();
+            closeOrKeep(c, reuse);
         }
+    }
+
+    /**
+     * After a body read to its end and closed, the connection goes back to the pool for the next request;
+     * disconnect() would close its socket, and the next request would pay a new TLS handshake.
+     */
+    static void closeOrKeep(HttpURLConnection c, boolean reuse) {
+        if (c != null && !reuse) c.disconnect();
     }
 
     /** A stream as UTF-8 text, or null past max bytes. Also reads the aerials list. */

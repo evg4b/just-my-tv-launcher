@@ -187,6 +187,7 @@ final class PhotoWallpaper {
     private Status download(String key) {
         Photo p;
         HttpURLConnection c = null;
+        boolean reuse = false;
         try {
             c = open(RANDOM, key);
             int code = c.getResponseCode();
@@ -196,17 +197,22 @@ final class PhotoWallpaper {
                 Log.w("Photos", "HTTP " + code);
                 return Status.FAILED;
             }
+            String body;
             try (InputStream in = c.getInputStream()) {
-                p = parse(WeatherClient.read(in, 256 * 1024));
+                body = WeatherClient.read(in, 256 * 1024);
             }
+            reuse = body != null;
+            p = parse(body);
         } catch (IOException | RuntimeException e) {
             Log.w("Photos", "request failed", e);
             return Status.FAILED;
         } finally {
-            if (c != null) c.disconnect();
+            WeatherClient.closeOrKeep(c, reuse);
         }
         if (p == null) return Status.FAILED;
         File tmp = new File(ctx.getFilesDir(), "photo.tmp");
+        c = null;
+        reuse = false;
         try {
             c = (HttpURLConnection) new URL(p.image).openConnection();
             c.setConnectTimeout(5_000);
@@ -221,6 +227,7 @@ final class PhotoWallpaper {
                     out.write(buf, 0, n);
                 }
             }
+            reuse = true;
             if (!tmp.renameTo(photo)) return Status.FAILED;
             try (OutputStream out = new FileOutputStream(author)) {
                 out.write(p.author.getBytes(StandardCharsets.UTF_8));
@@ -229,7 +236,7 @@ final class PhotoWallpaper {
             Log.w("Photos", "download failed", e);
             return Status.FAILED;
         } finally {
-            c.disconnect();
+            WeatherClient.closeOrKeep(c, reuse);
             //noinspection ResultOfMethodCallIgnored
             tmp.delete();
         }
@@ -241,13 +248,18 @@ final class PhotoWallpaper {
     private static void ping(String url, String key) {
         if (url.isEmpty()) return;
         HttpURLConnection c = null;
+        boolean reuse = false;
         try {
             c = open(url, key);
-            c.getResponseCode();
+            if (c.getResponseCode() == 200) {
+                try (InputStream in = c.getInputStream()) {
+                    reuse = WeatherClient.read(in, 64 * 1024) != null;   // read to the end, so the connection can be reused
+                }
+            }
         } catch (IOException | RuntimeException e) {
             Log.w("Photos", "download_location failed", e);
         } finally {
-            if (c != null) c.disconnect();
+            WeatherClient.closeOrKeep(c, reuse);
         }
     }
 
