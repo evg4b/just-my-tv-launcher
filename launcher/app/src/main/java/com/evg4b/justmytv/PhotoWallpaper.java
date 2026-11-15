@@ -214,7 +214,7 @@ final class PhotoWallpaper {
             WeatherClient.closeOrKeep(c, reuse);
         }
         if (p == null) return Status.FAILED;
-        File tmp = new File(ctx.getFilesDir(), "photo.tmp");
+        File tmp = new File(ctx.getFilesDir(), "photo.tmp"), authorTmp = new File(ctx.getFilesDir(), "photo.txt.tmp");
         c = null;
         reuse = false;
         try {
@@ -232,9 +232,16 @@ final class PhotoWallpaper {
                 }
             }
             reuse = true;
-            if (!tmp.renameTo(photo)) return Status.FAILED;
-            try (OutputStream out = new FileOutputStream(authorFile)) {
+            // both written before either replaces the kept one, so the photo never sits next to another's credit
+            try (OutputStream out = new FileOutputStream(authorTmp)) {
                 out.write(p.author.getBytes(StandardCharsets.UTF_8));
+            }
+            if (!tmp.renameTo(photo)) return Status.FAILED;
+            if (!authorTmp.renameTo(authorFile)) {
+                //noinspection ResultOfMethodCallIgnored
+                photo.delete();   // no photo beats an uncredited one
+                by = "";
+                return Status.FAILED;
             }
             by = p.author;
         } catch (IOException | RuntimeException e) {
@@ -244,6 +251,8 @@ final class PhotoWallpaper {
             WeatherClient.closeOrKeep(c, reuse);
             //noinspection ResultOfMethodCallIgnored
             tmp.delete();
+            //noinspection ResultOfMethodCallIgnored
+            authorTmp.delete();
         }
         pingUrl = p.downloadLocation;
         return Status.OK;
