@@ -21,8 +21,13 @@ Yes.
   Ours appears in the same list once the app declares one.
 - It starts after the TV's own "Screen saver" delay. *Verified:* `screen_off_timeout=600000` (10 minutes).
 - An app cannot choose the screensaver for the user (`screensaver_components` is a secure setting) and this TV has no
-  `android.settings.DREAM_SETTINGS` page to open. *Verified:* no activity answers that action. The user picks it once in
-  TV Settings → Device Preferences → Screen saver.
+  `android.settings.DREAM_SETTINGS` page to open. *Verified:* no activity answers that action. **Found after building:**
+  the TV's Screen saver menu is Google's Ambient page (`com.google.android.tv.settings.AmbientActivity`: Start now,
+  Settings), with no list of other screensavers. The user chooses ours once over ADB:
+  `settings put secure screensaver_components com.evg4b.justmytv/.Screensaver`. *Verified:* the TV then starts it.
+- **Found after building:** `DreamService` makes its window opaque, which hid the video layer behind it (a black screen
+  with the clock). The screensaver sets its window to `PixelFormat.TRANSLUCENT`; *verified* in SurfaceFlinger that the
+  window is then transparent over the video.
 - The chosen screensaver can be started on demand: `com.android.systemui/.Somnambulator` is exported with the
   `DESK_DOCK` category. *Verified.* This serves the "Start now" row and the tests on the TV.
 
@@ -121,6 +126,14 @@ time.
   remembers it; when the new one stops and the old one's screen was never hidden (Home under the screensaver), the old
   one starts again. If Home was stopped meanwhile, it simply starts in `onStart` as before. *Verified* with the preview:
   Home's decoder was released before the preview's started, and Home's came back when the preview closed.
+- **Hand-over (added after building, owner's request):** when Home and the screensaver show the same moving wallpaper
+  (the aerials, or the same video file), the player is not stopped and restarted: `VideoWallpaper.handTo` moves the
+  playing ExoPlayer and its listener to the other screen's surface, so the clip goes on from the same second. The
+  screensaver then fades in only the clock and its shade, not the whole screen from black. When the screensaver closes
+  and Home is not back yet, its player plays on for up to 3 s ("parked") for Home to take over, and is released if Home
+  does not come. *Verified* on the TV: the same decoder session from Home into the screensaver and back, and the log line
+  "video handed over, no restart" both ways. Not yet seen by eye: whether the TV blinks its video plane at the switch
+  (D94).
 - Photos: both screens use the same `photo.jpg` / `next.jpg` files; since only one controller plays at a time, only
   one `PhotoWallpaper` runs, with no extra guard.
 

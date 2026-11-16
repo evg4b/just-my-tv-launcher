@@ -2,6 +2,7 @@ package com.evg4b.justmytv;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.provider.Settings;
 import android.service.dreams.DreamService;
 
@@ -15,6 +16,9 @@ public class Screensaver extends DreamService {
         setInteractive(false);   // any button wakes the TV back to where it was
         setFullscreen(true);
         setScreenBright(true);
+        // DreamService makes its window opaque, which hides the video: the SurfaceView is a layer behind the window.
+        // The layout's black background still covers everything but the video's hole.
+        getWindow().setFormat(PixelFormat.TRANSLUCENT);
         screen = new ScreensaverView(this);
         setContentView(screen.root);
     }

@@ -199,8 +199,15 @@ nothing else. It follows your Wallpaper, Clock and Weather settings: video stays
 photos stay photos (with the photographer's credit). A gradient, or your own picture, becomes a slowly changing
 gradient. The clock drifts a little every few minutes. Any button wakes the TV back to where you were.
 
-To use it, choose it in TV Settings → Device Preferences → Screen saver → Just My TV Launcher. Android does not let
-an app choose the screensaver for you. It starts after the TV's screen saver delay. Settings → Screensaver in the
+To use it, choose Just My TV Launcher as the TV's screen saver. On the TCL G03 the Screen saver menu is Google's
+Ambient page, which offers no other screensavers, so choose it once from a computer:
+
+```bash
+adb -s <tv ip>:5555 shell settings put secure screensaver_components com.evg4b.justmytv/.Screensaver
+```
+
+To go back to Ambient, put `com.google.android.apps.tv.dreamx/.service.Backdrop` instead. Android does not let an app
+choose the screensaver for you. It starts after the TV's screen saver delay. Settings → Screensaver in the
 launcher shows whether it is in use, and has Start now and Preview.
 
 ## Where your settings live

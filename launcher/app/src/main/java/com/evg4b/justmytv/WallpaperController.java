@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,13 +26,23 @@ import java.util.function.Consumer;
  * The wallpaper of one screen (PLAN 6): poster, video surface, photos, aerials, dimming and the photo credit. Home and the
  * screensaver each own one (SCREENSAVER 4.2). With an {@link AmbientGradient} (the screensaver) a gradient wallpaper is
  * the animated gradient and the user's own picture is left out (D112); without one (Home) it is the still Dusk gradient.
- * Only one controller plays at a time (SCREENSAVER 4.3): starting one stops the other. Main thread only.
+ * Only one controller plays at a time (SCREENSAVER 4.3): starting one stops the other, and a video both show (the same
+ * aerials, the same file) is handed over instead, so it goes on without a new clip. Main thread only.
  */
 final class WallpaperController {
     /** The one playing now; a second start stops it, so two players and two photo timers never run together. */
     private static WallpaperController current;
     /** Stopped by the one playing while its own screen stayed shown: started again when that one stops. */
     private static WallpaperController waiting;
+    /** The screensaver just closed: its video plays on for a moment, for Home to take over as it comes back. */
+    private static WallpaperController parked;
+    private static final long PARK_MS = 3_000;
+    private static final Handler main = new Handler(Looper.getMainLooper());
+    private static final Runnable unpark = () -> {
+        WallpaperController p = parked;
+        parked = null;
+        if (p != null) p.halt();
+    };
     private static String aerialsRaw;
 
     final PhotoWallpaper photos;
@@ -82,6 +93,7 @@ final class WallpaperController {
         state = st;
         int g = ++gen;
         video.stop();
+        video.cover();
         photos.stop();
         String type = type();
         boolean moving = type.equals("video") || type.equals("aerials");
@@ -108,27 +120,64 @@ final class WallpaperController {
         if (started) play();
     }
 
-    /** The screen is shown: play. Stops the one playing, and starts it again when this one stops while it is still shown. */
-    void start() {
-        if (current != null && current != this) {
-            waiting = current;
-            current.halt();
+    /**
+     * The screen is shown: play. Stops the one playing, and starts it again when this one stops while it is still shown.
+     * True when a playing video was taken over rather than started.
+     */
+    boolean start() {
+        WallpaperController from = current != null && current != this ? current : parked != this ? parked : null;
+        if (from != null && from == parked) {
+            main.removeCallbacks(unpark);
+            parked = null;
+        }
+        boolean handed = from != null && sameVideo(from);
+        if (handed) {
+            from.video.handTo(video);
+            if (aerialUrls == null) aerialUrls = from.aerialUrls;
+            skipApple |= from.skipApple;
+            Log.i("Wallpaper", "video handed over, no restart");
+        }
+        if (from != null) {
+            if (from == current) waiting = from;
+            from.halt();
         }
         if (waiting == this) waiting = null;
         current = this;
         started = true;
         play();
+        return handed;
+    }
+
+    /** Both show the same moving wallpaper and the other one plays it now. */
+    private boolean sameVideo(WallpaperController o) {
+        if (state == null || o.state == null || !o.video.playing()) return false;
+        String t = type();
+        return t.equals(o.type()) && (t.equals("aerials") || (t.equals("video") && state.videoUri.equals(o.state.videoUri)));
     }
 
     /** The screen is hidden: release the decoder and the photo timer (PLAN 6.1). */
     void stop() {
-        halt();
         if (waiting == this) waiting = null;   // hidden while it waited: nothing to resume
-        if (current != this) return;
+        if (current != this) {
+            halt();
+            return;
+        }
         current = null;
         WallpaperController w = waiting;
         waiting = null;
-        if (w != null) w.start();   // Home under the screensaver was never stopped: it plays again
+        if (w != null) {
+            parked = this;   // Home under the screensaver was never stopped: it takes the video over and plays on
+            w.start();
+            if (parked == this) parked = null;
+            halt();
+        } else if (ambient != null && video.playing()) {
+            started = false;   // the screensaver closed: Home comes back in a moment and takes the video
+            photos.stop();
+            parked = this;
+            main.postDelayed(unpark, PARK_MS);
+        } else {
+            halt();
+        }
     }
 
     private void halt() {

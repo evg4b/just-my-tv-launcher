@@ -57,6 +57,7 @@ final class VideoWallpaper {
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
     private ExoPlayer player;
+    private Player.Listener events;   // this view's listener on the player; it moves with the player (handTo)
     private List<String> aerials;      // null: a user file
     private boolean resumed, rendered, appleFailed;
     private boolean revealPending;     // black is up and waits for the video to play and the TV to settle
@@ -125,10 +126,53 @@ final class VideoWallpaper {
             player.release();
             player = null;
         }
-        showPoster();
+    }
+
+    /** Opaque poster again; for a new wallpaper type (a stop no longer covers: a handed-over video leaves it hidden). */
+    void cover() { showPoster(); }
+
+    /**
+     * Hands the playing player to another view (Home and the screensaver, SCREENSAVER 4.3): the clip goes on from the
+     * same second in that view's surface, without a new clip or a fade from black. This view keeps its last frame.
+     */
+    void handTo(VideoWallpaper to) {
+        if (player == null || to.player != null) return;
+        main.removeCallbacks(watchdog);
+        main.removeCallbacks(fadeToBlack);
+        main.removeCallbacks(reveal);
+        player.removeListener(events);
+        to.player = player;
+        to.aerials = aerials;
+        to.rendered = rendered;
+        to.errors = errors;
+        to.watchdogMs = watchdogMs;
+        to.appleFailed |= appleFailed;
+        boolean pending = revealPending;
+        player = null;
+        aerials = null;
+        revealPending = false;
+        to.attach(pending);
+    }
+
+    private void attach(boolean pending) {
+        events = newEvents();
+        player.addListener(events);
+        player.setVideoSurfaceView(surface);
+        if (pending || !rendered) {   // it was still under black: reveal here as it would have there
+            showPoster();
+            revealPending = rendered;
+            revealWhenSettled();
+            if (!rendered) armWatchdog();
+        } else {
+            poster.animate().cancel();
+            poster.setAlpha(0f);
+            poster.setVisibility(View.GONE);
+        }
+        scheduleFadeToBlack();
     }
 
     private void build(int repeat, long watchdogMs) {
+        showPoster();   // a new clip comes up from black
         this.watchdogMs = watchdogMs;
         rendered = false;
         errors = 0;
@@ -142,7 +186,13 @@ final class VideoWallpaper {
         player.setVolume(0f);
         player.setRepeatMode(repeat);
         player.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
-        player.addListener(new Player.Listener() {
+        events = newEvents();
+        player.addListener(events);
+        player.setVideoSurfaceView(surface);
+    }
+
+    private Player.Listener newEvents() {
+        return new Player.Listener() {
             @Override public void onRenderedFirstFrame() {
                 rendered = true;
                 errors = 0;
@@ -177,8 +227,7 @@ final class VideoWallpaper {
             @Override public void onPlayerError(@NonNull PlaybackException e) {
                 onError(e);
             }
-        });
-        player.setVideoSurfaceView(surface);
+        };
     }
 
     private void go() {

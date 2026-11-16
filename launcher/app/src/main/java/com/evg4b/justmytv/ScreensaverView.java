@@ -70,9 +70,17 @@ final class ScreensaverView {
         HeaderBinder.weather(root, state, false);
         wallpaper.apply(state);
         wallpaper.onResume();
-        wallpaper.start();
-        root.setAlpha(0f);
-        root.animate().alpha(1f).setDuration(FADE_IN_MS).start();   // from black, as the video reveal
+        if (wallpaper.start()) {
+            // Home's video goes on: only the clock and the shade behind it come in
+            for (int id : new int[]{R.id.clock_block, R.id.scrim_bottom, R.id.photo_credit}) {
+                View v = root.findViewById(id);
+                v.setAlpha(0f);
+                v.animate().alpha(1f).setDuration(FADE_IN_MS).start();
+            }
+        } else {
+            root.setAlpha(0f);
+            root.animate().alpha(1f).setDuration(FADE_IN_MS).start();   // from black, as the video reveal
+        }
         ui.postDelayed(drift, DRIFT_EVERY);
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));

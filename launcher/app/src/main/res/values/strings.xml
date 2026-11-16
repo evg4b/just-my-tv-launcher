@@ -50,7 +50,7 @@
     <string name="status">Status</string>
     <string name="screensaver_in_use">In use</string>
     <string name="screensaver_not_chosen">Not chosen</string>
-    <string name="screensaver_how">To use it: TV Settings → Device Preferences → Screen saver → Just My TV Launcher. It starts after the TV\'s screen saver delay.</string>
+    <string name="screensaver_how">To use it, choose Just My TV Launcher as the screen saver. On TVs whose menu offers only Google\'s Ambient, run once from a computer: adb shell settings put secure screensaver_components com.evg4b.justmytv/.Screensaver</string>
     <string name="start_now">Start now</string>
     <string name="preview">Preview</string>
     <string name="about_text">Just My TV Launcher · version %1$s\nA home screen for Android TV with no ads, accounts or tracking\nSource: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nWeather: Open-Meteo.com, data under CC BY 4.0\nPhotos: Unsplash, through your access key\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
