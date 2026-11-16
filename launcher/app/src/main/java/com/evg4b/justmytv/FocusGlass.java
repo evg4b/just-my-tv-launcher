@@ -1,6 +1,10 @@
 package com.evg4b.justmytv;
 
+import android.animation.ValueAnimator;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +25,9 @@ final class FocusGlass {
     private final int stroke;
     private final SpringAnimation sx, sy;
     private final float pad;
-    private boolean shown;
+    private boolean shown, moving;
+    private int accent = Accent.WHITE, shownColor = Accent.WHITE;   // white until a wallpaper says otherwise
+    private ValueAnimator tint;
 
     FocusGlass(FrameLayout host, float density) {
         this.host = host;
@@ -79,7 +85,36 @@ final class FocusGlass {
 
     /** Move mode shows an amber ring instead of the accent. */
     void setMoving(boolean moving) {
-        ring.setStroke(stroke, moving ? 0xFFFFB74D : 0xFF8AB4F8);   // accent: Couchy's default
+        this.moving = moving;
+        ring.setStroke(stroke, moving ? 0xFFFFB74D : shownColor);
+    }
+
+    /** The accent follows what is on screen: a wallpaper drawable, or a frame of the video. */
+    void match(Drawable d) {
+        if (d == null || d.getConstantState() == null) return;
+        Bitmap b = Bitmap.createBitmap(32, 18, Bitmap.Config.ARGB_8888);
+        Drawable copy = d.getConstantState().newDrawable();   // a copy: the poster's own bounds stay untouched
+        copy.setBounds(0, 0, 32, 18);
+        copy.draw(new Canvas(b));
+        match(b);
+    }
+
+    void match(Bitmap b) {
+        int[] px = new int[b.getWidth() * b.getHeight()];
+        b.getPixels(px, 0, b.getWidth(), 0, 0, b.getWidth(), b.getHeight());
+        setAccent(Accent.of(px));
+    }
+
+    private void setAccent(int c) {
+        if (c == accent) return;
+        accent = c;
+        if (tint != null) tint.cancel();
+        tint = ValueAnimator.ofArgb(shownColor, c).setDuration(600);
+        tint.addUpdateListener(a -> {
+            shownColor = (int) a.getAnimatedValue();
+            if (!moving) ring.setStroke(stroke, shownColor);
+        });
+        tint.start();
     }
 
     void hide() {

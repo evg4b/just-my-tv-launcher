@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -71,6 +72,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private AppAdapter adapter;
     private AppArt art;
     private FocusGlass glass;
+    private Drawable posterSeen;     // the poster drawable the ring's colour was taken from
     /** Every launchable app from the last scan, hidden ones included (the Apps screen lists them). */
     List<App> installed = new ArrayList<>();
     private int generation;
@@ -125,9 +127,21 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         applyLayout();
 
         poster = findViewById(R.id.poster);
-        video = new VideoWallpaper(this, findViewById(R.id.video), poster, () -> {
-            skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
-            aerialUrls = null;
+        video = new VideoWallpaper(this, findViewById(R.id.video), poster, new VideoWallpaper.Listener() {
+            @Override public void onAppleFailed() {
+                skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
+                aerialUrls = null;
+            }
+
+            @Override public void onFrame(Bitmap frame) { glass.match(frame); }
+        });
+        // every wallpaper (picture, photo, gradient, black, a video's poster) lands in the poster: tint on each change
+        poster.getViewTreeObserver().addOnPreDrawListener(() -> {
+            if (poster.getDrawable() != posterSeen) {
+                posterSeen = poster.getDrawable();
+                glass.match(posterSeen);
+            }
+            return true;
         });
         photos = new PhotoWallpaper(this, poster, () -> {
             showPhotoCredit();

@@ -1,10 +1,12 @@
 package com.evg4b.justmytv;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.PixelCopy;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -36,6 +38,9 @@ final class VideoWallpaper {
     interface Listener {
         /** An Apple stream failed (its TLS chain, say): skip Apple for the rest of the session. */
         void onAppleFailed();
+
+        /** A small copy of the video just revealed (the focus ring takes its colour). */
+        default void onFrame(Bitmap frame) {}
     }
 
     private static final long WATCHDOG_FILE_MS = 3_000, WATCHDOG_AERIALS_MS = 8_000;
@@ -65,6 +70,7 @@ final class VideoWallpaper {
     private final Runnable reveal = () -> {
         revealPending = false;
         hidePoster();
+        copyFrame();
     };
 
     VideoWallpaper(Context ctx, SurfaceView surface, ImageView poster, Listener listener) {
@@ -237,6 +243,11 @@ final class VideoWallpaper {
         poster.animate().alpha(1f).setDuration(FADE_MS)
                 .setInterpolator(new AccelerateDecelerateInterpolator())
                 .start();
+    }
+
+    private void copyFrame() {
+        Bitmap frame = Bitmap.createBitmap(32, 18, Bitmap.Config.ARGB_8888);
+        PixelCopy.request(surface, frame, r -> { if (r == PixelCopy.SUCCESS) listener.onFrame(frame); }, main);
     }
 
     private void hidePoster() {
