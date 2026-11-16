@@ -23,6 +23,9 @@ Hold OK on a tile to open its menu:
 - Open starts the app.
 - Move puts a coral ring around the tile. Move it with the arrows and press OK to put it down, or Back to put it
   back where it was.
+- Change image lets you pick a picture for the tile from the TV's storage. It is cropped to the tile's shape from
+  the centre and kept even when the app updates. Reset image, shown once you have changed it, brings back the app's
+  own banner.
 - Hide removes the tile from the grid, and a message says where to find it: Settings → Apps brings it back.
 - App details opens the system page for the app, where you can force stop, clear data or uninstall it.
 

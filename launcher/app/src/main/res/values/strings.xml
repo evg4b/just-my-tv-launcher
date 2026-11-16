@@ -11,6 +11,9 @@
     <string name="move">Move</string>
     <string name="hide">Hide</string>
     <string name="app_details">App details</string>
+    <string name="change_image">Change image</string>
+    <string name="reset_image">Reset image</string>
+    <string name="image_failed">This picture could not be used</string>
     <string name="move_hint">Move with the arrows, OK to put it down, Back to cancel</string>
     <string name="hidden_hint">Hidden. Show it again in Settings → Apps.</string>
     <string name="loading">Loading…</string>

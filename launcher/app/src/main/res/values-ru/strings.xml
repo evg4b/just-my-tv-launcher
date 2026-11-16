@@ -9,6 +9,9 @@
     <string name="move">Переместить</string>
     <string name="hide">Скрыть</string>
     <string name="app_details">О приложении</string>
+    <string name="change_image">Сменить картинку</string>
+    <string name="reset_image">Вернуть картинку</string>
+    <string name="image_failed">Эту картинку не удалось использовать</string>
     <string name="move_hint">Двигайте стрелками, OK — поставить, «Назад» — отменить</string>
     <string name="hidden_hint">Скрыто. Вернуть можно в Настройки → Приложения.</string>
     <string name="loading">Загрузка…</string>

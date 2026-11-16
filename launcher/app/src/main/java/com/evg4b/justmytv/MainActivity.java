@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -48,7 +49,7 @@ import java.util.concurrent.Executors;
 /** Home screen: the app grid with the bar, the focus ring, the header, the tile menu (PLAN 7, 8, 9). */
 public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int FADE_DP = 36;
-    private static final int REQ_VIDEO = 1, REQ_PICTURE = 2;
+    private static final int REQ_VIDEO = 1, REQ_PICTURE = 2, REQ_ART = 3;
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
     private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
     private static final long WEATHER_RETRY = 2 * 60_000L;    // after a failure, as the photos
@@ -71,6 +72,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private RecyclerView grid;
     private AppAdapter adapter;
     private AppArt art;
+    // shortcut: lost if the system kills the launcher while the picker is open; then the pick is ignored
+    private String artPkg;           // the app whose image is being chosen
     private FocusGlass glass;
     private Drawable posterSeen;     // the poster drawable the ring's colour was taken from
     /** Every launchable app from the last scan, hidden ones included (the Apps screen lists them). */
@@ -431,6 +434,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     @Override
     protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
+        if (req == REQ_ART) {
+            if (res == RESULT_OK && data != null && data.getData() != null && artPkg != null) setOwnArt(artPkg, data.getData());
+            artPkg = null;
+            return;
+        }
         if ((req != REQ_VIDEO && req != REQ_PICTURE) || res != RESULT_OK || data == null || data.getData() == null) return;
         Uri uri = data.getData();
         try {
@@ -462,6 +470,26 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 applyWallpaper();
             });
         });
+    }
+
+    /** Copies the picture, cropped to 16:9, as the app's banner; no lasting access to the file is needed. */
+    private void setOwnArt(String pkg, Uri uri) {
+        pool.execute(() -> {
+            Bitmap b = WallpaperFiles.picture(this, uri);
+            boolean ok = b != null && art.setOwn(pkg, b);
+            ui.post(() -> {
+                if (ok) reloadArt(pkg);
+                else Toast.makeText(this, R.string.image_failed, Toast.LENGTH_LONG).show();
+            });
+        });
+    }
+
+    private void reloadArt(String pkg) {
+        for (App a : installed) {
+            if (!a.pkg.equals(pkg)) continue;
+            a.art = null;
+            loadArt(Collections.singletonList(a), generation);
+        }
     }
 
     // ---- weather (PLAN 4) ----
@@ -756,15 +784,25 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     @Override
     public void onMenu(App a, View card) {
         if (movingPkg != null) return;
-        menu = TileMenu.show(card,
+        List<Object> items = new ArrayList<>(Arrays.asList(
                 getString(R.string.open), (TileMenu.Action) () -> onLaunch(a),
                 getString(R.string.move), (TileMenu.Action) () -> startMove(a),
+                getString(R.string.change_image), (TileMenu.Action) () -> {
+                    artPkg = a.pkg;
+                    pick("image/*", REQ_ART);
+                }));
+        if (art.hasOwn(a.pkg)) items.addAll(Arrays.asList(getString(R.string.reset_image), (TileMenu.Action) () -> {
+            art.removeOwn(a.pkg);
+            reloadArt(a.pkg);
+        }));
+        items.addAll(Arrays.asList(
                 getString(R.string.hide), (TileMenu.Action) () -> {
                     setHidden(a.pkg, true);
                     Toast.makeText(this, R.string.hidden_hint, Toast.LENGTH_LONG).show();
                 },
                 getString(R.string.app_details), (TileMenu.Action) () -> start(new Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.pkg, null))));
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", a.pkg, null)))));
+        menu = TileMenu.show(card, items.toArray());
     }
 
     void setHidden(String pkg, boolean hidden) {

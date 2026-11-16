@@ -21,14 +21,15 @@ import java.util.Set;
 /**
  * Banner or icon for a tile, prepared once and kept as WebP in iconcache/ (PLAN 5.1, 5.2).
  * File names carry the package, its lastUpdateTime and the pixel size, so an update or a density change makes a new file.
- * Thread-safe: each call touches only its own files.
+ * An image the user chose for an app (tile menu → Change image) is kept apart in files/art/, survives app updates and
+ * comes first. Thread-safe: each call touches only its own files.
  */
 final class AppArt {
     private static final int ICON_PX = 128;
 
     private final Context ctx;
     private final PackageManager pm;
-    private final File dir;
+    private final File dir, own;
     private final int bannerW;
 
     AppArt(Context ctx) {
@@ -37,6 +38,9 @@ final class AppArt {
         dir = new File(ctx.getCacheDir(), "iconcache");
         //noinspection ResultOfMethodCallIgnored
         dir.mkdirs();
+        own = new File(ctx.getFilesDir(), "art");
+        //noinspection ResultOfMethodCallIgnored
+        own.mkdirs();
         float density = ctx.getResources().getDisplayMetrics().density;
         bannerW = Math.max(320, Math.min(720, Math.round(180 * GridMetrics.FOCUS_SCALE * density)));
     }
@@ -45,10 +49,24 @@ final class AppArt {
 
     private String iconName(App a) { return a.pkg + "-" + a.lastUpdate + "-i" + ICON_PX + ".webp"; }
 
-    /** From the cache, or drawn and cached. Null only if the app has neither a banner nor an icon. */
+    private File ownFile(String pkg) { return new File(own, pkg + ".webp"); }
+
+    boolean hasOwn(String pkg) { return ownFile(pkg).isFile(); }
+
+    /** Keeps a 16:9 picture as the app's banner, scaled to the banner size. False if it could not be written. */
+    boolean setOwn(String pkg, Bitmap picture) {
+        Bitmap b = Bitmap.createScaledBitmap(picture, bannerW, bannerW * 9 / 16, true);
+        return save(b, own, pkg + ".webp");
+    }
+
+    void removeOwn(String pkg) {
+        //noinspection ResultOfMethodCallIgnored
+        ownFile(pkg).delete();
+    }
+
+    /** The user's image, else from the cache, else drawn and cached. Null only if the app has no banner or icon. */
     Bitmap load(App a) {
-        for (String name : new String[]{bannerName(a), iconName(a)}) {
-            File f = new File(dir, name);
+        for (File f : new File[]{ownFile(a.pkg), new File(dir, bannerName(a)), new File(dir, iconName(a))}) {
             if (!f.isFile()) continue;
             Bitmap b = BitmapFactory.decodeFile(f.getPath());
             if (b != null) {
@@ -63,7 +81,7 @@ final class AppArt {
             name = iconName(a);
         }
         if (b == null) return null;
-        save(b, name);
+        save(b, dir, name);
         b.prepareToDraw();   // upload the texture now, not during a frame
         return b;
     }
@@ -113,7 +131,7 @@ final class AppArt {
     }
 
     @SuppressWarnings("deprecation")
-    private void save(Bitmap b, String name) {
+    private static boolean save(Bitmap b, File dir, String name) {
         Bitmap.CompressFormat fmt = Build.VERSION.SDK_INT >= 30 ? Bitmap.CompressFormat.WEBP_LOSSY : Bitmap.CompressFormat.WEBP;
         File tmp = new File(dir, name + ".tmp");
         try (FileOutputStream out = new FileOutputStream(tmp)) {
@@ -121,9 +139,8 @@ final class AppArt {
         } catch (IOException e) {
             //noinspection ResultOfMethodCallIgnored
             tmp.delete();
-            return;
+            return false;
         }
-        //noinspection ResultOfMethodCallIgnored
-        tmp.renameTo(new File(dir, name));   // a half-written file is never read as a banner
+        return tmp.renameTo(new File(dir, name));   // a half-written file is never read as a banner
     }
 }
