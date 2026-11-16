@@ -16,7 +16,8 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
 /**
- * One focus ring for the whole screen, moved by a spring (PLAN 7.4). It lives in glass_host above the grid.
+ * One focus ring for the whole screen, glided to each tile by a spring with no overshoot (PLAN 7.4, D111).
+ * It lives in glass_host above the grid.
  * While the grid scrolls the host itself is shifted, so the ring stays on its tile without disturbing the spring.
  */
 final class FocusGlass {
@@ -53,7 +54,8 @@ final class FocusGlass {
     }
 
     private SpringAnimation spring(DynamicAnimation.ViewProperty p) {
-        return new SpringAnimation(view, p).setSpring(new SpringForce().setStiffness(260f).setDampingRatio(0.58f));
+        return new SpringAnimation(view, p).setSpring(new SpringForce().setStiffness(260f)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY));   // a smooth glide, no bounce (D111)
     }
 
     void follow(View card) {
