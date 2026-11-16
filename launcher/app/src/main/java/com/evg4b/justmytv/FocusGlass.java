@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import androidx.dynamicanimation.animation.DynamicAnimation;
@@ -28,6 +29,15 @@ final class FocusGlass {
     private boolean shown, moving;
     private int accent = Accent.WHITE, shownColor = Accent.WHITE;   // white until a wallpaper says otherwise
     private ValueAnimator tint;
+    private View target;   // the card to ring at the next pre-draw, or null
+    private final ViewTreeObserver.OnPreDrawListener place = new ViewTreeObserver.OnPreDrawListener() {
+        @Override public boolean onPreDraw() {
+            host.getViewTreeObserver().removeOnPreDrawListener(this);
+            View card = target;
+            target = null;
+            return card == null || !card.isAttachedToWindow() || !ring(card);   // a resized ring skips this frame so it draws at its new size
+        }
+    };
 
     FocusGlass(FrameLayout host, float density) {
         this.host = host;
@@ -47,6 +57,14 @@ final class FocusGlass {
     }
 
     void follow(View card) {
+        // an adapter move or reload may not have laid the card out yet: read its place just before the next draw
+        if (target == null) host.getViewTreeObserver().addOnPreDrawListener(place);
+        target = card;
+        card.invalidate();
+    }
+
+    /** Sends the ring to the card; true if it had to be resized. */
+    private boolean ring(View card) {
         // glass_host and the grid are siblings: convert through the common parent
         ViewGroup common = (ViewGroup) host.getParent();
         Rect r = new Rect(0, 0, card.getWidth(), card.getHeight());
@@ -54,7 +72,8 @@ final class FocusGlass {
         float w = card.getWidth() * GridMetrics.FOCUS_SCALE + 2 * pad;
         float h = card.getHeight() * GridMetrics.FOCUS_SCALE + 2 * pad;
         ViewGroup.LayoutParams lp = view.getLayoutParams();
-        if (lp.width != (int) w || lp.height != (int) h) {
+        boolean resized = lp.width != (int) w || lp.height != (int) h;
+        if (resized) {
             lp.width = (int) w;
             lp.height = (int) h;
             view.setLayoutParams(lp);
@@ -72,6 +91,7 @@ final class FocusGlass {
             sx.animateToFinalPosition(x);
             sy.animateToFinalPosition(y);
         }
+        return resized;
     }
 
     /** The grid scrolled by dy: carry the ring along. */
@@ -118,6 +138,7 @@ final class FocusGlass {
     }
 
     void hide() {
+        target = null;
         view.setVisibility(View.INVISIBLE);
         shown = false;
     }

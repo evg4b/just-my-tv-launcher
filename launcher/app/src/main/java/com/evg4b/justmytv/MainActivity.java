@@ -797,7 +797,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         String pkg = movingPkg;
         movingPkg = null;
         glass.setMoving(false);
+        View card = getCurrentFocus();
         applyApps();
+        if (card != null) glass.follow(card);   // stable ids keep focus on this card, so no focus change will move the ring
         List<App> items = adapter.items();
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).pkg.equals(pkg)) {
