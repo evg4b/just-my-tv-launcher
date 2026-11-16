@@ -3,6 +3,7 @@
     <string name="app_name">Just My TV Launcher</string>
     <!-- two lines: "13 NOVEMBER" / "FRIDAY" (OPEN-QUESTIONS Q6) -->
     <string name="date_format" translatable="false">d MMMM\nEEEE</string>
+    <string name="date_format_line" translatable="false">EEEE, d MMMM</string>
     <string name="inputs">Inputs</string>
     <string name="network">Network problem</string>
     <string name="settings">Settings</string>
@@ -44,6 +45,14 @@
     <string name="greeting_evening">Good evening</string>
     <string name="greeting_night">Good night</string>
     <string name="about">About</string>
+    <string name="screensaver">Screensaver</string>
+    <string name="screensaver_note">Shows Home\'s wallpaper with the clock, the date and the weather. A gradient or your own picture becomes a slowly changing gradient. It follows the Wallpaper, Clock and Weather settings.</string>
+    <string name="status">Status</string>
+    <string name="screensaver_in_use">In use</string>
+    <string name="screensaver_not_chosen">Not chosen</string>
+    <string name="screensaver_how">To use it: TV Settings → Device Preferences → Screen saver → Just My TV Launcher. It starts after the TV\'s screen saver delay.</string>
+    <string name="start_now">Start now</string>
+    <string name="preview">Preview</string>
     <string name="about_text">Just My TV Launcher · version %1$s\nA home screen for Android TV with no ads, accounts or tracking\nSource: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nWeather: Open-Meteo.com, data under CC BY 4.0\nPhotos: Unsplash, through your access key\nAerials: streamed from Apple and Amazon servers; the clips belong to them\nIcons: Material Icons, Apache License 2.0\nVideo: AndroidX Media3, Apache License 2.0\nFont: Outfit, SIL Open Font License 1.1\nBased in part on CleanYourTV, MIT License</string>
     <string name="tv_settings">TV settings</string>
     <string name="wallpaper">Wallpaper</string>

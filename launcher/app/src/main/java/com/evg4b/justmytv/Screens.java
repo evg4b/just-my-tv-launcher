@@ -40,6 +40,7 @@ final class Screens {
         p.section(R.drawable.ic_input, s(R.string.inputs), this::inputSettings);
         p.section(R.drawable.ic_remote, s(R.string.remote), this::remote);
         p.section(R.drawable.ic_schedule, s(R.string.clock), this::clock);
+        p.section(R.drawable.wx_moon, s(R.string.screensaver), this::screensaver);
         p.section(R.drawable.ic_info, s(R.string.about), this::about);
         p.item(a.getDrawable(R.drawable.ic_tv), s(R.string.tv_settings), null, () -> a.start(new Intent(Settings.ACTION_SETTINGS)));
     }
@@ -118,6 +119,20 @@ final class Screens {
             ((android.view.View) v.getParent()).setAlpha(0.5f);
             p.note(s(R.string.settings_icon_unavailable));
         }
+    }
+
+    /** No options of its own: it mirrors Home (D112). Status, how to turn it on, and two ways to see it. */
+    private void screensaver(SidePanel p) {
+        boolean inUse = Screensaver.inUse(a);
+        p.title(s(R.string.screensaver));
+        p.note(s(R.string.screensaver_note));
+        p.item(s(R.string.status), s(inUse ? R.string.screensaver_in_use : R.string.screensaver_not_chosen), null);
+        if (!inUse) p.note(s(R.string.screensaver_how));
+        p.item(s(R.string.start_now), null, () -> {
+            if (inUse) a.start(new Intent().setClassName("com.android.systemui", "com.android.systemui.Somnambulator"));
+            else a.start(new Intent(a, ScreensaverPreview.class));   // not chosen: the system would start another one
+        });
+        p.item(s(R.string.preview), null, () -> a.start(new Intent(a, ScreensaverPreview.class)));
     }
 
     private void layoutChanged() {

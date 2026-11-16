@@ -17,6 +17,7 @@ is not stored in git.
 | [OPERATIONS.md](OPERATIONS.md) | Installation, state recording, rollback, checks after a reboot | How to change the TV safely |
 | [RISKS.md](RISKS.md) | 46 problem cases with handling and verification status | What can go wrong and how to handle it |
 | [BEST-PRACTICES.md](BEST-PRACTICES.md) | Practices for services, APIs, images, Media3, and the build | How to write clean code that works on the TV |
+| [SCREENSAVER.md](SCREENSAVER.md) | Plan for the screensaver: Home's wallpaper (an animated gradient for Gradient and Picture) with the clock and the weather, sharing the launcher's settings. Built; the real screensaver still to be checked on the TV | Building or reviewing the screensaver |
 | [WALLPAPERS.md](WALLPAPERS.md) | Register of background images and videos: what is taken from CleanYourTV and Couchy, their licences, and the streamed Apple and Amazon aerials | Choosing the background and checking licences |
 | [remote-buttons.md](remote-buttons.md) | 23 remote buttons: codes, behaviour, requirements | The remote and button remapping |
 | [remote-captures/](remote-captures/) | Raw `getevent` recordings and the `Generic.kl` key layout from the TV | Primary data for the button codes |

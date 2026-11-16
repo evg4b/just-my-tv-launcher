@@ -35,6 +35,8 @@ watching the screen. The on-device checks are listed as T16 to T19 in
   in once it plays, never over the gradient; aerials and photos fade through black from one to the next.
 - The focus ring takes its colour from the wallpaper, a light shade of its main hue, and turns white on a dark or grey
   one. Each aerial clip and each new photo tints it again, with a short fade.
+- A screensaver that shows Home's wallpaper with the clock and the weather; a gradient or your own picture becomes a
+  slowly changing gradient.
 - Weather from [Open-Meteo](https://open-meteo.com), with no key and no location permission. You type a city once.
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the

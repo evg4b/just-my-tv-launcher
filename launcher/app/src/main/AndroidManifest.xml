@@ -74,5 +74,25 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/remote_keys" />
         </service>
+
+        <!-- Screensaver (D112, SCREENSAVER): chosen by hand in TV Settings -> Device Preferences -> Screen saver.
+             No settingsActivity: an explicit start of Home makes a second launcher (D107) -->
+        <service
+            android:name=".Screensaver"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <!-- Settings -> Screensaver -> Preview -->
+        <activity
+            android:name=".ScreensaverPreview"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.Launcher" />
     </application>
 </manifest>

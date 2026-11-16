@@ -7,9 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -25,7 +23,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,14 +31,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,7 +45,6 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private static final int FADE_DP = 36;
     private static final int REQ_VIDEO = 1, REQ_PICTURE = 2, REQ_ART = 3;
     private static final long WEATHER_EVERY = 30 * 60_000L;   // fixed (PLAN 4.6)
-    private static final long WEATHER_OLD = 3 * 3600_000L;    // older than this gets the status dot (PLAN 4.7)
     private static final long WEATHER_RETRY = 2 * 60_000L;    // after a failure, as the photos
 
     private final Handler ui = new Handler(Looper.getMainLooper());
@@ -87,13 +80,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     private Screens screens;
     private View opener;        // what had focus when the panel opened; it gets it back
     final WeatherClient weather = new WeatherClient();
-    private VideoWallpaper video;
-    PhotoWallpaper photos;
+    private WallpaperController wallpaper;
+    PhotoWallpaper photos;           // the Wallpaper settings read it
     private ImageView poster;
-    private int wallpaperGen;        // a newer applyWallpaper makes older background results stale
-    private int inputsGen;           // the same for updateInputsButton
-    private boolean started, skipApple;
-    private List<String> aerialUrls;
+    private int inputsGen;           // a newer updateInputsButton makes older results stale
+    private boolean started;
     private boolean weatherFailed;   // the last refresh failed: show when the cache is from
     private final Runnable weatherTick = new Runnable() {
         @Override public void run() {
@@ -131,14 +122,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         applyEdges();
 
         poster = findViewById(R.id.poster);
-        video = new VideoWallpaper(this, findViewById(R.id.video), poster, new VideoWallpaper.Listener() {
-            @Override public void onAppleFailed() {
-                skipApple = true;   // for this session (PLAN 6.3): Apple's TLS chain failed here
-                aerialUrls = null;
-            }
-
-            @Override public void onFrame(Bitmap frame) { glass.match(frame); }
-        });
+        wallpaper = new WallpaperController(this, findViewById(R.id.video), poster, findViewById(R.id.dim),
+                findViewById(R.id.photo_credit), null, glass::match, () -> {
+                    if (panel != null && panel.showing(screens.wallpaper)) panel.refresh();
+                });
+        photos = wallpaper.photos;
         // every wallpaper (picture, photo, gradient, black, a video's poster) lands in the poster: tint on each change
         poster.getViewTreeObserver().addOnPreDrawListener(() -> {
             if (poster.getDrawable() != posterSeen) {
@@ -146,10 +134,6 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 glass.match(posterSeen);
             }
             return true;
-        });
-        photos = new PhotoWallpaper(this, poster, () -> {
-            showPhotoCredit();
-            if (panel != null && panel.showing(screens.wallpaper)) panel.refresh();
         });
         applyWallpaper();
         // the poster view now covers the window; drop the theme background after the first frame (overdraw, PLAN 11.3)
@@ -246,13 +230,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     /** 12/24 h, the date and the greeting (PLAN 10.1, Clock). */
     void applyClock() {
-        String fmt = state.h24 ? "HH:mm" : "h:mm";
-        TextClock clock = findViewById(R.id.clock);
-        clock.setFormat12Hour(fmt);
-        clock.setFormat24Hour(fmt);
-        int date = state.showDate ? View.VISIBLE : View.GONE;
-        findViewById(R.id.date).setVisibility(date);
-        findViewById(R.id.date_divider).setVisibility(date);
+        HeaderBinder.clock(getWindow().getDecorView(), state);
         TextView g = findViewById(R.id.greeting);
         g.setVisibility(state.greeting ? View.VISIBLE : View.GONE);
         if (state.greeting) {
@@ -266,64 +244,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     // ---- wallpaper (PLAN 6) ----
 
     /** Poster, video surface and dimming for the current type; restarts the video if Home is on screen. */
-    void applyWallpaper() {
-        int gen = ++wallpaperGen;
-        video.stop();
-        photos.stop();
-        String type = state.wallpaper;
-        boolean moving = type.equals("video") || type.equals("aerials");
-        findViewById(R.id.video).setVisibility(moving ? View.VISIBLE : View.GONE);
-        resetPoster();   // until the picture or the poster frame is decoded
-        if (type.equals("picture") && !state.imageUri.isEmpty()) {
-            Uri uri = Uri.parse(state.imageUri);
-            pool.execute(() -> {
-                Bitmap b = WallpaperFiles.picture(this, uri);
-                ui.post(() -> {
-                    if (gen != wallpaperGen) return;
-                    if (b != null) poster.setImageBitmap(b);
-                    else poster.setImageResource(R.drawable.dusk);   // the file is gone or unreadable: not black
-                });
-            });
-        } else if (type.equals("video") && !state.videoUri.isEmpty()) {
-            pool.execute(() -> {
-                Bitmap b = WallpaperFiles.readPoster(this);
-                ui.post(() -> { if (gen == wallpaperGen && b != null && !video.playing()) poster.setImageBitmap(b); });
-            });
-        }
-        applyDim();
-        showPhotoCredit();
-        if (started) startVideo();
-    }
+    void applyWallpaper() { wallpaper.apply(state); }
 
-    /** Unsplash's guidelines: the photographer and Unsplash where the photo is shown (D105). */
-    void showPhotoCredit() {
-        TextView credit = findViewById(R.id.photo_credit);
-        String by = state.wallpaper.equals("photos") ? photos.author() : "";
-        credit.setVisibility(by.isEmpty() ? View.GONE : View.VISIBLE);
-        if (!by.isEmpty()) credit.setText(getString(R.string.photo_by, by));
-    }
+    void showPhotoCredit() { wallpaper.showCredit(); }
 
-    /**
-     * Before the first frame: the gradient for its own type and for a picture or video not chosen yet (nothing will
-     * come); otherwise black, so a video or picture comes up from black, never over the gradient.
-     */
-    private void resetPoster() {
-        if (showsGradient()) poster.setImageResource(R.drawable.dusk);
-        else poster.setImageDrawable(new ColorDrawable(Color.BLACK));
-    }
-
-    private boolean showsGradient() {
-        String t = state.wallpaper;
-        return t.equals("gradient") || (t.equals("picture") && state.imageUri.isEmpty())
-                || (t.equals("video") && state.videoUri.isEmpty());
-    }
-
-    void applyDim() {
-        View dim = findViewById(R.id.dim);
-        boolean on = state.dim > 0 && !showsGradient();
-        dim.setVisibility(on ? View.VISIBLE : View.GONE);
-        dim.setBackgroundColor((state.dim * 255 / 100) << 24);
-    }
+    void applyDim() { wallpaper.applyDim(); }
 
     private final Runnable applyWallpaperNow = this::applyWallpaper;
 
@@ -333,46 +258,13 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         ui.postDelayed(applyWallpaperNow, 800);
     }
 
-    private void startVideo() {
-        if (state.wallpaper.equals("photos")) {
-            photos.start(state.photoMinutes * 60_000L, state.unsplashKey);
-        } else if (state.wallpaper.equals("video") && !state.videoUri.isEmpty()) {
-            video.startFile(Uri.parse(state.videoUri));
-        } else if (state.wallpaper.equals("aerials")) {
-            if (!video.playing()) poster.setImageDrawable(new ColorDrawable(Color.BLACK));   // a fallback may have left the gradient up
-            if (aerialUrls != null) {
-                playAerials(aerialUrls);
-                return;
-            }
-            int gen = wallpaperGen;
-            boolean skip = skipApple;
-            String source = state.aerialSource;
-            java.util.Set<String> themes = new java.util.HashSet<>(state.aerialThemes);
-            pool.execute(() -> {
-                List<String> urls = Aerials.parse(aerialsJson(), skip, source, themes);
-                ui.post(() -> {
-                    if (gen != wallpaperGen) return;   // the choice changed meanwhile
-                    aerialUrls = urls;
-                    if (started && state.wallpaper.equals("aerials")) playAerials(urls);
-                });
-            });
-        }
-    }
-
-    /** Offline, or no clip matches the chosen collection and themes: a still gradient, no requests (PLAN 6.3). */
-    private void playAerials(List<String> urls) {
-        if (urls.isEmpty() || !online()) poster.setImageResource(R.drawable.dusk);
-        else video.startAerials(urls);
-    }
-
     /**
      * A network came up. A TV turned on reaches Home before its Wi-Fi: the aerials found none, or failed on it, and
      * showed the gradient; they start now instead of at the next return to Home.
      */
     private final ConnectivityManager.NetworkCallback network = new ConnectivityManager.NetworkCallback() {
         @Override public void onAvailable(@NonNull Network n) {
-            // aerialUrls: the list is read (a start still reading it plays them itself)
-            if (started && state.wallpaper.equals("aerials") && aerialUrls != null && !video.playing()) startVideo();
+            wallpaper.networkUp();
         }
 
         @Override public void onCapabilitiesChanged(@NonNull Network n, @NonNull NetworkCapabilities c) { showNetwork(c); }
@@ -388,28 +280,14 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         setHeaderShown(R.id.btn_network, c == null || !c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED));
     }
 
-    private String aerialsRaw;
-
-    /** The bundled list, read once (about 60 KB). */
-    synchronized String aerialsJson() {
-        if (aerialsRaw == null) aerialsRaw = readRaw(R.raw.aerials);
-        return aerialsRaw;
-    }
+    /** The bundled aerials list (the Wallpaper settings count its clips). */
+    String aerialsJson() { return WallpaperController.aerialsJson(this); }
 
     /** The collection or a theme changed in settings: rebuild the playlist. */
     void aerialsChanged() {
-        aerialUrls = null;
+        wallpaper.aerialsChanged();
         save();
         if (state.wallpaper.equals("aerials")) applyWallpaperSoon();
-    }
-
-    private String readRaw(int id) {
-        try (java.io.InputStream in = getResources().openRawResource(id)) {
-            String text = WeatherClient.read(in, Integer.MAX_VALUE);
-            return text == null ? "" : text;
-        } catch (java.io.IOException e) {
-            return "";
-        }
     }
 
     boolean online() { return connectivity().getActiveNetwork() != null; }
@@ -518,21 +396,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     }
 
     /** The cached forecast under the clock; hidden when off, without a city or before the first answer. */
-    void showWeather() {
-        View row = findViewById(R.id.weather);
-        WeatherParser.Now now = state.weatherEnabled && state.hasCity() ? WeatherParser.parseForecast(state.weatherLast) : null;
-        row.setVisibility(now == null ? View.GONE : View.VISIBLE);
-        if (now == null) return;
-        ((ImageView) findViewById(R.id.wx_icon)).setImageResource(WeatherCode.res(WeatherCode.icon(now.code, now.isDay)));
-        ((TextView) findViewById(R.id.wx_temp)).setText(now.temp + "°");
-        ((TextView) findViewById(R.id.wx_city)).setText(state.city);
-        boolean old = System.currentTimeMillis() - state.fetchedAt > WEATHER_OLD;
-        findViewById(R.id.wx_dot).setVisibility(old ? View.VISIBLE : View.GONE);
-        TextView updated = findViewById(R.id.wx_updated);
-        updated.setVisibility(old || weatherFailed ? View.VISIBLE : View.GONE);
-        String time = new SimpleDateFormat(state.h24 ? "HH:mm" : "h:mm", Locale.getDefault()).format(new Date(state.fetchedAt));
-        updated.setText(getString(R.string.weather_updated, time));
-    }
+    void showWeather() { HeaderBinder.weather(getWindow().getDecorView(), state, weatherFailed); }
 
     /** The Inputs icon shows only when it is wanted and there is an input to switch to (PLAN 7.7). */
     void updateInputsButton() {
@@ -579,12 +443,11 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         long age = System.currentTimeMillis() - state.fetchedAt;
         ui.postDelayed(weatherTick, Math.max(0, WEATHER_EVERY - age));
         started = true;
+        if (artDropped) applyWallpaper();   // decodes the picture or poster again; first, before every tile
+        wallpaper.start();
         if (artDropped) {
             artDropped = false;
-            applyWallpaper();   // decodes the picture or poster again, and starts the video; first, before every tile
             loadArt(installed, generation);
-        } else {
-            startVideo();
         }
         ConnectivityManager cm = connectivity();
         showNetwork(cm.getNetworkCapabilities(cm.getActiveNetwork()));   // the callback says nothing when there is no network
@@ -600,20 +463,19 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         connectivity().unregisterNetworkCallback(network);
         RemoteKeyService.onBindChange = null;
         started = false;
-        video.stop();
-        photos.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
+        wallpaper.stop();   // release the decoder whenever Home is not on screen (PLAN 6.1)
         super.onStop();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        video.onResume();
+        wallpaper.onResume();
     }
 
     @Override
     protected void onPause() {
-        video.onPause();
+        wallpaper.onPause();
         super.onPause();
     }
 
@@ -623,7 +485,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         ui.removeCallbacksAndMessages(null);
         pool.shutdownNow();
         weather.shutdown();
-        photos.shutdown();
+        wallpaper.shutdown();
         io.shutdown();   // let a pending state write finish
         super.onDestroy();
     }
@@ -638,8 +500,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         if (level < TRIM_MEMORY_BACKGROUND || artDropped) return;
         for (App a : installed) a.art = null;
         adapter.notifyDataSetChanged();
-        wallpaperGen++;   // a decode still running is dropped too
-        resetPoster();   // drops the picture or poster frame: up to 8 MB
+        wallpaper.dropPoster();   // the picture or poster frame: up to 8 MB
         artDropped = true;
     }
 

@@ -192,6 +192,17 @@ The button names match the TCL RC902N_M1 remote. Other remotes may send differen
 
 About shows the version and the credits. TV settings opens the system settings.
 
+## Screensaver
+
+The launcher includes a screensaver that shows Home's wallpaper with the clock, the date and the weather, and
+nothing else. It follows your Wallpaper, Clock and Weather settings: video stays video, aerials stay aerials, Unsplash
+photos stay photos (with the photographer's credit). A gradient, or your own picture, becomes a slowly changing
+gradient. The clock drifts a little every few minutes. Any button wakes the TV back to where you were.
+
+To use it, choose it in TV Settings → Device Preferences → Screen saver → Just My TV Launcher. Android does not let
+an app choose the screensaver for you. It starts after the TV's screen saver delay. Settings → Screensaver in the
+launcher shows whether it is in use, and has Start now and Preview.
+
 ## Where your settings live
 
 Settings, the grid order and hidden apps are kept in one file inside the app's private storage. Clearing the launcher's

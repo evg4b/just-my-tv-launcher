@@ -42,6 +42,14 @@
     <string name="greeting_evening">Добрый вечер</string>
     <string name="greeting_night">Доброй ночи</string>
     <string name="about">О программе</string>
+    <string name="screensaver">Заставка</string>
+    <string name="screensaver_note">Показывает обои главного экрана с часами, датой и погодой. Градиент или ваша картинка становятся медленно меняющимся градиентом. Следует настройкам обоев, часов и погоды.</string>
+    <string name="status">Состояние</string>
+    <string name="screensaver_in_use">Используется</string>
+    <string name="screensaver_not_chosen">Не выбрана</string>
+    <string name="screensaver_how">Чтобы включить: Настройки ТВ → Настройки устройства → Заставка → Just My TV Launcher. Она запускается после задержки заставки ТВ.</string>
+    <string name="start_now">Запустить сейчас</string>
+    <string name="preview">Предпросмотр</string>
     <string name="about_text">Just My TV Launcher · версия %1$s\nДомашний экран для Android TV без рекламы, аккаунтов и слежки\nИсходный код: github.com/evg4b/just-my-tv-launcher, Apache License 2.0\nПогода: Open-Meteo.com, данные по лицензии CC BY 4.0\nФото: Unsplash, через ваш ключ доступа\nАэросъёмка: видео транслируются с серверов Apple и Amazon и принадлежат им\nЗначки: Material Icons, Apache License 2.0\nВидео: AndroidX Media3, Apache License 2.0\nШрифт: Outfit, SIL Open Font License 1.1\nЧастично основан на CleanYourTV, лицензия MIT</string>
     <string name="tv_settings">Настройки телевизора</string>
     <string name="wallpaper">Обои</string>
