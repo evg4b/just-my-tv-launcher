@@ -13,11 +13,13 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -470,6 +472,9 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
     @Override
     protected void onResume() {
         super.onResume();
+        // Seen once on the TV (2026-11-16): Home came back marked translucent (occludesParent=false), so the app it
+        // left stayed on screen over it and Home seemed to ignore Home and Back. The theme is opaque; insist on it.
+        if (Build.VERSION.SDK_INT >= 30 && setTranslucent(false)) Log.w("Home", "was translucent: made opaque again");
         wallpaper.onResume();
     }
 
