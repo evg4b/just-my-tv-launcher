@@ -11,10 +11,10 @@ one Activity. The only libraries are AndroidX RecyclerView, DynamicAnimation and
 
 ## Status
 
-The second alpha, 0.1.0-alpha.2, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
+The third alpha, 0.1.0-alpha.3, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
 ready-built APK.
 
-All planned features are written and build cleanly, and the 29 unit tests pass. The grid, the tile menu, settings,
+All planned features are written and build cleanly, and the 41 unit tests pass. The grid, the tile menu, settings,
 inputs, weather, the wallpapers and the remote buttons service have been checked on the TV, the service with a
 virtual keyboard rather than the real remote. The Russian screens have not, and a few video checks need someone
 watching the screen. The on-device checks are listed as T16 to T19 in
@@ -33,6 +33,8 @@ watching the screen. The on-device checks are listed as T16 to T19 in
 - Wallpapers: the built-in gradient, a picture, a new Unsplash photo every few minutes, a video file you choose, or
   Apple and Amazon aerials streamed from their servers. A video comes up from black (or its own first frame) and fades
   in once it plays, never over the gradient; aerials and photos fade through black from one to the next.
+- The focus ring takes its colour from the wallpaper, a light shade of its main hue, and turns white on a dark or grey
+  one. Each aerial clip and each new photo tints it again, with a short fade.
 - Weather from [Open-Meteo](https://open-meteo.com), with no key and no location permission. You type a city once.
 - An input switcher for HDMI and AV.
 - Remote buttons: an optional accessibility service that opens an app of your choice when you press, say, the
