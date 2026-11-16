@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Old weather data (over 3 hours) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
-    <solid android:color="#FFFFB74D" />
+    <solid android:color="#FFFFBE8E" />
 </shape>

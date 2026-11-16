@@ -21,7 +21,7 @@ Back on the home screen does nothing. There is nowhere to go back to.
 Hold OK on a tile to open its menu:
 
 - Open starts the app.
-- Move puts an amber ring around the tile. Move it with the arrows and press OK to put it down, or Back to put it
+- Move puts a coral ring around the tile. Move it with the arrows and press OK to put it down, or Back to put it
   back where it was.
 - Hide removes the tile from the grid, and a message says where to find it: Settings → Apps brings it back.
 - App details opens the system page for the app, where you can force stop, clear data or uninstall it.

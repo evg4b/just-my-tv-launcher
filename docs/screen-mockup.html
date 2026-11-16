@@ -7,8 +7,8 @@
 <style>
   :root {
     color-scheme: dark;
-    --accent: #8AB4F8;
-    --tile: #1C1C1E;
+    --accent: #F47D56;   /* Sunset coral (D110); the real ring follows the wallpaper */
+    --tile: #1F1820;
     --band: rgba(20, 20, 22, .86);
     --panel: rgba(30, 32, 38, .94);
     --text: rgba(255, 255, 255, .95);
@@ -32,7 +32,7 @@
     background:
       radial-gradient(900px 420px at 78% 110%, rgba(128,208,199,.55), transparent 60%),
       radial-gradient(700px 380px at 12% 0%, rgba(19,84,122,.9), transparent 70%),
-      linear-gradient(160deg, #13547A 0%, #2B825B 55%, #80D0C7 100%); }
+      linear-gradient(160deg, #2A1533 0%, #7E3459 55%, #D9714C 100%); }
   .video .tag { position: absolute; right: 16px; top: 250px; font-size: 11px; color: rgba(255,255,255,.6); }
   /* Dimming only at the top (60 % → 0 by 20 %), like ScrimTop in Couchy. */
   .scrim { position: absolute; inset: 0;
@@ -207,7 +207,7 @@
   <tr><td>Bar at rest</td><td>top 386.5 dp, row height 127.5 dp; the next row peeks up 18 dp from below</td><td><code>MainActivity.java:706–709</code>: "push the dock row towards the bottom"</td></tr>
   <tr><td>Rows under the bar</td><td>0 at rest (<code>rows_below_dock</code> = 0); the next row peeks in from below; on Down the grid expands</td><td><code>config.xml:413</code>, "the rest of the grid stays below until you press Down"</td></tr>
   <tr><td>Columns</td><td>5 at 960 dp: tile 147 × 83 dp, radius 13 dp</td><td><code>AppAdapter.java:108–114</code></td></tr>
-  <tr><td>Focus</td><td>scale 1.10, 2 dp ring #8AB4F8</td><td><code>AppCard.kt</code>, <code>AppAdapter.FOCUS_SCALE</code></td></tr>
+  <tr><td>Focus</td><td>scale 1.10, 2 dp ring in a light shade of the wallpaper, white on dark (Sunset coral #F47D56 here)</td><td><code>AppCard.kt</code>, <code>AppAdapter.FOCUS_SCALE</code></td></tr>
   <tr><td>Bar strip</td><td>#141416 at 86 %, radius 26 dp, 22 dp margin on each side, 14 dp at the top and bottom</td><td><code>DockDecoration.java</code></td></tr>
   <tr><td>Bottom edge</td><td>bottom of the screen (540 dp); dimming only at the top</td><td>Couchy <code>ScrimTop</code> (<code>LauncherScreen.kt:118–121</code>)</td></tr>
   <tr><td>Panel</td><td>440 dp, 260 ms slide, 16 dp radius on the left</td><td><code>SettingsSheet.kt:183–199</code> (Couchy)</td></tr>

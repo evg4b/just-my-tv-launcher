@@ -277,7 +277,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 ui.post(() -> {
                     if (gen != wallpaperGen) return;
                     if (b != null) poster.setImageBitmap(b);
-                    else poster.setImageResource(R.drawable.aurora);   // the file is gone or unreadable: not black
+                    else poster.setImageResource(R.drawable.dusk);   // the file is gone or unreadable: not black
                 });
             });
         } else if (type.equals("video") && !state.videoUri.isEmpty()) {
@@ -304,7 +304,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
      * come); otherwise black, so a video or picture comes up from black, never over the gradient.
      */
     private void resetPoster() {
-        if (showsGradient()) poster.setImageResource(R.drawable.aurora);
+        if (showsGradient()) poster.setImageResource(R.drawable.dusk);
         else poster.setImageDrawable(new ColorDrawable(Color.BLACK));
     }
 
@@ -357,7 +357,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
 
     /** Offline, or no clip matches the chosen collection and themes: a still gradient, no requests (PLAN 6.3). */
     private void playAerials(List<String> urls) {
-        if (urls.isEmpty() || !online()) poster.setImageResource(R.drawable.aurora);
+        if (urls.isEmpty() || !online()) poster.setImageResource(R.drawable.dusk);
         else video.startAerials(urls);
     }
 

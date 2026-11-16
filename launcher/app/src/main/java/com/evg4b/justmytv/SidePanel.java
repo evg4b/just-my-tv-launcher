@@ -138,7 +138,7 @@ final class SidePanel {
     // ---- building blocks ----
 
     void title(String text) {
-        TextView t = text(text, 22, 0xF2FFFFFF, R.font.outfit_medium);
+        TextView t = text(text, 22, 0xF2F4F1EE, R.font.outfit_medium);
         t.setPadding(Math.round(12 * d), 0, 0, Math.round(16 * d));
         content.addView(t);
     }
@@ -174,7 +174,7 @@ final class SidePanel {
             lp.setMarginEnd(p);
             row.addView(iv, lp);
         }
-        TextView l = text(label, 17, 0xF2FFFFFF, R.font.outfit_regular);
+        TextView l = text(label, 17, 0xF2F4F1EE, R.font.outfit_regular);
         l.setSingleLine(true);
         l.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.addView(l, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
@@ -193,7 +193,7 @@ final class SidePanel {
         e.setHint(hint);
         e.setText(text);
         e.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        e.setTextColor(0xF2FFFFFF);
+        e.setTextColor(0xF2F4F1EE);
         e.setHintTextColor(0x8CFFFFFF);
         e.setTypeface(ctx.getResources().getFont(R.font.outfit_regular));
         e.setBackgroundResource(R.drawable.row_bg);

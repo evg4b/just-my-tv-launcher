@@ -51,7 +51,7 @@ final class TileMenu {
         TextView t = new TextView(ctx);
         t.setText(text);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        t.setTextColor(0xF2FFFFFF);
+        t.setTextColor(0xF2F4F1EE);
         t.setTypeface(ctx.getResources().getFont(R.font.outfit_regular));
         t.setGravity(Gravity.CENTER_VERTICAL);
         t.setSingleLine(true);

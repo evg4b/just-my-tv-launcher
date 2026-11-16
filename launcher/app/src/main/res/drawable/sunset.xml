@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sunset, the brand gradient (D110): rose, coral, peach, top-left to bottom-right. Behind the icon and banner. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:dither="true"
+    android:shape="rectangle">
+    <gradient android:angle="315"
+        android:startColor="#FFE4577F"
+        android:centerColor="#FFF47D56"
+        android:endColor="#FFFFBE8E" />
+</shape>

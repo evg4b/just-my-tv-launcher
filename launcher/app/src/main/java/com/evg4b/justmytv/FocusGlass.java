@@ -83,10 +83,10 @@ final class FocusGlass {
         ring.setCornerRadius(cornerPx * GridMetrics.FOCUS_SCALE + pad);
     }
 
-    /** Move mode shows an amber ring instead of the accent. */
+    /** Move mode shows a coral ring instead of the accent. */
     void setMoving(boolean moving) {
         this.moving = moving;
-        ring.setStroke(stroke, moving ? 0xFFFFB74D : shownColor);
+        ring.setStroke(stroke, moving ? 0xFFF47D56 : shownColor);
     }
 
     /** The accent follows what is on screen: a wallpaper drawable, or a frame of the video. */

@@ -31,9 +31,9 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     }
 
     /** Tile colours for apps without a banner (PLAN 5.3). */
-    private static final int[] PALETTE = {0xFF37474F, 0xFF4E342E, 0xFF1B5E20, 0xFF0D47A1, 0xFF4A148C,
-            0xFF880E4F, 0xFF3E2723, 0xFF263238, 0xFF33691E};
-    private static final int BANNER_BG = 0xFF1C1C1E;
+    private static final int[] PALETTE = {0xFF5A2A4A, 0xFF7A2E45, 0xFF8E3B2F, 0xFF6B3E26, 0xFF7A4A2A,   // Sunset tiles (D110)
+            0xFF3E2A4F, 0xFF4A3B35, 0xFF2F3A4A, 0xFF2E4A47};
+    private static final int BANNER_BG = 0xFF1F1820;
 
     private final GridMetrics m;
     private final int columns;

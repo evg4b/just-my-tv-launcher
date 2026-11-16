@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dusk, the Sunset scheme's wallpaper (D110), top-left to bottom-right: the default wallpaper. Deep enough for white
+     text. A shape, not a bitmap: a 1920x1080 bitmap would hold 8 MB for a gradient. Dithered against banding. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:dither="true"
+    android:shape="rectangle">
+    <gradient android:angle="315"
+        android:startColor="#FF2A1533"
+        android:centerColor="#FF7E3459"
+        android:endColor="#FFD9714C" />
+</shape>

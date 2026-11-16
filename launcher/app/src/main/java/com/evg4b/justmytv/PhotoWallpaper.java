@@ -107,7 +107,7 @@ final class PhotoWallpaper {
         }
         if (key.isEmpty()) {   // nothing can be fetched; the kept photo stays, or the gradient
             status = Status.NO_KEY;
-            if (!photo.exists()) poster.setImageResource(R.drawable.aurora);
+            if (!photo.exists()) poster.setImageResource(R.drawable.dusk);
             return;
         }
         String k = key;
@@ -209,7 +209,7 @@ final class PhotoWallpaper {
                 fetching = false;
                 changed.run();
                 if (b != null) show(b, at, true);
-                else if (!photo.exists()) poster.setImageResource(R.drawable.aurora);   // nothing to show: not black
+                else if (!photo.exists()) poster.setImageResource(R.drawable.dusk);   // nothing to show: not black
                 // a rejected key waits for a new one (a new start); the limit resets within the hour
                 if (status != Status.BAD_KEY) {
                     main.postDelayed(tick, b != null ? everyMs : status == Status.LIMIT ? LIMIT_MS : RETRY_MS);

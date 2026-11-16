@@ -459,6 +459,6 @@ final class Screens {
             if (Inputs.switchTo(a, r.id)) panel.close();
             else Toast.makeText(a, R.string.input_not_opened, Toast.LENGTH_SHORT).show();
         });
-        v.setTextColor(r.state == 0 ? 0xFF66BB6A : r.state == 1 ? 0xFF9E9E9E : 0x40FFFFFF);
+        v.setTextColor(r.state == 0 ? 0xFF7CC08A : r.state == 1 ? 0xFF9E9E9E : 0x40FFFFFF);
     }
 }
