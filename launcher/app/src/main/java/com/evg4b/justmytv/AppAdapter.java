@@ -76,7 +76,7 @@ final class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         lp.width = m.tileW;
         lp.height = m.tileH;
         ((ViewGroup.MarginLayoutParams) h.name.getLayoutParams()).topMargin = m.labelMargin;
-        if (!labels) h.name.setVisibility(View.GONE);
+        if (!labels) h.name.setVisibility(View.INVISIBLE);   // keeps its room: the bar sits as it does with names
         h.color.setCornerRadius(m.cornerPx);
         h.dust.setCornerRadius(m.cornerPx);
         h.under.setCornerRadius(m.cornerPx);

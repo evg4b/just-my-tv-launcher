@@ -93,6 +93,12 @@ final class Screens {
             st.corner = corners[i];
             layoutChanged();
         });
+        p.choice(s(R.string.edge_dim), new String[]{s(R.string.edge_both), s(R.string.edge_top), s(R.string.edge_bottom),
+                s(R.string.off)}, java.util.Arrays.asList(StateJson.EDGES).indexOf(st.edgeDim), i -> {
+            st.edgeDim = StateJson.EDGES[i];
+            a.save();
+            a.applyEdges();
+        });
         settingsIcon(p, st);
     }
 

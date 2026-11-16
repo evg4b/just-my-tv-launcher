@@ -25,6 +25,10 @@
     <string name="rows_below">Rows below the bar</string>
     <string name="labels">Name under the focused tile</string>
     <string name="corners">Corner radius</string>
+    <string name="edge_dim">Edge dimming</string>
+    <string name="edge_both">Top and bottom</string>
+    <string name="edge_top">Top only</string>
+    <string name="edge_bottom">Bottom only</string>
     <string name="inputs_button">Inputs icon at the top</string>
     <string name="connected_only">Connected only</string>
     <string name="hide_av">Hide AV</string>

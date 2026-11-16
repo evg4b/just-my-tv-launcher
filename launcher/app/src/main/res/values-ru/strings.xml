@@ -23,6 +23,10 @@
     <string name="rows_below">Рядов под панелью</string>
     <string name="labels">Название под плиткой в фокусе</string>
     <string name="corners">Скругление углов</string>
+    <string name="edge_dim">Затемнение краёв</string>
+    <string name="edge_both">Сверху и снизу</string>
+    <string name="edge_top">Только сверху</string>
+    <string name="edge_bottom">Только снизу</string>
     <string name="inputs_button">Значок входов вверху</string>
     <string name="connected_only">Только подключённые</string>
     <string name="hide_av">Скрыть AV</string>

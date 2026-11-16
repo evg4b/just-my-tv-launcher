@@ -37,6 +37,15 @@
         android:layout_height="108dp"
         android:background="@drawable/scrim_top" />
 
+    <!-- the same at the bottom (Edge dimming); which of the two show is set in code -->
+    <View
+        android:id="@+id/scrim_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="108dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/scrim_bottom"
+        android:visibility="gone" />
+
     <!-- paddingTop is set in code to barTop (PLAN 7.2) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/grid"
@@ -44,6 +53,7 @@
         android:layout_height="match_parent"
         android:clipChildren="false"
         android:clipToPadding="false"
+        android:overScrollMode="never"
         android:paddingStart="44dp"
         android:paddingEnd="44dp"
         android:paddingBottom="0dp" />

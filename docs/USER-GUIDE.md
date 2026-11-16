@@ -131,6 +131,7 @@ Every app on the TV, in grid order. OK on a row shows or hides that app. "Show a
 - Rows below the bar: 0 to 3 rows of the grid kept visible under the bar at rest.
 - Name under the focused tile: on or off.
 - Corner radius: 0, 8 or 16 dp.
+- Edge dimming: a dark gradient at the top and bottom of the screen, the top only (the default), the bottom only, or off.
 - Settings icon: shown or hidden. This option works only after you assign "Launcher settings" to a remote button
   (Remote buttons, below); until then it says "Unavailable". The gear comes back on its own if you take that action
   off the button, or while the remote button service is not running, so you can always reach these settings.

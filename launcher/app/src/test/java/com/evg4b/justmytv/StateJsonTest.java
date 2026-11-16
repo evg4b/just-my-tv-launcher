@@ -109,4 +109,13 @@ public class StateJsonTest {
         assertFalse(b.showInputsButton);                           // the other ui keys still round-trip
         assertEquals(5, b.columns);
     }
+
+    @Test public void edgeDimDefaultsToTopAndSurvives() {
+        assertEquals("top", new StateJson().edgeDim);
+        assertEquals("top", StateJson.parse("{\"ui\":{\"columns\":6}}").edgeDim);   // a file from before
+        assertEquals("top", StateJson.parse("{\"ui\":{\"edgeDim\":\"sideways\"}}").edgeDim);
+        StateJson a = new StateJson();
+        a.edgeDim = "bottom";
+        assertEquals("bottom", StateJson.parse(a.toJson()).edgeDim);
+    }
 }

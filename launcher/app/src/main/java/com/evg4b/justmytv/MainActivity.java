@@ -125,6 +125,7 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
             }
         });
         applyLayout();
+        applyEdges();
 
         poster = findViewById(R.id.poster);
         video = new VideoWallpaper(this, findViewById(R.id.video), poster, new VideoWallpaper.Listener() {
@@ -517,6 +518,13 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
                 if (panel.showing(screens.inputs)) panel.refresh();
             });
         });
+    }
+
+    /** Settings → Appearance → Edge dimming: the dark gradients at the top and bottom of the screen. */
+    void applyEdges() {
+        String e = state.edgeDim;
+        findViewById(R.id.scrim).setVisibility(e.equals("both") || e.equals("top") ? View.VISIBLE : View.GONE);
+        findViewById(R.id.scrim_bottom).setVisibility(e.equals("both") || e.equals("bottom") ? View.VISIBLE : View.GONE);
     }
 
     /** The gear can be hidden only while a remote button opens the settings through the bound service (D109). */

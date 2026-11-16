@@ -41,6 +41,8 @@ final class StateJson {
     boolean inputsConnectedOnly = false;
     boolean inputsHideAv = false;
     boolean hideSettingsButton = false;   // honoured only while a remote button opens the settings (D109)
+    static final String[] EDGES = {"both", "top", "bottom", "off"};
+    String edgeDim = "top";        // one of EDGES: which screen edges get a dark gradient
 
     // clock
     boolean h24 = true;
@@ -112,6 +114,8 @@ final class StateJson {
                 s.inputsConnectedOnly = ui.optBoolean("inputsConnectedOnly", false);
                 s.inputsHideAv = ui.optBoolean("inputsHideAv", false);
                 s.hideSettingsButton = ui.optBoolean("hideSettingsButton", false);
+                String e = ui.optString("edgeDim", "top");
+                s.edgeDim = java.util.Arrays.asList(EDGES).contains(e) ? e : "top";
             }
             JSONObject clock = o.optJSONObject("clock");
             if (clock != null) {
@@ -158,7 +162,7 @@ final class StateJson {
             o.put("ui", obj(o, "ui").put("columns", columns).put("rowsBelow", rowsBelow).put("labels", labels)
                     .put("corner", corner).put("showInputsButton", showInputsButton)
                     .put("inputsConnectedOnly", inputsConnectedOnly).put("inputsHideAv", inputsHideAv)
-                    .put("hideSettingsButton", hideSettingsButton));
+                    .put("hideSettingsButton", hideSettingsButton).put("edgeDim", edgeDim));
             o.put("remote", new JSONObject(remote));
             o.put("clock", obj(o, "clock").put("h24", h24).put("showDate", showDate).put("greeting", greeting));
             JSONObject w = obj(o, "weather").put("enabled", weatherEnabled).put("name", city).put("admin1", admin1)
