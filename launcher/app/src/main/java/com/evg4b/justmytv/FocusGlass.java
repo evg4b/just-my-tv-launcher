@@ -54,8 +54,8 @@ final class FocusGlass {
     }
 
     private SpringAnimation spring(DynamicAnimation.ViewProperty p) {
-        return new SpringAnimation(view, p).setSpring(new SpringForce().setStiffness(260f)
-                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY));   // a smooth glide, no bounce (D111)
+        return new SpringAnimation(view, p).setSpring(new SpringForce().setStiffness(700f)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY));   // a quick glide, no bounce (D111)
     }
 
     void follow(View card) {
