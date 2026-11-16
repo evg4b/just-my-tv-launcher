@@ -75,6 +75,7 @@ final class SidePanel {
         onOpen.run();
         panel.setVisibility(View.VISIBLE);
         veil.setVisibility(View.VISIBLE);
+        veil.animate().alpha(1f).setDuration(260).start();   // from wherever a close left it
         panel.animate().translationX(0).setDuration(260).start();
     }
 
@@ -82,7 +83,7 @@ final class SidePanel {
         if (!open) return;
         open = false;
         panel.animate().translationX(width).setDuration(260).withEndAction(() -> panel.setVisibility(View.GONE)).start();
-        veil.setVisibility(View.GONE);
+        veil.animate().alpha(0f).setDuration(260).withEndAction(() -> { if (!open) veil.setVisibility(View.GONE); }).start();
         onClose.run();
     }
 
