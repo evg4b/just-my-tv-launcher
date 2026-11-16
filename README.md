@@ -11,10 +11,10 @@ one Activity. The only libraries are AndroidX RecyclerView, DynamicAnimation and
 
 ## Status
 
-The third alpha, 0.1.0-alpha.3, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
+The fourth alpha, 0.1.0-alpha.4, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
 ready-built APK.
 
-All planned features are written and build cleanly, and the 41 unit tests pass. The grid, the tile menu, settings,
+All planned features are written and build cleanly, and the 43 unit tests pass. The grid, the tile menu, settings,
 inputs, weather, the wallpapers and the remote buttons service have been checked on the TV, the service with a
 virtual keyboard rather than the real remote. The Russian screens have not, and a few video checks need someone
 watching the screen. The on-device checks are listed as T16 to T19 in
