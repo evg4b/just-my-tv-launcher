@@ -21,14 +21,19 @@ final class Aerials {
 
     private Aerials() { }
 
-    /** The https links; Apple's are left out once its TLS chain has failed on this TV. */
-    static List<String> parse(String json, boolean skipApple) {
-        return parse(json, skipApple, "", new java.util.HashSet<>(java.util.Arrays.asList(THEMES)));
+    /** One clip of the list: its link, collection and theme. */
+    static final class Clip {
+        final String url, set, theme;
+        Clip(String url, String set, String theme) {
+            this.url = url;
+            this.set = set;
+            this.theme = theme;
+        }
     }
 
-    /** The links of one collection ("" for both) and the chosen themes. */
-    static List<String> parse(String json, boolean skipApple, String source, java.util.Set<String> themes) {
-        List<String> out = new ArrayList<>();
+    /** Every usable clip of the list, read once (WallpaperController.aerials); a broken list has none. */
+    static List<Clip> clips(String json) {
+        List<Clip> out = new ArrayList<>();
         try {
             JSONArray a = new JSONArray(json);
             for (int i = 0; i < a.length(); i++) {
@@ -36,13 +41,22 @@ final class Aerials {
                 if (o == null) continue;
                 String s = o.optString("s"), u = o.optString("u");
                 if (!u.startsWith("https://") || !(s.equals("A") || s.equals("Z"))) continue;
-                if (!source.isEmpty() && !source.equals(s)) continue;
-                if (!themes.contains(theme(o.optString("k")))) continue;
-                if (skipApple && isApple(u)) continue;
-                out.add(u);
+                out.add(new Clip(u, s, theme(o.optString("k"))));
             }
         } catch (JSONException e) {
             // a broken list: no aerials, the poster stays
+        }
+        return out;
+    }
+
+    /** The links of one collection ("" for both) and the chosen themes, without Apple's after its failure. */
+    static List<String> filter(List<Clip> clips, boolean skipApple, String source, java.util.Set<String> themes) {
+        List<String> out = new ArrayList<>();
+        for (Clip c : clips) {
+            if (!source.isEmpty() && !source.equals(c.set)) continue;
+            if (!themes.contains(c.theme)) continue;
+            if (skipApple && isApple(c.url)) continue;
+            out.add(c.url);
         }
         return out;
     }

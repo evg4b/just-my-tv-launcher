@@ -18,10 +18,18 @@ public class AerialsTest {
             + "{\"t\":\"c\",\"u\":\"https://github.com/z.mp4\",\"s\":\"C1\"},"
             + "{\"t\":\"h\",\"u\":\"http://plain/x.mp4\",\"s\":\"Z\"}]";
 
+    private static final java.util.Set<String> ALL = StateJson.allThemes();
+
+    private static List<String> parse(String json, boolean skipApple) { return parse(json, skipApple, "", ALL); }
+
+    private static List<String> parse(String json, boolean skipApple, String source, java.util.Set<String> themes) {
+        return Aerials.filter(Aerials.clips(json), skipApple, source, themes);
+    }
+
     @Test public void keepsAppleAndAmazonOverHttpsOnly() {
-        assertEquals(Arrays.asList("https://sylvan.apple.com/x.mov", "https://cdn.example/y.mp4"), Aerials.parse(JSON, false));
-        assertEquals(Collections.singletonList("https://cdn.example/y.mp4"), Aerials.parse(JSON, true));
-        assertTrue(Aerials.parse("not json", false).isEmpty());
+        assertEquals(Arrays.asList("https://sylvan.apple.com/x.mov", "https://cdn.example/y.mp4"), parse(JSON, false));
+        assertEquals(Collections.singletonList("https://cdn.example/y.mp4"), parse(JSON, true));
+        assertTrue(parse("not json", false).isEmpty());
     }
 
     @Test public void filtersByCollectionAndTheme() {
@@ -29,11 +37,11 @@ public class AerialsTest {
                 + "{\"u\":\"https://cdn.example/z.mp4\",\"s\":\"Z\",\"k\":\"water\"},"
                 + "{\"u\":\"https://cdn.example/n.mp4\",\"s\":\"Z\"}]";   // no theme: landscapes
         java.util.Set<String> all = StateJson.allThemes();
-        assertEquals(3, Aerials.parse(json, false, "", all).size());
-        assertEquals(Collections.singletonList("https://sylvan.apple.com/a.mov"), Aerials.parse(json, false, "A", all));
+        assertEquals(3, parse(json, false, "", all).size());
+        assertEquals(Collections.singletonList("https://sylvan.apple.com/a.mov"), parse(json, false, "A", all));
         assertEquals(Collections.singletonList("https://cdn.example/n.mp4"),
-                Aerials.parse(json, false, "Z", Collections.singleton("nature")));
-        assertTrue(Aerials.parse(json, false, "A", Collections.singleton("water")).isEmpty());
+                parse(json, false, "Z", Collections.singleton("nature")));
+        assertTrue(parse(json, false, "A", Collections.singleton("water")).isEmpty());
     }
 
     @Test public void neverTheSameTwiceInARow() {
@@ -52,11 +60,11 @@ public class AerialsTest {
     @Test public void bundledListParses() throws Exception {
         try (java.io.InputStream in = new java.io.FileInputStream("src/main/res/raw/aerials.json")) {
             String json = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-            assertEquals(251, Aerials.parse(json, false).size());   // 139 Apple + 112 Amazon
-            assertEquals(112, Aerials.parse(json, true).size());
+            assertEquals(251, parse(json, false).size());   // 139 Apple + 112 Amazon
+            assertEquals(112, parse(json, true).size());
             int sum = 0;   // every clip has exactly one theme
             for (String t : Aerials.THEMES) {
-                int n = Aerials.parse(json, false, "", Collections.singleton(t)).size();
+                int n = parse(json, false, "", Collections.singleton(t)).size();
                 assertTrue(t, n > 0);
                 sum += n;
             }

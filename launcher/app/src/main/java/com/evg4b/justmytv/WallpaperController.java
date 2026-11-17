@@ -43,7 +43,7 @@ final class WallpaperController {
         parked = null;
         if (p != null) p.halt();
     };
-    private static String aerialsRaw;
+    private static List<Aerials.Clip> aerialClips;
 
     final PhotoWallpaper photos;
     private final Context ctx;
@@ -230,7 +230,7 @@ final class WallpaperController {
             String source = state.aerialSource;
             java.util.Set<String> themes = new HashSet<>(state.aerialThemes);
             decode.execute(() -> {
-                List<String> urls = Aerials.parse(aerialsJson(ctx), skip, source, themes);
+                List<String> urls = Aerials.filter(aerials(ctx), skip, source, themes);
                 ui.post(() -> {
                     if (g != gen) return;   // the choice changed meanwhile
                     aerialUrls = urls;
@@ -288,16 +288,16 @@ final class WallpaperController {
         if (!by.isEmpty()) credit.setText(ctx.getString(R.string.photo_by, by));
     }
 
-    /** The bundled aerials list, read once (about 60 KB) and shared by Home and the screensaver. */
-    static synchronized String aerialsJson(Context ctx) {
-        if (aerialsRaw == null) {
+    /** The bundled aerials list (about 47 KB), parsed once and shared by Home, the screensaver and the settings. */
+    static synchronized List<Aerials.Clip> aerials(Context ctx) {
+        if (aerialClips == null) {
             try (InputStream in = ctx.getResources().openRawResource(R.raw.aerials)) {
                 String text = WeatherClient.read(in, Integer.MAX_VALUE);
-                aerialsRaw = text == null ? "" : text;
+                aerialClips = Aerials.clips(text == null ? "" : text);
             } catch (IOException e) {
-                return "";
+                return java.util.Collections.emptyList();
             }
         }
-        return aerialsRaw;
+        return aerialClips;
     }
 }

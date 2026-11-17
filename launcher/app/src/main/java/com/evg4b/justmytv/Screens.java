@@ -379,7 +379,7 @@ final class Screens {
     }
 
     private String aerialsCount(StateJson st) {
-        int n = Aerials.parse(a.aerialsJson(), false, st.aerialSource, st.aerialThemes).size();
+        int n = Aerials.filter(a.aerials(), false, st.aerialSource, st.aerialThemes).size();
         return n == 0 ? s(R.string.aerials_none) : a.getResources().getQuantityString(R.plurals.aerials_count, n, n);
     }
 

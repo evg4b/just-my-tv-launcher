@@ -282,8 +282,8 @@ public class MainActivity extends Activity implements AppAdapter.Listener {
         setHeaderShown(R.id.btn_network, c == null || !c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED));
     }
 
-    /** The bundled aerials list (the Wallpaper settings count its clips). */
-    String aerialsJson() { return WallpaperController.aerialsJson(this); }
+    /** The bundled aerials (the Wallpaper settings count its clips). */
+    List<Aerials.Clip> aerials() { return WallpaperController.aerials(this); }
 
     /** The collection or a theme changed in settings: rebuild the playlist. */
     void aerialsChanged() {
