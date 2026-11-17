@@ -13,6 +13,7 @@ is not stored in git.
 | [PLAN.md](PLAN.md) | The main plan: architecture, screens, video, weather, inputs, remote, build, rollback, tests, milestones M0–M7 | The primary document. Everything else supplements it |
 | [DECISIONS.md](DECISIONS.md) | Decision log: what was decided, when, and why | So that settled questions are not asked again |
 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Open questions, and the checks still to run on the TV (T16–T19) | What is not settled or not verified |
+| [TEST-PLAN.md](TEST-PLAN.md) | The TV session of 2026-11-17: every change since alpha 4, the screensaver, and the open checks that need someone at the TV, with commands and expected results | Running the checks on the TV |
 | [DEVICE.md](DEVICE.md) | Facts about the TV, collected over ADB (read-only) | Compatibility, packages, inputs, HOME, memory |
 | [OPERATIONS.md](OPERATIONS.md) | Installation, state recording, rollback, checks after a reboot | How to change the TV safely |
 | [RISKS.md](RISKS.md) | 46 problem cases with handling and verification status | What can go wrong and how to handle it |
