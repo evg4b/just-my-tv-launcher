@@ -49,6 +49,10 @@ final class VideoWallpaper {
     private static final long FADE_IN_MS = 1_200;       // black to video
     // the TV blanks its video window and switches its picture engine on for about 0.6 s after the first frame (D94)
     private static final long SETTLE_MS = 1_000;
+    private static final long RESUME_MIN_LEFT_MS = 5_000;   // an aerial this near its end is not resumed: a new one plays
+
+    private String resumeUri;   // the clip and the second the last stop left (D113): the next start goes on from there
+    private long resumeMs;      // -1: that aerial was about to end, take another
 
     private final Context ctx;
     private final SurfaceView surface;
@@ -95,8 +99,10 @@ final class VideoWallpaper {
     void startFile(Uri uri) {
         if (player != null) return;
         aerials = null;
+        String was = resumeUri;
+        resumeUri = null;
         build(Player.REPEAT_MODE_ONE, WATCHDOG_FILE_MS);
-        player.setMediaItem(MediaItem.fromUri(uri));
+        player.setMediaItem(MediaItem.fromUri(uri), uri.toString().equals(was) ? Math.max(0, resumeMs) : 0);
         go();
     }
 
@@ -104,8 +110,16 @@ final class VideoWallpaper {
     void startAerials(List<String> urls) {
         if (player != null || urls.isEmpty()) return;
         aerials = urls;
+        String was = resumeUri;
+        resumeUri = null;
         build(Player.REPEAT_MODE_OFF, WATCHDOG_AERIALS_MS);
-        queueAerials(null);
+        if (was != null && resumeMs >= 0 && urls.contains(was)) {   // the clip Home left, from the same second
+            player.addMediaItem(MediaItem.fromUri(was));
+            player.addMediaItem(MediaItem.fromUri(Aerials.next(aerials, was, random)));
+            player.seekTo(0, resumeMs);
+        } else {
+            queueAerials(was);
+        }
         go();
     }
 
@@ -116,16 +130,27 @@ final class VideoWallpaper {
         player.addMediaItem(MediaItem.fromUri(Aerials.next(aerials, first, random)));
     }
 
-    /** ON_STOP: release the decoder; the poster is opaque again. */
+    /** ON_STOP: release the decoder, remembering the clip and the second for the next start (D113). */
     void stop() {
         main.removeCallbacks(watchdog);
         main.removeCallbacks(fadeToBlack);
         main.removeCallbacks(reveal);
         revealPending = false;
         if (player != null) {
+            remember();
             player.release();
             player = null;
         }
+    }
+
+    /** Where the video is, for the next start; nothing if no frame was shown yet. */
+    private void remember() {
+        MediaItem item = player.getCurrentMediaItem();
+        resumeUri = rendered && item != null && item.localConfiguration != null ? item.localConfiguration.uri.toString() : null;
+        resumeMs = player.getCurrentPosition();
+        long d = player.getDuration();
+        if (aerials != null && d != C.TIME_UNSET && d - resumeMs < RESUME_MIN_LEFT_MS) resumeMs = -1;
+        if (resumeUri != null) Log.i("Wallpaper", "stopped at " + resumeMs + " ms");
     }
 
     /** Opaque poster again; for a new wallpaper type (a stop no longer covers: a handed-over video leaves it hidden). */
