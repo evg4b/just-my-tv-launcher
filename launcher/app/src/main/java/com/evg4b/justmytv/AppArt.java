@@ -22,7 +22,8 @@ import java.util.Set;
  * Banner or icon for a tile, prepared once and kept as WebP in iconcache/ (PLAN 5.1, 5.2).
  * File names carry the package, its lastUpdateTime and the pixel size, so an update or a density change makes a new file.
  * An image the user chose for an app (tile menu → Change image) is kept apart in files/art/, survives app updates and
- * comes first. Thread-safe: each call touches only its own files.
+ * comes first. Tiles get hardware bitmaps: their pixels live only on the GPU, not also in memory (about 350 KB a
+ * banner). Thread-safe: each call touches only its own files.
  */
 final class AppArt {
     private static final int ICON_PX = 128;
@@ -68,11 +69,8 @@ final class AppArt {
     Bitmap load(App a) {
         for (File f : new File[]{ownFile(a.pkg), new File(dir, bannerName(a)), new File(dir, iconName(a))}) {
             if (!f.isFile()) continue;
-            Bitmap b = BitmapFactory.decodeFile(f.getPath());
-            if (b != null) {
-                b.prepareToDraw();
-                return b;
-            }
+            Bitmap b = decode(f);
+            if (b != null) return b;
         }
         Bitmap b = banner(a.info);
         String name = bannerName(a);
@@ -82,8 +80,26 @@ final class AppArt {
         }
         if (b == null) return null;
         save(b, dir, name);
-        b.prepareToDraw();   // upload the texture now, not during a frame
-        return b;
+        return toGpu(b);
+    }
+
+    private static Bitmap decode(File f) {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inPreferredConfig = Bitmap.Config.HARDWARE;
+        Bitmap b = BitmapFactory.decodeFile(f.getPath(), o);
+        return b != null ? b : toGpu(BitmapFactory.decodeFile(f.getPath()));   // no hardware decode here: copy it up
+    }
+
+    /** The bitmap moved to the GPU; if the GPU refuses, the same one, uploaded now rather than during a frame. */
+    private static Bitmap toGpu(Bitmap b) {
+        if (b == null) return null;
+        Bitmap h = b.copy(Bitmap.Config.HARDWARE, false);
+        if (h == null) {
+            b.prepareToDraw();
+            return b;
+        }
+        b.recycle();
+        return h;
     }
 
     /** Delete cached files that belong to no current app (old versions, removed apps, another density). */
