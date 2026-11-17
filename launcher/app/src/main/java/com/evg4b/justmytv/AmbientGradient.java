@@ -12,7 +12,7 @@ import android.view.View;
 /**
  * The screensaver's animated gradient (SCREENSAVER 3): a slow colour field like an ambient lamp. Each palette holds
  * for 20 s, then eases into the next over 40 s; the angle turns once in 4 minutes. Colours come from the clock, not
- * from accumulated steps, so a dropped frame never shifts them. At most ~30 redraws a second: the GPU is slow (PLAN 11.3).
+ * from accumulated steps, so a dropped frame never shifts them. 10 redraws a second: a step is then 0.15° and a fraction of a shade, still smooth, and the slow GPU (PLAN 11.3) is spared all night.
  */
 public final class AmbientGradient extends View {
     static final int[][] PALETTES = {
@@ -23,7 +23,7 @@ public final class AmbientGradient extends View {
             {0xFF13547A, 0xFF2B825B, 0xFF80D0C7},   // Aurora
     };
     static final long HOLD_MS = 20_000, FADE_MS = 40_000, TURN_MS = 240_000;
-    private static final long FRAME_MS = 33;
+    private static final long FRAME_MS = 100;
 
     private final Paint paint = new Paint();
     private boolean running;
