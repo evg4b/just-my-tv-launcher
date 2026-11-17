@@ -11,10 +11,10 @@ one Activity. The only libraries are AndroidX RecyclerView, DynamicAnimation and
 
 ## Status
 
-The fourth alpha, 0.1.0-alpha.4, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
+The fifth alpha, 0.1.0-alpha.5, is on the [releases page](https://github.com/evg4b/just-my-tv-launcher/releases) with a
 ready-built APK.
 
-All planned features are written and build cleanly, and the 43 unit tests pass. The grid, the tile menu, settings,
+All planned features are written and build cleanly, and the 49 unit tests pass. The grid, the tile menu, settings,
 inputs, weather, the wallpapers and the remote buttons service have been checked on the TV, the service with a
 virtual keyboard rather than the real remote. The Russian screens have not, and a few video checks need someone
 watching the screen. The on-device checks are listed as T16 to T19 in
@@ -24,7 +24,7 @@ watching the screen. The on-device checks are listed as T16 to T19 in
 
 - App grid. The first row is the bar and sits at the bottom of the screen, with the next row peeking up from below.
   Press Down to scroll the rest into view. Banners come from each app and are cached as WebP.
-- Long OK on a tile opens a menu: Open, Move, Hide, App details. Order and hidden apps survive restarts, and new apps
+- Long OK on a tile opens a menu: Open, Move, Change image, Hide, App details. Order and hidden apps survive restarts, and new apps
   go to the end.
 - Header with the clock, the date and the weather on the left, and round icons on the right: inputs, settings, and a
   Wi-Fi icon that appears only when the network has a problem. The settings icon can be hidden once a remote button
